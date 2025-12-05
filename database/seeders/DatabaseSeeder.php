@@ -24,6 +24,5 @@ class DatabaseSeeder extends Seeder
         //     ]
         // );
 
-        Test::create(['text' => 'fala pinto']);
     }
 }
