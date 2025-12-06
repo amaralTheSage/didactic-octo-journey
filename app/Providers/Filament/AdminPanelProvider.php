@@ -34,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
                 'secondary' => "#5f8787",
             ])
             ->login()
+            ->brandLogo(asset('assets/logo.png'))
             // ->brandLogo(fn() => view('filament.logo'))->brandLogoHeight('18px')
             ->brandName('InfluHub')
             ->registration()
