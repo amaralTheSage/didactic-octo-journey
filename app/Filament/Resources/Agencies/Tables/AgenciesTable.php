@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Agencies\Tables;
 
+use Filament\Actions\ChatAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,9 +29,6 @@ class AgenciesTable
                 TextColumn::make('name')->label('Nome')
                     ->searchable(),
 
-                TextColumn::make('Chat')->label('')
-                    ->url(fn(Model $record): string => route('home', ['user' => $record]))->default('Chat'),
-
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -40,7 +38,7 @@ class AgenciesTable
                 //
             ])
             ->recordActions([
-                ViewAction::make(), // try and change into a chat action
+                ChatAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
