@@ -64,11 +64,16 @@ class InfluencerResource extends Resource
         return Auth::user()?->role === UserRoles::Agency && $record->agency_id === Auth::user()->id;
     }
 
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListInfluencers::route('/'),
-            'create' => CreateInfluencer::route('/create'),
+            //  'create' => CreateInfluencer::route('/create'),
             'edit' => EditInfluencer::route('/{record}/edit'),
         ];
     }

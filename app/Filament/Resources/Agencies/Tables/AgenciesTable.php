@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Agencies\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Schemas\Components\Image;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -39,11 +40,11 @@ class AgenciesTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ViewAction::make(), // try and change into a chat action
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    // DeleteBulkAction::make(),
                 ]),
             ]);
     }
