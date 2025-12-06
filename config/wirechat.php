@@ -2,6 +2,30 @@
 
 return [
 
+    'notifications' => [
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enable Notifications
+        |--------------------------------------------------------------------------
+        |
+        | Enable or disable notifications globally for Wirechat.
+        |
+        */
+        'enabled' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notification Sound
+        |--------------------------------------------------------------------------
+        |
+        | The sound to play for notifications. This should correspond to a valid
+        | sound file in the public sounds directory.
+        |
+        */
+        'sound' => 'default',
+
+    ],
     /*
     |--------------------------------------------------------------------------
     | Use UUIDs for Conversations

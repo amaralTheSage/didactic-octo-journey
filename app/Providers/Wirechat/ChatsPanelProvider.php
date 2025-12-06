@@ -14,7 +14,10 @@ class ChatsPanelProvider extends PanelProvider
             ->path('chats')
             ->middleware(['web', 'auth'])
             ->createGroupAction()
-            ->createChatAction()
+            ->createChatAction()->createGroupAction()
+            ->clearChatAction(false)->maxGroupMembers(10)
+            ->webPushNotifications()
+            ->deleteChatAction(false)
             ->attachments()
             ->default();
     }
