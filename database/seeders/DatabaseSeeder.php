@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 10) as $i) {
             $companies->push(
                 User::create([
-                    'name' => "Company $i",
+                    'name' => fake()->company(),
                     'email' => "company$i@gmail.com",
                     'avatar' => $createAvatar("Company $i"),
                     'password' => Hash::make('senha123'),
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 10) as $i) {
             $agencies->push(
                 User::create([
-                    'name' => "Agency $i",
+                    'name' => fake()->company(),
                     'email' => "agency$i@gmail.com",
                     'avatar' => $createAvatar("Agency $i"),
                     'password' => Hash::make('senha123'),
@@ -69,7 +69,7 @@ class DatabaseSeeder extends Seeder
         // -------------------------------------------------------
         foreach (range(1, 30) as $i) {
             User::create([
-                'name' => "Influencer $i",
+                'name' => fake()->name(),
                 'email' => "influencer$i@gmail.com",
                 'avatar' => $createAvatar("Influencer $i"),
                 'password' => Hash::make('senha123'),
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder
         $companies->each(function ($company) {
             foreach (range(1, 5) as $i) {
                 Product::create([
-                    'name' => "Product {$i}",
+                    'name' => fake()->colorName() . " " . fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
                     'company_id' => $company->id,
