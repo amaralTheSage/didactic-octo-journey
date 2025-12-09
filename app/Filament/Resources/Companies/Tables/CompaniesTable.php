@@ -14,6 +14,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class CompaniesTable
 {
@@ -40,9 +41,14 @@ class CompaniesTable
                 Action::make('viewCampaigns')
                     ->label('Campanhas')
                     ->icon('heroicon-o-presentation-chart-line')
-                    ->url(fn($record) => route('filament.admin.resources.campaigns.index', [
+                    ->url(fn($record) => route('filament.admin.resources.agency-campaigns.index', [
                         'search' => $record->name,
-                    ])),
+                    ]))->visible(
+                        fn(Model $record) =>
+                        $record->campaigns()
+                            ->where('agency_id', Auth::id())
+                            ->exists()
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
