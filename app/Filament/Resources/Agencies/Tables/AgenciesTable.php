@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Agencies\Tables;
 
+use App\Actions\Filament\ChatAction;
 use Filament\Actions\Action;
-use Filament\Actions\ChatAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
