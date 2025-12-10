@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\User;
+use App\UserRoles;
 use Filament\Support\Colors\Color;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,20 @@ class DatabaseSeeder extends Seeder
 
             return "avatars/{$filename}";
         };
+
+
+        // -------------------------------------------------------
+        // ADMIN
+        // -------------------------------------------------------
+        User::create([
+            'name' => 'Admin',
+            'email' => "admin@gmail.com",
+            'avatar' => $createAvatar("Admin"),
+            'password' => Hash::make('senha123'),
+            'role' => UserRoles::Admin,
+            'email_verified_at' => now(),
+        ]);
+
 
 
         // -------------------------------------------------------
