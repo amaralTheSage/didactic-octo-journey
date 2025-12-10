@@ -10,9 +10,15 @@ class ChatsPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-             ->id('chats')
-             ->path('chats')
-             ->middleware(['web','auth'])
-             ->default();
+            ->id('chats')
+            ->path('chats')
+            ->middleware(['web', 'auth'])
+            ->createGroupAction()
+            ->createChatAction()->createGroupAction()
+            ->clearChatAction(false)->maxGroupMembers(10)
+            ->webPushNotifications()
+            ->deleteChatAction(false)
+            ->attachments()
+            ->default();
     }
 }

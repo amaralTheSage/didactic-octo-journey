@@ -66,6 +66,18 @@
     --shadow-2xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.13);
     --tracking-normal: 0rem;
     --spacing: 0.25rem;
+
+    /* Light mode Wirechat overrides */
+    --wc-light-border: var(--border);
+    --wc-dark-border: var(--border);
+    --wc-bg: var(--background);
+    --wc-text: var(--foreground);
+    --wc-primary: var(--primary);
+    --wc-primary-foreground: var(--primary-foreground);
+    --wc-secondary: var(--secondary);
+    --wc-secondary-foreground: var(--secondary-foreground);
+    --wc-accent: var(--accent);
+    --wc-accent-foreground: var(--accent-foreground);
 }
 
 .dark {
@@ -129,6 +141,18 @@
         0px 1px 4px 0px hsl(0 0% 0% / 0.05),
         0px 8px 10px -1px hsl(0 0% 0% / 0.05);
     --shadow-2xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.13);
+
+    /* Dark mode Wirechat overrides */
+    --wc-light-border: var(--border);
+    --wc-dark-border: var(--border);
+    --wc-bg: var(--background);
+    --wc-text: var(--foreground);
+    --wc-primary: var(--primary);
+    --wc-primary-foreground: var(--primary-foreground);
+    --wc-secondary: var(--secondary);
+    --wc-secondary-foreground: var(--secondary-foreground);
+    --wc-accent: var(--accent);
+    --wc-accent-foreground: var(--accent-foreground);
 }
 
 @theme inline {

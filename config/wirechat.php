@@ -2,6 +2,10 @@
 <?php
 
 return [
+    'broadcasting' => [
+        'driver' => env('WIRECHAT_BROADCAST_DRIVER', 'reverb'),
+    ],
+
 
     'notifications' => [
 
