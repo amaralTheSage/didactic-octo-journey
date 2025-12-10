@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -57,10 +58,7 @@ class User extends Authenticatable implements WirechatUser
         return asset('storage/' . $this->avatar);
     }
 
-    public function getWirechatAvatarUrlAttribute(): string
-    {
-        return $this->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
-    }
+
 
     public function campaigns()
     {
@@ -89,6 +87,11 @@ class User extends Authenticatable implements WirechatUser
      * Decide if this user may access the given panel.
      * Here, only users with verified emails are allowed.
      */
+    public function getWirechatAvatarUrlAttribute(): string
+    {
+        return $this->getAvatarUrlAttribute() ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+    }
+
     public function canAccessWirechatPanel(Panel $panel): bool
     {
         return $this->hasVerifiedEmail();
@@ -99,7 +102,7 @@ class User extends Authenticatable implements WirechatUser
      */
     public function canCreateChats(): bool
     {
-        return true;
+        return Auth::user()->role !== UserRoles::Influencer;
     }
 
     /**
@@ -107,7 +110,7 @@ class User extends Authenticatable implements WirechatUser
      */
     public function canCreateGroups(): bool
     {
-        return true;
+        return Auth::user()->role !== UserRoles::Influencer;
     }
 
 
