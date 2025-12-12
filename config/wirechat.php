@@ -1,6 +1,8 @@
 
 <?php
 
+use App\Models\User;
+
 return [
     'broadcasting' => [
         'driver' => env('WIRECHAT_BROADCAST_DRIVER', 'reverb'),
@@ -57,6 +59,10 @@ return [
     |
     */
     'table_prefix' => 'wirechat_',
+
+    'models' => [
+        'user' => User::class,
+    ],
 
     /*
      |--------------------------------------------------------------------------
