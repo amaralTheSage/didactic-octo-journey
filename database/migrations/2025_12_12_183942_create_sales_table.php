@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('influencer_id')->constrained('user_id');
+            $table->string('channel');
+            $table->foreignId('influencer_id')->constrained('users');
             $table->foreignId('campaign_id')->constrained();
             $table->decimal('gross_value', 14, 2);
             $table->decimal('net_value', 14, 2);
