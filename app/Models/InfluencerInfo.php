@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\UserRoles;
 use Illuminate\Database\Eloquent\Model;
 
 class InfluencerInfo extends Model
@@ -16,4 +17,9 @@ class InfluencerInfo extends Model
         'facebook',
         'youtube'
     ];
+
+    public function agency()
+    {
+        return $this->belongsTo(User::class, 'agency_id')->where('role', UserRoles::Agency);
+    }
 }
