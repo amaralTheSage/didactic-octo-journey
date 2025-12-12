@@ -2,8 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
 use DutchCodingCompany\FilamentSocialite\Provider;
+use Filament\Auth\Pages\Register;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -35,15 +37,15 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => '#d87943',
                 'secondary' => '#5f8787',
             ])
+            ->profile(EditProfile::class)
             ->login()
             // ->brandLogo(asset('assets/logo.png'))
             // ->brandLogo(fn() => view('filament.logo'))->brandLogoHeight('18px')
             ->brandName('HubInflu')
-            ->registration()
+            ->registration(Register::class)
             ->passwordReset()
             // ->emailVerification()
             // ->emailChangeVerification()
-            ->profile()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
