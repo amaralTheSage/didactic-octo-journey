@@ -35,7 +35,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           source: "docker-compose.yml"
-          target: "~/."
+          target: "~/influhub/"
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.1.0
@@ -45,6 +45,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            cd ~/influhub
             echo "Pulling updated container..."
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/influhub:latest
 
