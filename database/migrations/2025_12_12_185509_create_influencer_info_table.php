@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('association_accepted');
+        Schema::table('influencer_info', function (Blueprint $table) {
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('agency_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('association_status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->integer('n_followers');
+            $table->string('instagram');
+            $table->string('twitter');
+            $table->string('facebook');
+            $table->string('youtube');
         });
     }
 
@@ -22,9 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('association_accepted')->default(false);
-            $table->dropColumn('association_status');
-        });
+        //
     }
 };

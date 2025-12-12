@@ -7,6 +7,7 @@ namespace App\Models;
 use App\UserRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
@@ -32,10 +33,6 @@ class User extends Authenticatable implements WirechatUser
         'password',
         'role',
         'avatar',
-        // Para influenciadores
-        'agency_id',
-        'association_status',
-        // Para agencias e empresas
         'description',
     ];
 
@@ -60,6 +57,11 @@ class User extends Authenticatable implements WirechatUser
             ->orWhere('influencer_id', $this->id);
     }
 
+    public function influencer_info(): HasOne
+    {
+        return $this->hasOne(InfluencerInfo::class);
+    }
+
     public function agency()
     {
         return $this->belongsTo(User::class, 'agency_id')->where('role', UserRoles::Agency);
@@ -67,7 +69,14 @@ class User extends Authenticatable implements WirechatUser
 
     public function influencers()
     {
-        return $this->hasMany(User::class, 'agency_id')->where('role', UserRoles::Influencer);
+        return $this->hasManyThrough(
+            User::class,
+            InfluencerInfo::class,
+            'agency_id',
+            'id',
+            'id',
+            'user_id'
+        );
     }
 
     public function products(): HasMany
