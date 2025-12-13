@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class InfluencerInfo extends Model
 {
+    protected $table = 'influencer_info';
+
     protected $fillable = [
         'user_id',
         'agency_id',

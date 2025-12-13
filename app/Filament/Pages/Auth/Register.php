@@ -92,7 +92,6 @@ class Register extends SimplePage
             $this->callHook('afterValidate');
 
             $influencerData = $data['influencer_data'] ?? [];
-            unset($data['influencer_data']); // Remove it from the user data array
 
             $data = $this->mutateFormDataBeforeRegister($data);
 
@@ -100,16 +99,13 @@ class Register extends SimplePage
 
             $user = $this->handleRegistration($data);
 
-            // 2. MANUALLY CREATES THE RELATED INFLUENCERINFO RECORD
-            if ($user && $user->role === 'influencer' && ! empty($influencerData)) {
-
-                $influencer_info = InfluencerInfo::create([
-                    'user_id' => $user['id'],
+            if ($data['role'] === 'influencer') {
+                InfluencerInfo::create([
+                    'user_id' => $user->id,
                     ...$influencerData,
                 ]);
             }
 
-            dump($user, $influencer_info);
 
             $this->form->model($user)->saveRelationships();
 
@@ -185,7 +181,7 @@ class Register extends SimplePage
 
 
                 $this->getNameFormComponent(),
-                Textarea::make('bio')->rows(5)->placeholder('Sou Youtuber e Streamer na área da tecnologia...'),
+                Textarea::make('bio')->rows(5)->placeholder('Sou Youtuber e Streamer na área da tecnologia...')->required(),
 
                 Section::make()->schema([
                     Select::make('role')
@@ -215,11 +211,11 @@ class Register extends SimplePage
                                 ]),
 
                                 Group::make()->schema([
-                                    TextInput::make('instagram_followers')->hiddenLabel(),
-                                    TextInput::make('twitter_followers')->hiddenLabel(),
-                                    TextInput::make('youtube_followers')->hiddenLabel(),
-                                    TextInput::make('tiktok_followers')->hiddenLabel(),
-                                    TextInput::make('facebook_followers')->hiddenLabel(),
+                                    TextInput::make('instagram_followers')->hiddenLabel()->numeric(),
+                                    TextInput::make('twitter_followers')->hiddenLabel()->numeric(),
+                                    TextInput::make('youtube_followers')->hiddenLabel()->numeric(),
+                                    TextInput::make('tiktok_followers')->hiddenLabel()->numeric(),
+                                    TextInput::make('facebook_followers')->hiddenLabel()->numeric(),
                                 ]),
                             ]),
                         ])
