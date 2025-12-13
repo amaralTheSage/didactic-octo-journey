@@ -2,6 +2,7 @@
 
 namespace Filament\Auth\Pages;
 
+use App\Models\User;
 use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -27,6 +28,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\Width;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -374,6 +376,13 @@ class EditProfile extends Page
     }
 
 
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+    // FORM
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -403,6 +412,22 @@ class EditProfile extends Page
                             ]),
 
                             Group::make()->columns(2)->dehydrated()->statePath('influencer_data')->schema([
+                                Select::make('agency_id')
+                                    ->label('Agência Vinculada')->columnSpan(2)
+                                    ->helperText('Selecione a agência responsável pelo seu perfil.')
+                                    ->searchable()
+                                    ->preload()
+                                    ->getSearchResultsUsing(
+                                        fn(string $search): array => User::query()
+                                            ->where('role', UserRoles::Agency)
+                                            ->where('name', 'ilike', "%{$search}%")
+                                            ->limit(50)
+                                            ->pluck('name', 'id')
+                                            ->toArray()
+                                    )
+                                    ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
+
+
                                 Group::make()->schema([
                                     TextInput::make('instagram')->hiddenLabel()->placeholder('@ do Instagram'),
                                     TextInput::make('twitter')->hiddenLabel()->placeholder('@ do Twitter'),
@@ -431,6 +456,14 @@ class EditProfile extends Page
 
             ]);
     }
+
+
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+
+
     /**
      * @return array<Action | ActionGroup>
      */
