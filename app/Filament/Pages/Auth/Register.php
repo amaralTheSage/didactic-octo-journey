@@ -12,7 +12,6 @@ use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -180,10 +179,11 @@ class Register extends SimplePage
         return $schema
             ->components([
 
-                FileUpload::make('avatar_url')
+                FileUpload::make('avatar')
                     ->label('Avatar')
-                    ->disk('public')->alignCenter()
+                    ->disk('public')
                     ->directory('avatars')
+                    ->alignCenter()
                     ->image()
                     ->avatar()
                     ->circleCropper()
