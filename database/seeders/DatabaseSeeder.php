@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\InfluencerInfo;
 use App\Models\Product;
+use App\Models\Subcategory;
 use App\Models\User;
 use App\UserRoles;
 use Illuminate\Database\Seeder;
@@ -18,15 +20,17 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(20) . '.jpg';
+            // $filename = Str::random(20) . '.jpg';
 
-            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
+            // $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
 
-            $imageData = file_get_contents($url);
+            // $imageData = file_get_contents($url);
 
-            Storage::disk('public')->put("avatars/{$filename}", $imageData);
+            // Storage::disk('public')->put("avatars/{$filename}", $imageData);
 
-            return "avatars/{$filename}";
+            // return "avatars/{$filename}";
+
+            return null;
         };
 
         // -------------------------------------------------------
@@ -116,6 +120,68 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         });
+
+
+        // -------------------------------------------------------
+        // Categoriesssssssss
+        // -------------------------------------------------------
+        $categoriesData = [
+            'Beleza e Moda' => [
+                'Maquiagem',
+                'Cuidados com a Pele',
+                'Cabelos',
+                'Tendências de Moda',
+                'Estilo de Vida Fitness',
+            ],
+            'Tecnologia e Jogos' => [
+                'Reviews de Gadgets',
+                'Mobile Gaming',
+                'Consoles e PC Gaming',
+                'Desenvolvimento de Software',
+                'Inteligência Artificial',
+            ],
+            'Viagens e Turismo' => [
+                'Viagens Nacionais',
+                'Intercâmbios',
+                'Gastronomia de Viagem',
+                'Mochilão e Aventura',
+                'Dicas de Hospedagem',
+            ],
+            'Alimentação e Culinária' => [
+                'Receitas Veganas',
+                'Culinária Internacional',
+                'Bebidas e Coquetéis',
+                'Dieta e Nutrição',
+                'Restaurantes e Críticas',
+            ],
+            'Finanças e Negócios' => [
+                'Investimentos',
+                'Empreendedorismo',
+                'Educação Financeira',
+                'Marketing Digital',
+                'Carreira e Produtividade',
+            ],
+            'Entretenimento e Cultura' => [
+                'Críticas de Cinema e Séries',
+                'Música e Shows',
+                'Livros e Literatura',
+                'Arte e Design',
+                'Comédia e Humor',
+            ],
+        ];
+
+        foreach ($categoriesData as $categoryName => $subcategories) {
+            $category = Category::create(['title' => $categoryName]);
+
+            foreach ($subcategories as $subcategoryName) {
+                Subcategory::create([
+                    'category_id' => $category->id,
+                    'title' => $subcategoryName,
+                ]);
+            }
+        }
+
+
 
         // -------------------------------------------------------
         // MANUAL TEST USERS
