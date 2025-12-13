@@ -2,6 +2,7 @@
 
 namespace Filament\Auth\Pages;
 
+use App\Models\Category;
 use App\Models\User;
 use App\UserRoles;
 use Filament\Actions\Action;
@@ -402,14 +403,29 @@ class EditProfile extends Page
                 $this->getNameFormComponent(),
                 Textarea::make('bio')->rows(5)->placeholder('Sou Youtuber e Streamer na área da tecnologia...')->required(),
 
+
+
                 Section::make()->schema([
+
                     Section::make('Canais de Mídia Social')
                         ->description('Atualize o @ do seu perfil e número de seguidores em cada plataforma.')
                         ->schema([
-                            Group::make()->columns(2)->schema([
-                                TextEntry::make('handle_label')->label('@ do Perfil'),
-                                TextEntry::make('followers_label')->label('Seguidores'),
-                            ]),
+                            Select::make('subcategories')
+                                ->multiple()
+                                ->label('Categoria')
+                                ->options(
+                                    Category::with('subcategories')->get()
+                                        ->mapWithKeys(function ($category) {
+                                            return [
+                                                $category->title => $category->subcategories
+                                                    ->filter(fn($subcategory) => $subcategory->title !== null)
+                                                    ->pluck('title', 'id')
+                                                    ->toArray(),
+                                            ];
+                                        })
+                                        ->toArray()
+                                ),
+
 
                             Group::make()->columns(2)->dehydrated()->statePath('influencer_data')->schema([
                                 Select::make('agency_id')
@@ -427,6 +443,14 @@ class EditProfile extends Page
                                     )
                                     ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
 
+
+
+
+
+                                Group::make()->columns(2)->schema([
+                                    TextEntry::make('handle_label')->label('@ do Perfil'),
+                                    TextEntry::make('followers_label')->label('Seguidores'),
+                                ])->columnSpan(2),
 
                                 Group::make()->schema([
                                     TextInput::make('instagram')->hiddenLabel()->placeholder('@ do Instagram'),
