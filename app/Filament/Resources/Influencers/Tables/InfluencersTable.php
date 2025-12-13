@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Influencers\Tables;
 
+use App\Models\User;
 use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -11,10 +12,20 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class InfluencersTable
 {
+    public static function getEloquentQuery(): Builder
+    {
+        return User::query()
+            ->where('role', UserRoles::Influencer)
+            ->whereHas('influencer_info', function (Builder $query) {
+                $query->where('agency_id', Auth::id());
+            });
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -24,7 +35,7 @@ class InfluencersTable
                     ->circular(),
                 TextColumn::make('name')->label('Nome')
                     ->searchable(),
-                TextColumn::make('agency.name')->label('Agência')->default('___')
+                TextColumn::make('influencer_info.agency.name')->label('Agência')->default('___')
                     ->searchable(),
 
                 TextColumn::make('created_at')
@@ -41,16 +52,19 @@ class InfluencersTable
                 //
             ])
             ->recordActions([
-                // EditAction::make(),
-                // ChatAction::make()->visible(fn($record): bool => Auth::user()->role === UserRoles::Company),
 
-                Action::make('Aprovar Vínculo')->label('Aprovar')->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')->action(fn($record) => $record->update(['association_status' => 'approved']))->successNotification(
-                    Notification::make()
-                        ->success()
-                        ->title('Influenciador vinculado')
-                        ->body('Vínculo com influenciador criado com sucesso.')
-                        ->send()
-                ),
+                Action::make('Aprovar Vínculo')
+                    ->label('Aprovar')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->action(function ($record) {
+                        $record->influencer_info->update(['association_status' => 'approved']);
+                    })
+                    ->successNotification(
+                        Notification::make()
+                            ->success()
+                            ->title('Influenciador vinculado')
+                            ->body('Vínculo com influenciador criado com sucesso.')
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
