@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d5654b0397d4403459ebc4cddeeded1",
+    "content-hash": "1f674ff5bce5f54c178f2d4a587669d1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1357,6 +1357,69 @@
                 "source": "https://github.com/igorw/evenement/tree/v3.0.2"
             },
             "time": "2023-08-08T05:53:35+00:00"
+        },
+        {
+            "name": "filafly/filament-identity-column",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/filafly/filament-identity-column.git",
+                "reference": "b50791a230363b98068139069f01c3cb6c61fd93"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/filafly/filament-identity-column/zipball/b50791a230363b98068139069f01c3cb6c61fd93",
+                "reference": "b50791a230363b98068139069f01c3cb6c61fd93",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.92"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.22",
+                "phpunit/phpunit": "^12.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filafly\\IdentityColumn\\IdentityColumnServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filafly\\IdentityColumn\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nolan Nordlund",
+                    "email": "nolan@filafly.com",
+                    "homepage": "https://www.filafly.com/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A column for Filament Tables to which combines an avatar, name and description.",
+            "homepage": "https://filafly.com/plugins/filament-identity-column",
+            "keywords": [
+                "column",
+                "filament",
+                "identity",
+                "laravel",
+                "tables"
+            ],
+            "support": {
+                "issues": "https://github.com/filafly/filament-identity-column/issues",
+                "source": "https://github.com/filafly/filament-identity-column/tree/v1.0.2"
+            },
+            "time": "2025-11-25T15:45:15+00:00"
         },
         {
             "name": "filament/actions",

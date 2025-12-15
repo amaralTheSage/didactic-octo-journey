@@ -16,7 +16,7 @@ class ViewInfluencerDetails
     public static function make(): ViewAction
     {
         return ViewAction::make('viewInfluencerDetails')
-            ->label('Ver Perfil')
+            ->label('Detalhes')
             ->slideOver()
             ->modalWidth('2xl')
             ->schema([

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Agencies\Tables;
 
+use App\Actions\Filament\ViewAgencyDetails;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -36,15 +37,15 @@ class AgenciesTable
                 Action::make('viewCampaigns')
                     ->label('Campanhas')
                     ->icon('heroicon-o-presentation-chart-line')
-                    ->url(fn ($record) => route('filament.admin.resources.campaigns.index', [
+                    ->url(fn($record) => route('filament.admin.resources.campaigns.index', [
                         'search' => $record->name,
                     ]))->visible(
-                        fn (Model $record) => $record->campaigns()
+                        fn(Model $record) => $record->campaigns()
                             ->where('company_id', Auth::id())
                             ->exists()
                     ),
+                ViewAgencyDetails::make()
                 //  ChatAction::make(),
-
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
