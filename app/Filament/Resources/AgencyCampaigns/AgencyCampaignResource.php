@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AgencyCampaignResource extends Resource
 {
@@ -45,7 +46,7 @@ class AgencyCampaignResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()->role === UserRoles::Agency;
+        return Gate::allows('is_agency');
     }
 
     public static function canCreate(): bool

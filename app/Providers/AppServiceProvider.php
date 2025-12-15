@@ -26,19 +26,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('is_agency', function () {
-            return Auth::user()->role === UserRoles::Agency;
+        Gate::define('is_agency', function (User $user) {
+            return $user->role === UserRoles::Agency;
         });
 
-        Gate::define('is_company', function () {
-            return Auth::user()->role === UserRoles::Company;
+        Gate::define('is_company', function (User $user) {
+            return $user->role === UserRoles::Company;
         });
 
-        Gate::define('is_influencer', function () {
-            return Auth::user()->role === UserRoles::Influencer;
+        Gate::define('is_influencer', function (User $user) {
+            return $user->role === UserRoles::Influencer;
         });
 
-        Gate::define('is_influencers_agency', function (User $influencer) {
+        Gate::define('is_influencers_agency', function (User $user, User $influencer) {
             return Gate::allows('is_agency') && $influencer->influencer_info->agency_id === Auth::id();
         });
 

@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class InfluencerCampaignResource extends Resource
 {
@@ -45,7 +46,7 @@ class InfluencerCampaignResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()->role === UserRoles::Influencer;
+        return Gate::allows('is_influencer');
     }
 
     public static function canCreate(): bool

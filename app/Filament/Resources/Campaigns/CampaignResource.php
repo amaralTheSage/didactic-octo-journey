@@ -16,6 +16,9 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+
+
 
 class CampaignResource extends Resource
 {
@@ -44,7 +47,7 @@ class CampaignResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()->role === UserRoles::Company;
+        return Gate::allows('is_company');
     }
 
     public static function getEloquentQuery(): Builder
