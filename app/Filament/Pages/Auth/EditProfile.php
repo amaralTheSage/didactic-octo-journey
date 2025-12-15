@@ -179,9 +179,6 @@ class EditProfile extends Page
     protected function mutateFormDataBeforeSave(array $data): array
     {
 
-
-
-
         $this->influencerData = $data['influencer_data'] ?? [];
 
         unset($data['influencer_data']);

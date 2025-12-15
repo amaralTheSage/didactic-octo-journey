@@ -71,6 +71,7 @@ class Register extends SimplePage
 
         $this->form->fill();
 
+
         $this->callHook('afterFill');
     }
 
@@ -106,12 +107,21 @@ class Register extends SimplePage
                 ]);
             }
 
+
+
             $this->form->model($user)->saveRelationships();
 
             $this->callHook('afterRegister');
 
             return $user;
         });
+
+
+        $data = $this->form->getState();
+
+        foreach ($data['subcategories'] as $sub) {
+            $user->subcategories()->attach($sub);
+        }
 
         event(new Registered($user));
 
@@ -143,6 +153,7 @@ class Register extends SimplePage
      */
     protected function handleRegistration(array $data): Model
     {
+
         return $this->getUserModel()::create($data);
     }
 
@@ -212,6 +223,8 @@ class Register extends SimplePage
                     Section::make('Canais de Mídia Social')
                         ->description('Informe o @ do seu perfil e número de seguidores em cada plataforma.')
                         ->schema([
+
+
                             Select::make('subcategories')
                                 ->multiple()
                                 ->label('Categoria')
@@ -220,13 +233,14 @@ class Register extends SimplePage
                                         ->mapWithKeys(function ($category) {
                                             return [
                                                 $category->title => $category->subcategories
-                                                    ->filter(fn ($subcategory) => $subcategory->title !== null)
+                                                    ->filter(fn($subcategory) => $subcategory->title !== null)
                                                     ->pluck('title', 'id')
                                                     ->toArray(),
                                             ];
                                         })
                                         ->toArray()
                                 ),
+
 
                             Group::make()->columns(2)->dehydrated()->statePath('influencer_data')->schema([
                                 Select::make('agency_id')
@@ -235,14 +249,14 @@ class Register extends SimplePage
                                     ->searchable()
                                     ->preload()
                                     ->getSearchResultsUsing(
-                                        fn (string $search): array => User::query()
+                                        fn(string $search): array => User::query()
                                             ->where('role', UserRoles::Agency)
                                             ->where('name', 'ilike', "%{$search}%")
                                             ->limit(50)
                                             ->pluck('name', 'id')
                                             ->toArray()
                                     )
-                                    ->getOptionLabelUsing(fn ($value): ?string => User::find($value)?->name),
+                                    ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
 
                                 Group::make()->columns(2)->schema([
                                     TextEntry::make('handle_label')->label('@ do Perfil'),
@@ -266,7 +280,7 @@ class Register extends SimplePage
                                 ]),
                             ]),
                         ])
-                        ->visible(fn (Get $get): bool => $get('role') === 'influencer'),
+                        ->visible(fn(Get $get): bool => $get('role') === 'influencer'),
                 ]),
 
                 $this->getEmailFormComponent(),
@@ -310,7 +324,7 @@ class Register extends SimplePage
             ->required()
             ->rule(Password::default())
             ->showAllValidationMessages()
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationAttribute(__('filament-panels::auth/pages/register.form.password.validation_attribute'));
     }
@@ -389,6 +403,7 @@ class Register extends SimplePage
      */
     protected function mutateFormDataBeforeRegister(array $data): array
     {
+
         return $data;
     }
 
@@ -398,7 +413,7 @@ class Register extends SimplePage
             return null;
         }
 
-        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before').' '.$this->loginAction->toHtml());
+        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before') . ' ' . $this->loginAction->toHtml());
     }
 
     public function content(Schema $schema): Schema
