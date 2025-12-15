@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('subcategory_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreignId('subcategory_id');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

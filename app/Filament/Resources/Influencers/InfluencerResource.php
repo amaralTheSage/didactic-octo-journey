@@ -28,9 +28,13 @@ class InfluencerResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', UserRoles::Influencer)->whereHas('influencer_info', function (Builder $query) {
-            $query->where('agency_id', Auth::id());
-        });
+        if (Auth::user()->role === UserRoles::Agency) {
+            return parent::getEloquentQuery()->where('role', UserRoles::Influencer)->whereHas('influencer_info', function (Builder $query) {
+                $query->where('agency_id', Auth::id());
+            });
+        } else {
+            return parent::getEloquentQuery()->where('role', UserRoles::Influencer);
+        }
     }
 
     public static function canViewAny(): bool

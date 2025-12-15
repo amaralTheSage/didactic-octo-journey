@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\UserRoles;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Instagram\InstagramExtendSocialite;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -22,6 +26,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('is_agency', function () {
+            return Auth::user()->role === UserRoles::Agency;
+        });
+
+        Gate::define('is_company', function () {
+            return Auth::user()->role === UserRoles::Company;
+        });
+
+        Gate::define('is_influencer', function () {
+            return Auth::user()->role === UserRoles::Influencer;
+        });
+
+        Gate::define('is_influencers_agency', function (User $influencer) {
+            return Gate::allows('is_agency') && $influencer->influencer_info->agency_id === Auth::id();
+        });
+
         Event::listen(
             SocialiteWasCalled::class,
             InstagramExtendSocialite::class

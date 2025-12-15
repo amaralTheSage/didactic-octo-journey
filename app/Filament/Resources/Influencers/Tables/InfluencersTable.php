@@ -2,12 +2,17 @@
 
 namespace App\Filament\Resources\Influencers\Tables;
 
+use App\Actions\Filament\ViewInfluencerDetails;
 use App\Models\User;
 use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -18,11 +23,13 @@ class InfluencersTable
 {
     public static function getEloquentQuery(): Builder
     {
-        return User::query()
+        $query =  User::query()
             ->where('role', UserRoles::Influencer)
             ->whereHas('influencer_info', function (Builder $query) {
                 $query->where('agency_id', Auth::id());
             });
+
+        return $query->with('subcategories');
     }
 
     public static function configure(Table $table): Table
@@ -53,7 +60,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -63,6 +70,7 @@ class InfluencersTable
                             ->title('Influenciador vinculado')
                             ->body('Vínculo com influenciador criado com sucesso.')
                     ),
+                ViewInfluencerDetails::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

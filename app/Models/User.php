@@ -36,6 +36,8 @@ class User extends Authenticatable implements WirechatUser
         'bio',
     ];
 
+    protected $with = ['subcategories'];
+
     /**
      * The attributes that should be hidden for serialization.
      *

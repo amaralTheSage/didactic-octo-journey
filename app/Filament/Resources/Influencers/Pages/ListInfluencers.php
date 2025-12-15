@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Influencers\Pages;
 
 use App\Filament\Resources\Influencers\InfluencerResource;
+use App\UserRoles;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -22,6 +23,10 @@ class ListInfluencers extends ListRecords
 
     public function getTabs(): array
     {
+        if (Auth::user()->role !== UserRoles::Agency) {
+            return [];
+        }
+
         return [
             'Nossos Influenciadores' => Tab::make()->modifyQueryUsing(function ($query) {
                 $query->whereHas('influencer_info', function (Builder $query) {
