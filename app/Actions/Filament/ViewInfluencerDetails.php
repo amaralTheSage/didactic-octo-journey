@@ -55,7 +55,9 @@ class ViewInfluencerDetails
                             ->label('Categorias')
                             ->badge()
                             ->separator(',')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()->visible(function ($record) {
+                                return sizeof($record->subcategories) > 0;
+                            }),
                     ])
                     ->columns(2),
 

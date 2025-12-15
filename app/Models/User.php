@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\UserRoles;
+use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,7 +18,7 @@ use Wirechat\Wirechat\Contracts\WirechatUser;
 use Wirechat\Wirechat\Panel;
 use Wirechat\Wirechat\Traits\InteractsWithWirechat;
 
-class User extends Authenticatable implements WirechatUser
+class User extends Authenticatable implements WirechatUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Impersonate, InteractsWithWirechat, Notifiable, TwoFactorAuthenticatable;
@@ -43,9 +44,15 @@ class User extends Authenticatable implements WirechatUser
      *
      * @var list<string>
      */
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return asset('storage/' . $this->avatar);
+    }
+
     public function getAvatarUrlAttribute(): ?string
     {
-        if (! $this->avatar) {
+        if (!$this->avatar) {
             return null;
         }
 
