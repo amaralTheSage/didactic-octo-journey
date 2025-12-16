@@ -19,6 +19,6 @@ class Proposal extends Model
 
     public function announcement(): BelongsTo
     {
-        return $this->belongsTo(CampaignAnnouncement::class);
+        return $this->belongsTo(CampaignAnnouncement::class,         'campaign_announcement_id');
     }
 }

@@ -17,7 +17,7 @@ class ViewAgencyDetails
         return ViewAction::make('viewAgencyDetails')
             ->label('Detalhes')
             ->slideOver()
-            ->modalWidth('2xl')
+            ->modalWidth('xl')
             ->schema([
                 Section::make('Detalhes da Agência')
                     ->schema([
@@ -25,7 +25,7 @@ class ViewAgencyDetails
                             ImageEntry::make('avatar')
                                 ->label('Avatar')
                                 ->circular()
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome'),

@@ -4,8 +4,8 @@ namespace App;
 
 enum CampaignStatus: string
 {
-    case PendingApproval = 'pending_approval';
-    case Active = 'active';
-    case Finished = 'finished';
-    case Cancelled = 'cancelled';
+    case PENDING_APPROVAL = 'pending_approval';
+    case APPROVED = 'approved';
+    case FINISHED = 'finished';
+    case REJECTED = 'rejected';
 }

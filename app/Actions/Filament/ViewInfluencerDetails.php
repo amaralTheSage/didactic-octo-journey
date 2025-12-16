@@ -16,7 +16,7 @@ class ViewInfluencerDetails
         return ViewAction::make('viewInfluencerDetails')
             ->label('Detalhes')
             ->slideOver()
-            ->modalWidth('2xl')
+            ->modalWidth('xl')
             ->schema([
                 Section::make('Informações do Influencer')
                     ->schema([
@@ -24,7 +24,7 @@ class ViewInfluencerDetails
                             ImageEntry::make('avatar_url')
                                 ->label('Avatar')
                                 ->circular()
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
 
                             TextEntry::make('name')
@@ -95,7 +95,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.instagram')
                             ->label('Instagram')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://instagram.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://instagram.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -107,7 +107,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.youtube')
                             ->label('YouTube')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://youtube.com/@{$state}" : null)
+                            ->url(fn($state) => $state ? "https://youtube.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -119,7 +119,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.tiktok')
                             ->label('TikTok')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://tiktok.com/@{$state}" : null)
+                            ->url(fn($state) => $state ? "https://tiktok.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -131,7 +131,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.twitter')
                             ->label('Twitter')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://twitter.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://twitter.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -143,7 +143,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.facebook')
                             ->label('Facebook')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://facebook.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://facebook.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 

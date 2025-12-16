@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Campaigns\Tables;
 
+use App\CampaignStatus;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -22,8 +24,26 @@ class CampaignsTable
                     ->searchable(),
                 TextColumn::make('agency.name')->label('Agência')
                     ->searchable(),
-                TextColumn::make('status')
-                    ->searchable(),
+
+                TextColumn::make('status_agency')->label('Aprovação da Agência')
+                    ->searchable()
+                    ->formatStateUsing(fn(CampaignStatus $state): string => match ($state) {
+                        CampaignStatus::PENDING_APPROVAL => 'Aprovação Pendente',
+                        CampaignStatus::APPROVED => 'Aprovada',
+                        CampaignStatus::FINISHED => 'Concluída',
+                        CampaignStatus::REJECTED => 'Cancelada',
+                        default => $state->value,
+                    }),
+                TextColumn::make('status_influencer')->label('Aprovação do Influenciador')
+                    ->searchable()
+                    ->formatStateUsing(fn(CampaignStatus $state): string => match ($state) {
+                        CampaignStatus::PENDING_APPROVAL => 'Aprovação Pendente',
+                        CampaignStatus::APPROVED => 'Aprovada',
+                        CampaignStatus::FINISHED => 'Concluída',
+                        CampaignStatus::REJECTED => 'Cancelada',
+                        default => $state->value,
+                    }),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -38,6 +58,7 @@ class CampaignsTable
             ])
             ->recordActions([
                 EditAction::make(),
+
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

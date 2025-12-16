@@ -25,6 +25,7 @@ class UsersTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('email')
                     ->label('Email address')

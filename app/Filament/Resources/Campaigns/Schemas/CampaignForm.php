@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Campaigns\Schemas;
 use App\Models\InfluencerInfo;
 use App\Models\User; // Import the InfluencerInfo model
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
@@ -32,7 +33,26 @@ class CampaignForm
                             fn($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
-                        ->required(),
+                        ->required()
+                        ->createOptionForm([
+                            TextInput::make('name')
+                                ->required(),
+                            TextInput::make('price')
+                                ->numeric()
+                                ->inputMode('decimal')->prefix('R$')
+                                ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
+                                ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
+                                ->placeholder('0,00')
+                                ->step('0.01')
+                                ->required(),
+                            MarkdownEditor::make('description')
+                                ->nullable()->columnSpan(2),
+                            Hidden::make('company_id')->default(Auth::id()),
+                        ])
+                        ->createOptionAction(
+                            fn($action) =>
+                            $action->modalHeading('Criar Produto')
+                        ),
 
                     Select::make('category_id')
                         ->relationship(
@@ -55,7 +75,7 @@ class CampaignForm
                     ->default(Auth::id()),
 
                 Section::make()->schema([
-                    TextInput::make('agency_cut')->label('Parcela da Agência')->numeric()->required()->prefix('%')->inputMode('decimal')->maxLength(5)->placeholder('30,00'),
+                    TextInput::make('agency_cut')->label('Parcela da Agência')->numeric()->required()->prefix('%')->inputMode('decimal')->maxValue(100)->minValue(0.01)->placeholder('30,00'),
 
                     Select::make('agency_id')
                         ->label('Agência')
