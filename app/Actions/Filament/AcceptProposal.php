@@ -45,7 +45,7 @@ class AcceptProposal extends Action
 
             $record->agency->notify(
                 Notification::make()
-                    ->title('Proposta de Campanha Aceita por ' . Auth::user()->name)
+                    ->title('Proposta de Campanha aceita por ' . Auth::user()->name)
                     ->body('A campanha foi iniciada com sucesso e está aguardando sua aprovação.')
                     ->success()->toDatabase()
             );
@@ -68,7 +68,6 @@ class AcceptProposal extends Action
                     'status_influencer' => CampaignStatus::PENDING_APPROVAL,
                 ]);
 
-                // 2. Delete the Proposal
                 $record->delete();
 
                 DB::commit();
