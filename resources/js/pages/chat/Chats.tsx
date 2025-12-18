@@ -1,6 +1,6 @@
+import { useAppearance } from '@/hooks/use-appearance';
 import { ChevronRight } from 'lucide-react';
-import { useRef, useState } from 'react';
-import '../../../css/filament/admin/theme.css';
+import { useEffect, useRef, useState } from 'react';
 import { ChatSidebar } from './chat-sidebar';
 import { GroupChat } from './group-chat';
 import { ChatType } from './types';
@@ -17,8 +17,14 @@ export default function Chats({
     const [infoPanelOpen, setInfoPanelOpen] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const { appearance, updateAppearance } = useAppearance();
+
+    useEffect(() => {
+        updateAppearance(localStorage.theme);
+    }, [localStorage.theme]);
+
     return (
-        <main className="flex min-h-screen bg-background">
+        <main className={`flex min-h-screen`}>
             <ChatSidebar
                 isOpen={sidebarOpen}
                 allChats={allChats}
@@ -35,7 +41,7 @@ export default function Chats({
                     sidebarOpen={sidebarOpen}
                 />
             ) : (
-                <div className="px-5 py-5">
+                <div className="bg-background px-5 py-5">
                     {!sidebarOpen && (
                         <button
                             className="mr-2 aspect-square rounded-full p-1 transition-colors hover:bg-secondary/30"
