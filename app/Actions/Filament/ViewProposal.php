@@ -17,7 +17,7 @@ class ViewProposal
             ->label('Ver Proposta')
             ->slideOver()
             ->modalWidth('xl')
-            ->schema(fn ($record) => [
+            ->schema(fn($record) => [
                 Section::make('Informações da Agência')->schema([
                     ImageEntry::make('agency.avatar_url')->circular(),
                     TextEntry::make('agency.name')->label('Agência'),
@@ -34,7 +34,7 @@ class ViewProposal
                                     'search' => $record->name,
                                 ]);
                             }),
-                        ChatAction::make(),
+                        // ChatAction::make(), // fix: passar user e nao proposta
                         AcceptProposal::make(),
 
                     ])->columnSpanFull(),

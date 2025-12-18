@@ -34,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('dashboard')
+            ->databaseNotifications()->databaseNotificationsPolling('45s')
             ->navigationItems([
                 NavigationItem::make('Chat')
                     ->url('/chats')

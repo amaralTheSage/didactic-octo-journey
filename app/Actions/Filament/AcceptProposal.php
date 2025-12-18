@@ -8,12 +8,13 @@ use App\Models\Proposal;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AcceptProposal extends Action
 {
-    public static function getDefaultChatName(): ?string
+    public static function getDefaultName(): ?string
     {
         return 'acceptProposal';
     }
@@ -28,7 +29,7 @@ class AcceptProposal extends Action
         $this->button();
 
         $this->modalHeading('Confirmar aceitação da Proposta');
-        $this->modalDescription('Tem certeza de que deseja aceitar esta proposta? Isto iniciará a Campanha e a **proposta será excluída**.');
+        $this->modalDescription('Tem certeza de que deseja aceitar esta proposta? Isto iniciará a Campanha.');
         $this->modalSubmitActionLabel('Aceitar')->color('primary');
 
         $this->successRedirectUrl(function (Proposal $record): string {
@@ -41,6 +42,13 @@ class AcceptProposal extends Action
 
         $this->action(function (Proposal $record) {
             DB::beginTransaction();
+
+            $record->agency->notify(
+                Notification::make()
+                    ->title('Proposta de Campanha Aceita por ' . Auth::user()->name)
+                    ->body('A campanha foi iniciada com sucesso e está aguardando sua aprovação.')
+                    ->success()->toDatabase()
+            );
 
             try {
                 $announcement = $record->announcement;
@@ -67,7 +75,7 @@ class AcceptProposal extends Action
 
                 Notification::make()
                     ->title('Proposta Aceita')
-                    ->body('A campanha foi iniciada com sucesso e está aguardando aprovação. A proposta foi excluída.')
+                    ->body('A campanha foi iniciada com sucesso e está aguardando aprovação. ')
                     ->success()
                     ->send();
             } catch (\Exception $e) {
