@@ -1,16 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getDefaultChatName } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
 import type { ChatType } from './types';
 
 interface ChatHeaderProps {
-    conversation: ChatType;
+    chat: ChatType;
     onToggleSidebar: () => void;
     sidebarOpen: boolean;
     onHeaderClick: () => void;
 }
 
 export function ChatHeader({
-    conversation,
+    chat,
     onToggleSidebar,
     sidebarOpen,
     onHeaderClick,
@@ -35,16 +36,16 @@ export function ChatHeader({
                 <button className="-mx-2 -my-1 flex items-center gap-3 rounded-lg px-2 py-1 transition-colors">
                     {/* <Avatar className="h-10 w-10">
                         <AvatarImage
-                            src={conversation.avatar || '/placeholder.svg'}
+                            src={chat.avatar || '/placeholder.svg'}
                         />
-                        <AvatarFallback>{conversation.name[0]}</AvatarFallback>
+                        <AvatarFallback>{chat.name}</AvatarFallback>
                     </Avatar> */}
                     <div className="text-left">
                         <h2 className="font-semibold text-foreground">
-                            {conversation.name}
+                            {chat.name || getDefaultChatName(chat.users)}
                         </h2>
                         <p className="text-xs text-muted-foreground">
-                            {`${conversation.users.length} members`}
+                            {`${chat.users.length} members`}
                         </p>
                     </div>
                 </button>
@@ -52,7 +53,7 @@ export function ChatHeader({
 
             <div className="flex items-center gap-1">
                 <div className="mr-3 flex -space-x-2">
-                    {conversation.users.slice(0, 4).map((user) => (
+                    {chat.users.slice(0, 4).map((user) => (
                         <Avatar
                             key={user.id}
                             className="h-8 w-8 border-2 border-card"

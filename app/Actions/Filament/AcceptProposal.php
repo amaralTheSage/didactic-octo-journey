@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class AcceptProposal extends Action
 {
-    public static function getDefaultName(): ?string
+    public static function getDefaultChatName(): ?string
     {
         return 'acceptProposal';
     }
@@ -72,7 +72,7 @@ class AcceptProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao aceitar proposta: '.$e->getMessage());
+                Log::error('Erro ao aceitar proposta: ' . $e->getMessage());
                 Notification::make()
                     ->title('Erro ao Aceitar Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')

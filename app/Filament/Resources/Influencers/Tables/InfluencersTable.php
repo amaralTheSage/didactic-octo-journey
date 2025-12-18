@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Influencers\Tables;
 
+use App\Actions\Filament\ChatAction;
 use App\Actions\Filament\ViewInfluencerDetails;
 use App\Models\Category;
 use App\Models\User;
@@ -78,7 +79,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -88,7 +89,8 @@ class InfluencersTable
                             ->title('Influenciador vinculado')
                             ->body('Vínculo com influenciador criado com sucesso.')
                     ),
-                //  ViewInfluencerDetails::make()
+
+                ChatAction::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

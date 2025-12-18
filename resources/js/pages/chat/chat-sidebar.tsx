@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, getDefaultChatName } from '@/lib/utils';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, MessageCircle } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
+import { GroupDefaultImage } from './group-default-image';
 import type { ChatType } from './types';
 
 interface ChatSidebarProps {
@@ -30,9 +31,6 @@ export function ChatSidebar({
             <div className="flex items-center justify-between border-b p-4">
                 <h1 className="text-xl font-semibold">Chats</h1>
                 <div className="flex items-center gap-2">
-                    <button className="rounded-full p-2 hover:bg-sidebar-accent">
-                        <MessageCircle className="h-5 w-5" />
-                    </button>
                     <button
                         onClick={onToggle}
                         className="aspect-square rounded-full p-1 hover:bg-sidebar-accent"
@@ -61,15 +59,21 @@ export function ChatSidebar({
                             )}
                         >
                             <div className="relative">
-                                <Avatar className="h-12 w-12">
-                                    <AvatarImage
-                                        src={chat.image || '/placeholder.svg'}
-                                        alt={chat.name}
-                                    />
-                                    <AvatarFallback>
-                                        {chat.name[0]}
-                                    </AvatarFallback>
-                                </Avatar>
+                                {chat.image ? (
+                                    <Avatar className="h-12 w-12">
+                                        <AvatarImage
+                                            src={
+                                                chat.image || '/placeholder.svg'
+                                            }
+                                            alt={chat.name || ''}
+                                        />
+                                        <AvatarFallback>
+                                            {chat.name || ''}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                ) : (
+                                    <GroupDefaultImage users={chat.users} />
+                                )}
 
                                 {isGroup && (
                                     <span className="absolute -right-0.5 -bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 bg-sidebar-primary text-[10px] font-medium text-sidebar-primary-foreground">
@@ -81,7 +85,8 @@ export function ChatSidebar({
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between">
                                     <span className="truncate font-medium">
-                                        {chat.name}
+                                        {chat.name ||
+                                            getDefaultChatName(chat.users)}
                                     </span>
                                     {lastMessage && (
                                         <span className="text-xs text-muted-foreground">

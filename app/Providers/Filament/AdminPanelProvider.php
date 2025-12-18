@@ -10,6 +10,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -33,6 +34,12 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('dashboard')
+            ->navigationItems([
+                NavigationItem::make('Chat')
+                    ->url('/chats')
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->sort(2),
+            ])
             ->colors([
                 'primary' => '#d87943',
                 'secondary' => '#5f8787',

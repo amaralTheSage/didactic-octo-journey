@@ -12,11 +12,12 @@ Route::get('/', function () {
 Route::middleware('auth')
     ->prefix('/chats')
     ->group(function () {
-        Route::get('/', [ChatController::class, 'index']);
-        Route::post('/', [ChatController::class, 'store']);
-        Route::get('/{chat}', [ChatController::class, 'show']);
+        Route::get('/', [ChatController::class, 'index'])->name('chats.index');
 
-        Route::post('/{chat}/messages', [MessageController::class, 'store']);
+        Route::post('/', [ChatController::class, 'store'])->name('chats.store');
+        Route::get('/{chat}', [ChatController::class, 'show'])->name('chats.show');
+
+        Route::post('/{chat}/messages', [MessageController::class, 'store'])->name('messages.store');
     });
 
 // Route::middleware(['auth', 'verified'])->group(function () {

@@ -114,22 +114,6 @@ class User extends Authenticatable implements HasAvatar
      * Here, only users with verified emails are allowed.
      */
 
-    /**
-     * Control whether this user is allowed to create 1-to-1 chats.
-     */
-    public function canCreateChats(): bool
-    {
-        return Auth::user()->role !== UserRoles::Influencer;
-    }
-
-    /**
-     * Control whether this user can create group conversations.
-     */
-    public function canCreateGroups(): bool
-    {
-        return Auth::user()->role !== UserRoles::Influencer;
-    }
-
     protected $hidden = [
         'password',
         'two_factor_secret',

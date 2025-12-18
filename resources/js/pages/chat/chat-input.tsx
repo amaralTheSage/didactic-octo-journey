@@ -1,28 +1,51 @@
 import type React from 'react';
 
+import { store } from '@/actions/App/Http/Controllers/MessageController';
 import { cn } from '@/lib/utils';
-import { FileText, ImageIcon, Paperclip, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import { FileText, Image, Paperclip, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import type { Attachment } from './types';
 
 interface ChatInputProps {
-    onSendMessage: (content: string, attachments: Attachment[]) => void;
+    chatId: number;
+    onSendMessage?: (content: string, attachments: Attachment[]) => void;
 }
 
-export function ChatInput({ onSendMessage }: ChatInputProps) {
+export function ChatInput({ chatId }: ChatInputProps) {
     const [message, setMessage] = useState('');
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [showAttachMenu, setShowAttachMenu] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
+    const { data, setData, processing, errors, reset, submit } = useForm({
+        content: '',
+    });
+
+    useEffect(() => {
+        setData({ content: message });
+    }, [message]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (message.trim() || attachments.length > 0) {
-            onSendMessage(message, attachments);
-            setMessage('');
-            setAttachments([]);
-        }
+        if (!message.trim() || isSending) return;
+
+        setIsSending(true);
+
+        submit(store(chatId), {
+            onSuccess: () => {
+                setMessage('');
+                setAttachments([]);
+            },
+            onError: (errors) => {
+                console.error('Error sending message:', errors);
+            },
+            onFinish: () => {
+                setIsSending(false);
+            },
+        });
     };
 
     const handleFileSelect = (
@@ -56,7 +79,16 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
     };
 
     return (
-        <div className="border-t border-border bg-card p-4">
+        <form
+            onSubmit={handleSubmit}
+            className="border-t border-border bg-card p-4"
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                }
+            }}
+        >
             {/* Attachment Preview */}
             {attachments.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2 rounded-sm p-2">
@@ -91,7 +123,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex items-end gap-2">
+            <div className="flex items-end gap-2">
                 <div className="relative">
                     <button
                         type="button"
@@ -108,7 +140,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                                 onClick={() => imageInputRef.current?.click()}
                                 className="flex w-full items-center gap-3 rounded-t-sm px-4 py-3 text-sm transition-colors hover:bg-secondary/10"
                             >
-                                <ImageIcon className="h-4 w-4 text-secondary" />
+                                <Image className="h-4 w-4 text-secondary" />
                                 <span>Image</span>
                             </button>
                             <button
@@ -143,26 +175,24 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                     <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSubmit(e);
-                            }
-                        }}
                         placeholder="Type a message..."
+                        name="content"
+                        id="content"
                         rows={1}
-                        className="max-h-32 flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
+                        disabled={isSending}
+                        className="max-h-32 flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
                     />
                 </div>
 
                 <button
-                    type="submit"
-                    disabled={!message.trim() && attachments.length === 0}
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={!message.trim() || isSending}
                     className={cn(
                         'cursor-pointer rounded-sm p-2 transition-all',
-                        message.trim() || attachments.length > 0
+                        message.trim() && !isSending
                             ? 'text-primary hover:bg-primary/10'
-                            : 'text-muted-foreground',
+                            : 'text-muted-foreground opacity-50',
                     )}
                 >
                     <svg
@@ -180,7 +210,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                         />
                     </svg>
                 </button>
-            </form>
-        </div>
+            </div>
+        </form>
     );
 }

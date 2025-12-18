@@ -47,7 +47,7 @@ export function GroupChat({
         <div className="flex h-screen w-full">
             <div className="flex min-w-0 flex-1 flex-col">
                 <ChatHeader
-                    conversation={chat}
+                    chat={chat}
                     onToggleSidebar={onToggleSidebar}
                     sidebarOpen={sidebarOpen}
                     onHeaderClick={() => setInfoPanelOpen(true)}
@@ -59,11 +59,11 @@ export function GroupChat({
                     messagesEndRef={messagesEndRef}
                 />
 
-                <ChatInput onSendMessage={handleSendMessage} />
+                <ChatInput chatId={chat.id} onSendMessage={handleSendMessage} />
             </div>
 
             <ChatInfoPanel
-                conversation={chat}
+                chat={chat}
                 isOpen={infoPanelOpen}
                 onClose={() => setInfoPanelOpen(false)}
                 onUpdateConversation={handleUpdateConversation}
