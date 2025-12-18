@@ -16,6 +16,7 @@ RUN npm ci
 
 COPY . .
 
+# Add --no-dev later, keep while using seeder in production
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 RUN npm run build
