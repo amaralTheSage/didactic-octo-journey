@@ -56,6 +56,7 @@ jobs:
             docker compose up --build -d
 
             echo "Running Laravel post-deploy tasks..."
+            docker exec influhub-app php artisan storage:link
             docker exec influhub-app php artisan migrate --force
             docker exec influhub-app php artisan optimize
 
