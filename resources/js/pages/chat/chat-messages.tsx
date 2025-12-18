@@ -154,7 +154,13 @@ export function ChatMessages({
                                                         'Conta excluída'}
                                                 </p>
                                             </TooltipTrigger>
-                                            <TooltipContent side="right">
+                                            <TooltipContent
+                                                side="right"
+                                                align="end"
+                                                color=""
+                                                className={`${isCurrentUser && 'bg-secondary text-white'}`}
+                                                arrowClasses={`${isCurrentUser && 'bg-secondary fill-secondary'}`}
+                                            >
                                                 {getTranslatedRole(user.role)}
                                             </TooltipContent>
                                         </Tooltip>
@@ -164,7 +170,7 @@ export function ChatMessages({
                                 {message.content && (
                                     <div
                                         className={cn(
-                                            'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                                            'rounded-2xl px-4 py-2.5 text-sm leading-relaxed font-semibold',
                                             isCurrentUser
                                                 ? 'rounded-br-md bg-primary text-primary-foreground'
                                                 : 'rounded-bl-md bg-secondary text-secondary-foreground',
