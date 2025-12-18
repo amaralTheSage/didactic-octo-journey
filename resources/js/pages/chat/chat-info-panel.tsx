@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getDefaultChatName } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { getDefaultChatName, getTranslatedRole } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { Calendar, Check, Info, Pencil, Users, X } from 'lucide-react';
 import { useState } from 'react';
@@ -181,7 +182,7 @@ export function ChatInfoPanel({
                             </span>
                         </div>
                         <p className="px-4 text-foreground">
-                            {/* {chat.created_at.toLocaleDateString(
+                            {new Date(chat.created_at).toLocaleDateString(
                                 'pt-BR',
                                 {
                                     weekday: 'long',
@@ -189,7 +190,7 @@ export function ChatInfoPanel({
                                     month: 'long',
                                     day: 'numeric',
                                 },
-                            )} */}
+                            )}
                         </p>
                     </div>
 
@@ -205,32 +206,36 @@ export function ChatInfoPanel({
                             <div className="space-y-1">
                                 {chat.users.map((member) => (
                                     <div
-                                        key={member.id}
-                                        className="flex items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-secondary/10"
+                                        className={` ${
+                                            member.id === auth.user.id &&
+                                            'bg-primary/30'
+                                        } flex items-start justify-between rounded-lg px-4 py-3 font-medium text-foreground transition-colors hover:bg-secondary/10`}
                                     >
-                                        <div className="relative">
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarImage
-                                                    src={
-                                                        member.avatar_url ||
-                                                        '/placeholder.svg'
-                                                    }
-                                                />
-                                                <AvatarFallback>
-                                                    {member.name}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                        <div
+                                            key={member.id}
+                                            className="flex items-center gap-3"
+                                        >
+                                            <div className="relative">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage
+                                                        src={
+                                                            member.avatar_url ||
+                                                            '/placeholder.svg'
+                                                        }
+                                                    />
+                                                    <AvatarFallback>
+                                                        {member.name}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            </div>
+                                            <div className="line-clamp-2 min-w-0 flex-1 wrap-break-word">
+                                                <span>{member.name}</span>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate font-medium text-foreground">
-                                                {member.name}
-                                                {member.id === auth.user.id && (
-                                                    <span className="ml-2 text-xs text-muted-foreground">
-                                                        (You)
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </div>
+
+                                        <Badge>
+                                            {getTranslatedRole(member.role)}
+                                        </Badge>
                                     </div>
                                 ))}
                             </div>
