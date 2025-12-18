@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { useRef, useState } from 'react';
 import '../../../css/filament/admin/theme.css';
 import { ChatSidebar } from './chat-sidebar';
@@ -34,7 +35,19 @@ export default function Chats({
                     sidebarOpen={sidebarOpen}
                 />
             ) : (
-                <div>nenhum chat</div>
+                <div className="px-5 py-5">
+                    {!sidebarOpen && (
+                        <button
+                            className="mr-2 aspect-square rounded-full p-1 transition-colors hover:bg-secondary/30"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSidebarOpen(!sidebarOpen);
+                            }}
+                        >
+                            <ChevronRight className="ml-0.5 h-6 w-6 text-muted-foreground" />
+                        </button>
+                    )}
+                </div>
             )}
         </main>
     );

@@ -61,6 +61,10 @@ class CampaignAnnouncementResource extends Resource
         ];
     }
 
+    public static function canAccess(): bool
+    {
+        return Gate::denies('is_admin');
+    }
     public static function canEdit(Model $record): bool
     {
         return Gate::allows('is_company') && $record->company_id === Auth::id();
