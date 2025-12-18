@@ -29,7 +29,9 @@ export function ChatSidebar({
         >
             {/* Header */}
             <div className="flex items-center justify-between border-b p-4">
-                <h1 className="text-xl font-semibold">Chats</h1>
+                <a href={'/dashboard'}>
+                    <h1 className="text-xl font-semibold">HubInflu</h1>
+                </a>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onToggle}

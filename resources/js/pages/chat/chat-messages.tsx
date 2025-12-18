@@ -1,11 +1,17 @@
 import type React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, getTranslatedRole } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { Download, FileText, Maximize2, X } from 'lucide-react';
 import { useState } from 'react';
 import type { Attachment, Message, User } from './types';
+
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ChatMessagesProps {
     messages: Message[];
@@ -135,18 +141,23 @@ export function ChatMessages({
                                 {showAvatar && (
                                     <div
                                         className={cn(
-                                            'mb-1 flex items-center gap-2',
+                                            'relative mb-1 flex items-center gap-2',
                                             isCurrentUser
                                                 ? 'flex-row-reverse'
                                                 : 'flex-row',
                                         )}
                                     >
-                                        <span className="text-sm font-semibold">
-                                            {user?.name ?? 'Unknown'}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {formatTime(message.created_at)}
-                                        </span>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <p className="text-sm font-semibold">
+                                                    {user?.name ??
+                                                        'Conta excluída'}
+                                                </p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right">
+                                                {getTranslatedRole(user.role)}
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </div>
                                 )}
 

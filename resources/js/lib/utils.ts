@@ -23,3 +23,31 @@ export function getDefaultChatName(users: User[]): string {
         .map((user) => user.name.trim().split(/\s+/).slice(0, 2).join(' '))
         .join(', ');
 }
+
+export function getTranslatedRole(role: string): string {
+    let translated;
+
+    switch (role) {
+        case 'admin':
+            translated = 'Administrador';
+            break;
+
+        case 'influencer':
+            translated = 'Influenciador';
+            break;
+
+        case 'company':
+            translated = 'Empresa';
+            break;
+
+        case 'agency':
+            translated = 'Agência';
+            break;
+
+        default:
+            translated = 'erro';
+            break;
+    }
+
+    return translated;
+}

@@ -35,9 +35,14 @@ export interface User {
     name: string;
     email: string;
     avatar_url?: string;
+
+    agency_id?: number;
+    role: 'admin' | 'agency' | 'influencer' | 'company';
+
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
+
     [key: string]: unknown; // This allows for additional properties...
 }
