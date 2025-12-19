@@ -15,6 +15,7 @@ class ChatService
 {
     public static function createChat(array $selectedUserIds): Chat|array
     {
+
         $finalUserIds = self::processChatParticipants(Auth::user(), $selectedUserIds);
 
         if (isset($finalUserIds['error'])) {

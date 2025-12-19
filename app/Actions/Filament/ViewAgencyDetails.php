@@ -54,7 +54,7 @@ class ViewAgencyDetails
                                     ]);
                                 }),
 
-                            ChatAction::make()
+                            // ChatAction::make() BUG-> não funcionando dentro das ViewDetails
                         ])->columnSpanFull(),
                     ])
                     ->columns(2),

@@ -21,6 +21,8 @@ class ChatAction extends Action
 
     protected function setUp(): void
     {
+
+
         parent::setUp();
 
 
@@ -41,7 +43,7 @@ class ChatAction extends Action
                     ->label('Iniciar Nova Conversa')
                     ->icon('heroicon-o-plus-circle')
                     ->color('primary')
-                    ->action(function () use ($record) {
+                    ->action(function ($record) {
                         $chat = ChatService::createChat([$record->id]);
 
                         if (is_array($chat) && isset($chat['error'])) {

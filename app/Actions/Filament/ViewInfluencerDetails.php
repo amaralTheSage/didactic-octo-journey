@@ -10,11 +10,13 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Gate;
 
 class ViewInfluencerDetails
 {
     public static function make(): ViewAction
     {
+
         return ViewAction::make('viewInfluencerDetails')
             ->label('Detalhes')
             ->slideOver()
@@ -85,15 +87,24 @@ class ViewInfluencerDetails
                             ->placeholder('Independente')
                             ->icon(Heroicon::OutlinedBuildingStorefront),
 
-                        // TextEntry::make('created_at')
-                        //     ->label('Membro desde')
-                        //     ->date('d/m/Y')
-                        //     ->icon('heroicon-o-calendar'),
                     ])
                     ->columns(3),
 
                 Actions::make([
-                    ChatAction::make()
+                    Action::make('viewAgency')
+                        ->label('Ver Agência')
+                        ->button()
+                        ->icon('heroicon-o-building-storefront')
+                        ->color('primary')
+                        ->url(function ($record) {
+                            return route('filament.admin.resources.agencies.index', [
+                                'search' => $record->influencer_info->agency->name,
+                            ]);
+                        })->visible(Gate::denies('is_agency')),
+
+                    // ChatAction::make() BUG-> não funcionando dentro das ViewDetails
+
+
                 ])->columnSpanFull(),
 
                 Section::make('Redes Sociais')

@@ -25,8 +25,7 @@ class CampaignsTable
                     ->searchable(),
 
                 TextColumn::make('status_agency')->label('Aprovação da Agência')
-                    ->searchable()
-                    ->formatStateUsing(fn (CampaignStatus $state): string => match ($state) {
+                    ->formatStateUsing(fn(CampaignStatus $state): string => match ($state) {
                         CampaignStatus::PENDING_APPROVAL => 'Aprovação Pendente',
                         CampaignStatus::APPROVED => 'Aprovada',
                         CampaignStatus::FINISHED => 'Concluída',
@@ -34,8 +33,7 @@ class CampaignsTable
                         default => $state->value,
                     }),
                 TextColumn::make('status_influencer')->label('Aprovação do Influenciador')
-                    ->searchable()
-                    ->formatStateUsing(fn (CampaignStatus $state): string => match ($state) {
+                    ->formatStateUsing(fn(CampaignStatus $state): string => match ($state) {
                         CampaignStatus::PENDING_APPROVAL => 'Aprovação Pendente',
                         CampaignStatus::APPROVED => 'Aprovada',
                         CampaignStatus::FINISHED => 'Concluída',

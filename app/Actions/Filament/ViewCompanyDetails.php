@@ -25,7 +25,7 @@ class ViewCompanyDetails
                             ImageEntry::make('avatar_url')
                                 ->label('Avatar')
                                 ->circular()
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome'),
@@ -42,18 +42,16 @@ class ViewCompanyDetails
                             ->columnSpanFull()
                             ->markdown(),
 
-                        // Actions::make([
-                        //     Action::make('viewInfluencers')
-                        //         ->label('Ver Influenciadores desta Agência')
-                        //         ->button()
-                        //         ->icon('heroicon-o-user-group')
-                        //         ->color('primary')
-                        //         ->url(function ($record) {
-                        //             return route('filament.admin.resources.influencers.index', [
-                        //                 'search' => $record->name
-                        //             ]);
-                        //         })
-                        // ])->columnSpanFull(),
+                        Actions::make([
+                            Action::make('viewCampaigns')
+                                ->label('Campanhas')
+                                ->icon('heroicon-o-presentation-chart-line')
+                                ->url(fn($record) => route('filament.admin.resources.campaign-announcements.index', [
+                                    'search' => $record->name,
+                                ])),
+                            // ChatAction::make() BUG-> não funcionando dentro das ViewDetails
+
+                        ])->columnSpanFull(),
                     ])
                     ->columns(2),
             ]);

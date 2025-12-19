@@ -55,7 +55,6 @@ class InfluencersTable
                     })
                     ->badge()
                     ->sortable()
-                    ->searchable()
                     ->tooltip(function (Model $record): string {
                         return $record->subcategories->pluck('title')->join(', ');
                     }),
@@ -71,10 +70,10 @@ class InfluencersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('subcategory.0.category')
-                    ->options([
+                SelectFilter::make('subcategory.0.category')->label('Categoria')
+                    ->options(
                         Category::query()->pluck('title', 'id')->toArray(),
-                    ]),
+                    ),
             ])
             ->recordActions([
                 Action::make('Aprovar Vínculo')
@@ -90,7 +89,8 @@ class InfluencersTable
                             ->body('Vínculo com influenciador criado com sucesso.')
                     ),
 
-                ChatAction::make()
+                ChatAction::make(),
+                ViewInfluencerDetails::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

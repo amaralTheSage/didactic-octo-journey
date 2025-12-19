@@ -22,7 +22,7 @@ class InfluencerResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $modelLabel = 'Influenciador';
+    protected static ?string $modelLabel = 'Influenciadores';
 
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;

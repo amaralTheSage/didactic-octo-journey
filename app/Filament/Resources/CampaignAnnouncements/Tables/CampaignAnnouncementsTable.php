@@ -23,7 +23,7 @@ class CampaignAnnouncementsTable
         return $table
             ->columns([
                 ImageColumn::make('company.avatar_url')->circular()->label(' ')
-                    ->searchable()->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
+                    ->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
                 TextColumn::make('company.name')->label('Empresa')
                     ->searchable()->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
                 TextColumn::make('name')->label('Campanha')

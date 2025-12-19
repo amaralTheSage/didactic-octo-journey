@@ -49,7 +49,7 @@ class AgenciesTable
                             ->where('company_id', Auth::id())
                             ->exists()
                     ),
-                // ViewAgencyDetails::make()
+                ViewAgencyDetails::make(),
                 ChatAction::make(),
             ])
             ->toolbarActions([
