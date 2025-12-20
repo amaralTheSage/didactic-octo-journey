@@ -64,11 +64,10 @@ class ChatService
 
             $agencyId = $targetUser->influencer_info['agency_id'] ?? null;
 
-            if (!$agencyId) {
-                return ['error' => 'This influencer does not belong to an agency.'];
+            if ($agencyId) {
+                $currentParticipants[] = $agencyId;
             }
 
-            $currentParticipants[] = $agencyId;
             return $currentParticipants;
         }
 

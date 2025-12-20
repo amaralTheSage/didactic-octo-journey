@@ -121,9 +121,12 @@ class Register extends SimplePage
 
         $data = $this->form->getState();
 
+            if ($data['role'] === 'influencer' && isset($data['subcategories']))  {
+        
         foreach ($data['subcategories'] as $sub) {
             $user->subcategories()->attach($sub);
         }
+    }
 
 
         $agency = User::whereId($data['influencer_data']['agency_id'])->first();

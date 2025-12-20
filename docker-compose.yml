@@ -1,24 +1,34 @@
 services:
+  migrate:
+    image: amaralthesage/influhub:latest
+    container_name: influhub-migrate
+    command: sh -c "php artisan migrate --force"
+    env_file:
+      - .env
+
   app:
     image: amaralthesage/influhub:latest
     container_name: influhub-app
     command: sh -c "php artisan optimize && php artisan octane:start"
-
     pull_policy: always
-
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     pre_stop:
       - command: php artisan octane:stop
-
     ports:
       - '8000:8000'
-      - '5432:5432'
-
     env_file:
       - .env
-
+    volumes:
+      - storage_data:/app/storage/
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8000/up']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
+
+volumes:
+  storage_data:
+    driver: local
