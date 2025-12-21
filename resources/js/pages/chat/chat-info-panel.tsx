@@ -35,6 +35,12 @@ export function ChatInfoPanel({ chat, isOpen, onClose }: ChatInfoPanelProps) {
 
     const handleSaveNameAndDescription = () => {
         form.submit(update({ chat: chat.id }));
+
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+            setEditingName(false);
+            setEditingDescription(false);
+        }
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

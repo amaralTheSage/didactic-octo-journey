@@ -24,7 +24,7 @@ class ProductsTable
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money('BRL', true)
+                    ->money('BRL')
                     ->sortable(),
                 TextColumn::make('description')
                     ->limit(30),

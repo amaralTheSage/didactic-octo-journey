@@ -33,7 +33,7 @@ class ChatController extends Controller
             'users.*' => 'exists:users,id',
         ]);
 
-        $chat = $this->chatService->createChat(Auth::user(), $request->users);
+        $chat = $this->chatService->createChat([Auth::user(), $request->users]);
 
         if (is_array($chat) && isset($chat['error'])) {
             return response()->json(['error' => $chat['error']], 422);
@@ -62,7 +62,6 @@ class ChatController extends Controller
 
     public function update(Request $request, Chat $chat)
     {
-        dd($request);
 
         abort_unless(
             $chat->users->contains(Auth::id()),

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CampaignAnnouncement;
 use App\Models\Category;
 use App\Models\InfluencerInfo;
 use App\Models\Product;
@@ -119,12 +120,73 @@ class DatabaseSeeder extends Seeder
             }
         });
 
-      
+        // -------------------------------------------------------
+        // Categories
+        // -------------------------------------------------------
+        $categoriesData = [
+            'Beleza e Moda' => [
+                'Maquiagem',
+                'Cuidados com a Pele',
+                'Cabelos',
+                'Tendências de Moda',
+                'Estilo de Vida Fitness',
+            ],
+            'Tecnologia e Jogos' => [
+                'Reviews de Gadgets',
+                'Mobile Gaming',
+                'Consoles e PC Gaming',
+                'Desenvolvimento de Software',
+                'Inteligência Artificial',
+            ],
+            'Viagens e Turismo' => [
+                'Viagens Nacionais',
+                'Intercâmbios',
+                'Gastronomia de Viagem',
+                'Mochilão e Aventura',
+                'Dicas de Hospedagem',
+            ],
+            'Alimentação e Culinária' => [
+                'Receitas Veganas',
+                'Culinária Internacional',
+                'Bebidas e Coquetéis',
+                'Dieta e Nutrição',
+                'Restaurantes e Críticas',
+            ],
+            'Finanças e Negócios' => [
+                'Investimentos',
+                'Empreendedorismo',
+                'Educação Financeira',
+                'Marketing Digital',
+                'Carreira e Produtividade',
+            ],
+            'Entretenimento e Cultura' => [
+                'Críticas de Cinema e Séries',
+                'Música e Shows',
+                'Livros e Literatura',
+                'Arte e Design',
+                'Comédia e Humor',
+            ],
+        ];
+
+        $categories = collect();
+        foreach ($categoriesData as $categoryName => $subcategories) {
+            $category = Category::create(['title' => $categoryName]);
+
+            foreach ($subcategories as $subcategoryName) {
+                Subcategory::create([
+                    'category_id' => $category->id,
+                    'title' => $subcategoryName,
+                ]);
+            }
+
+            $categories->push($category);
+        }
+
 
         // -------------------------------------------------------
         // MANUAL TEST USERS
         // -------------------------------------------------------
-        User::create([
+        $testCompany = User::create([
             'name' => '1 Empresa',
             'email' => 'empresa@gmail.com',
             'avatar' => $createAvatar(),
@@ -160,7 +222,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $influencerA2 = User::create([
-            'name' => '1 Influencer',
+            'name' => '2 Influencer',
             'email' => 'influencera2@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -173,5 +235,47 @@ class DatabaseSeeder extends Seeder
             'agency_id' => $agenciaA->id,
             'association_status' => 'pending',
         ]);
+
+
+        // -------------------------------------------------------
+        // Products for Test Company
+        // -------------------------------------------------------
+        $testProducts = collect();
+        foreach (range(1, 5) as $i) {
+            $testProducts->push(
+                Product::create([
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
+                    'description' => "Test product {$i} from 1 Empresa.",
+                    'price' => rand(50, 1000),
+                    'company_id' => $testCompany->id,
+                ])
+            );
+        }
+
+        // -------------------------------------------------------
+        // Campaign Announcements for Test Company
+        // -------------------------------------------------------
+        $campaignNames = [
+            'Campanha de Verão 2024',
+            'Lançamento Exclusivo',
+            'Black Friday Especial',
+            'Campanha de Natal',
+            'Promoção de Aniversário',
+            'Campanha de Volta às Aulas',
+            'Edição Limitada',
+            'Mega Promoção',
+        ];
+
+        foreach ($campaignNames as $index => $campaignName) {
+            CampaignAnnouncement::create([
+                'name' => $campaignName,
+                'description' => fake()->paragraph(3),
+                'agency_cut' => rand(10, 30),
+                'budget' => rand(5000, 50000),
+                'product_id' => $testProducts->random()->id,
+                'company_id' => $testCompany->id,
+                'category_id' => $categories->random()->id,
+            ]);
+        }
     }
 }

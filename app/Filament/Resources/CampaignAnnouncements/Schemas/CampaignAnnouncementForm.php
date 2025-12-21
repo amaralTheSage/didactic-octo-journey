@@ -89,7 +89,7 @@ class CampaignAnnouncementForm
 
                 ]),
 
-                MarkdownEditor::make('description')->columnSpan(2)
+                MarkdownEditor::make('description')->label("Descrição")->columnSpan(2)
             ]);
     }
 }

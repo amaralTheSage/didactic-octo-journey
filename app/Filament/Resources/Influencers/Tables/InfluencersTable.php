@@ -36,7 +36,6 @@ class InfluencersTable
     {
         $table->recordAction('viewInfluencerDetails');
 
-        $table->recordActions([ViewInfluencerDetails::make()]);
 
         return $table
             ->columns([

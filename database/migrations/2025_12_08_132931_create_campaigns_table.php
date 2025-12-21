@@ -15,10 +15,15 @@ return new class extends Migration
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+
+            $table->decimal('budget', 14, 2);
+            $table->decimal('agency_cut', 5, 2);
+
             $table->foreignId('product_id')->constrained();
             $table->foreignId('influencer_id')->nullable()->constrained('users');
             $table->foreignId('company_id')->constrained('users');
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('agency_id')->nullable()->constrained('users');
 
             $table->enum('status_agency', [CampaignStatus::PENDING_APPROVAL, CampaignStatus::APPROVED, CampaignStatus::FINISHED, CampaignStatus::REJECTED])->default('pending_approval');
 

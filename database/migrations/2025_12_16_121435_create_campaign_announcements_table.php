@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('campaign_announcements', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->text('description')->nullable();
             $table->decimal('agency_cut', 5, 2)->after('name');
             $table->decimal('budget', 14, 2);
             $table->foreignId('product_id')->constrained();

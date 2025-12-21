@@ -26,16 +26,16 @@ class ListCampaignAnnouncements extends ListRecords
         return [
             'announcements' => Tab::make('Anúncios')
                 ->modifyQueryUsing(
-                    fn (Builder $query) => $query->where('company_id', Auth::id())
+                    fn(Builder $query) => $query->where('company_id', Auth::id())
                 ),
 
             'proposals' => Tab::make('Propostas')
                 ->modifyQueryUsing(
-                    fn () => Proposal::query()
+                    fn() => Proposal::query()
                         ->with(['agency', 'announcement'])
                         ->whereHas(
                             'announcement',
-                            fn (Builder $q) => $q->where('company_id', Auth::id())
+                            fn(Builder $q) => $q->where('company_id', Auth::id())
                         )
                 ),
         ];
@@ -44,7 +44,7 @@ class ListCampaignAnnouncements extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Anunciar Campanha'),
+            CreateAction::make()->label('Anunciar Campanha')->visible(fn() => Gate::allows('is_company')),
         ];
     }
 }

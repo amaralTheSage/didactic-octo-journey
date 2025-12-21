@@ -68,6 +68,12 @@ class CampaignAnnouncementResource extends Resource
     {
         return Gate::denies('is_admin');
     }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Gate::allows('is_company') && $record->company_id === Auth::id();
+    }
+
     public static function canEdit(Model $record): bool
     {
         return Gate::allows('is_company') && $record->company_id === Auth::id();

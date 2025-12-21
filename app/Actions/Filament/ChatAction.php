@@ -22,8 +22,6 @@ class ChatAction extends Action
 
     protected function setUp(): void
     {
-
-
         parent::setUp();
 
 
@@ -51,7 +49,7 @@ class ChatAction extends Action
                             dd($chat['error']);
 
                             Notification::make()->title('Erro')->body($chat['error'])->danger();
-                      
+
                             return;
                         }
 

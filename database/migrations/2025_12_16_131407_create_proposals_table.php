@@ -13,8 +13,15 @@ return new class extends Migration
     {
         Schema::create('proposals', function (Blueprint $table) {
             $table->id();
+
+            $table->text('message')->nullable();
+            $table->decimal('proposed_agency_cut', 5, 2)->nullable();
+
             $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
             $table->foreignId('agency_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('influencer_id')->nullable()->constrained('users')->nullOnDelete();
+
+
             $table->timestamps();
         });
     }
