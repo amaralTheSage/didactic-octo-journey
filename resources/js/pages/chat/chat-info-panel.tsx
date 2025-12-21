@@ -1,9 +1,10 @@
+import { update } from '@/actions/App/Http/Controllers/ChatController';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getDefaultChatName, getTranslatedRole } from '@/lib/utils';
-import { usePage } from '@inertiajs/react';
-import { Calendar, Check, Info, Pencil, Users, X } from 'lucide-react';
-import { useState } from 'react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { Calendar, Check, Info, Pencil, Upload, Users, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { GroupDefaultImage } from './group-default-image';
 import type { ChatType } from './types';
 
@@ -11,33 +12,53 @@ interface ChatInfoPanelProps {
     chat: ChatType;
     isOpen: boolean;
     onClose: () => void;
-    onUpdateConversation: (updates: Partial<ChatType>) => void;
 }
 
-export function ChatInfoPanel({
-    chat,
-    isOpen,
-    onClose,
-    onUpdateConversation,
-}: ChatInfoPanelProps) {
+export function ChatInfoPanel({ chat, isOpen, onClose }: ChatInfoPanelProps) {
     const [editingName, setEditingName] = useState(false);
     const [editingDescription, setEditingDescription] = useState(false);
-    const [name, setName] = useState(
-        chat.name || getDefaultChatName(chat.users),
-    );
-    const [description, setDescription] = useState(chat.description);
 
-    const handleSaveName = () => {
-        onUpdateConversation({ name });
-        setEditingName(false);
-    };
-
-    const handleSaveDescription = () => {
-        onUpdateConversation({ description });
-        setEditingDescription(false);
-    };
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { auth } = usePage().props as any;
+
+    const form = useForm({
+        image: chat.image || '',
+        name: chat.name || '',
+        description: chat.description || '',
+    });
+
+    useEffect(() => {
+        console.log(form.data.image);
+    }, [form.data]);
+
+    const handleSaveNameAndDescription = () => {
+        form.submit(update({ chat: chat.id }));
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        form.setData('image', file);
+
+        if (!file) return;
+
+        setIsUploading(true);
+        form.patch(update({ chat: chat.id }), {
+            preserveScroll: true,
+            onFinish: () => setIsUploading(false),
+            forceFormData: true,
+        });
+    };
+
+    const handleDeleteImage = () => {
+        if (confirm('Are you sure you want to delete the chat image?')) {
+            router.delete(chatsDeleteImage.url({ chat: chat.id }), {
+                preserveScroll: true,
+            });
+        }
+    };
     return (
         <>
             {/* Backdrop */}
@@ -70,43 +91,81 @@ export function ChatInfoPanel({
                 <div className="h-[calc(100%-65px)] overflow-y-auto p-6">
                     {/* Avatar and Name */}
                     <div className="mb-8 flex flex-col items-center">
-                        {chat.image ? (
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage
-                                    src={chat.image || '/placeholder.svg'}
-                                    alt={chat.name || ''}
+                        <div className="group relative">
+                            {chat.image ? (
+                                <Avatar className="h-32 w-32">
+                                    <AvatarImage
+                                        src={`/storage/${chat.image}`}
+                                        alt={chat.name || ''}
+                                    />
+                                    <AvatarFallback>
+                                        {chat.name || ''}
+                                    </AvatarFallback>
+                                </Avatar>
+                            ) : (
+                                <GroupDefaultImage
+                                    users={chat.users}
+                                    size={120}
                                 />
-                                <AvatarFallback>
-                                    {chat.name || ''}
-                                </AvatarFallback>
-                            </Avatar>
-                        ) : (
-                            <GroupDefaultImage users={chat.users} size={120} />
-                        )}
+                            )}
+
+                            {/* Image Upload Overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        disabled={isUploading}
+                                        className="rounded-lg bg-primary p-2 text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                                        title="Upload image"
+                                    >
+                                        <Upload className="h-5 w-5" />
+                                    </button>
+                                    {chat.image && (
+                                        <button
+                                            onClick={handleDeleteImage}
+                                            className="rounded-lg bg-destructive p-2 text-destructive-foreground transition-colors hover:bg-destructive/90"
+                                            title="Delete image"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageUpload}
+                            />
+                        </div>
 
                         {/* Editable Name */}
-                        <div className="flex w-full items-center justify-center gap-2">
+                        <div className="mt-4 flex w-full items-center justify-center gap-2">
                             {editingName ? (
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="text"
-                                        value={
-                                            name ||
+                                        defaultValue={
+                                            form.data.name ||
                                             getDefaultChatName(chat.users)
                                         }
                                         onChange={(e) =>
-                                            setName(e.target.value)
+                                            form.setData('name', e.target.value)
                                         }
-                                        className="rounded-lg border border-border bg-secondary px-3 py-2 text-center text-lg font-semibold text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
+                                        className="rounded-lg border border-border bg-secondary/10 px-3 py-1 text-center text-lg font-semibold text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
                                         autoFocus
                                         onKeyDown={(e) =>
                                             e.key === 'Enter' &&
-                                            handleSaveName()
+                                            handleSaveNameAndDescription()
                                         }
                                     />
                                     <button
-                                        onClick={handleSaveName}
-                                        className="rounded-lg bg-primary p-2 text-primary-foreground transition-colors hover:bg-primary/90"
+                                        onClick={handleSaveNameAndDescription}
+                                        className="rounded-lg bg-primary p-3 text-primary-foreground transition-colors hover:bg-primary/90"
                                     >
                                         <Check className="h-4 w-4" />
                                     </button>
@@ -143,16 +202,19 @@ export function ChatInfoPanel({
                         {editingDescription ? (
                             <div className="flex flex-col gap-2">
                                 <textarea
-                                    value={description}
+                                    defaultValue={form.data.description || ''}
                                     onChange={(e) =>
-                                        setDescription(e.target.value)
+                                        form.setData(
+                                            'description',
+                                            e.target.value,
+                                        )
                                     }
-                                    className="resize-none rounded-lg border border-border bg-secondary px-4 py-3 text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
+                                    className="resize-none rounded-lg border border-border bg-secondary/10 px-4 py-3 text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
                                     rows={3}
                                     autoFocus
                                 />
                                 <button
-                                    onClick={handleSaveDescription}
+                                    onClick={handleSaveNameAndDescription}
                                     className="self-end rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                                 >
                                     Save
@@ -206,15 +268,13 @@ export function ChatInfoPanel({
                             <div className="space-y-1">
                                 {chat.users.map((member) => (
                                     <div
+                                        key={member.id}
                                         className={` ${
                                             member.id === auth.user.id &&
                                             'bg-primary/30'
                                         } flex items-start justify-between rounded-lg px-4 py-3 font-medium text-foreground transition-colors hover:bg-secondary/10`}
                                     >
-                                        <div
-                                            key={member.id}
-                                            className="flex items-center gap-3"
-                                        >
+                                        <div className="flex items-center gap-3">
                                             <div className="relative">
                                                 <Avatar className="h-10 w-10">
                                                     <AvatarImage
