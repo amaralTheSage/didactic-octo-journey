@@ -1,0 +1,87 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-deploy:
+    environment: production
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: '22.19.0'
+        cache: 'npm'
+
+    - name: Setup php
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: ctype, curl, dom, fileinfo, filter, hash, openssl, pcre, PDO, session, tokenizer, xml
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          composer-
+
+    - name: "Install project depedencies"
+      run: |
+        composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+        npm ci
+
+    - name: "Build front-end"
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 3
+        max_attempts: 5
+        command: VITE_APP_NAME=HubInlu npm run build
+
+    - name: "run pre deploy script"
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSHKEY }}
+        port: ${{ secrets.PORT }}
+        script: "cd /home/ubuntu/didactic-octo-journey && bash ./.github/scripts/pre-deploy.sh"
+
+    - name: "deploy files in ec2"
+      uses: burnett01/rsync-deployments@5.2
+      with:
+        switches: -avzr --delete --exclude='.git' --exclude='tests' --exclude='node_modules' --exclude='.env' --exclude="storage/" --exclude='bootstrap/cache/'
+        remote_path: "/home/ubuntu/didactic-octo-journey/."
+        remote_host: ${{ secrets.HOST }}
+        remote_port: ${{ secrets.PORT }}
+        remote_user: ${{ secrets.USERNAME }}
+        remote_key: ${{ secrets.SSHKEY }}
+
+    - name: "run post deploy script"
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSHKEY }}
+        port: ${{ secrets.PORT }}
+        script: "cd /home/ubuntu/didactic-octo-journey && bash ./.github/scripts/post-deploy.sh"
+
+    - name: "Deploy failed, bring site back up"
+      if: failure()
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSHKEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /home/ubuntu/didactic-octo-journey
+          php artisan up
