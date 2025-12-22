@@ -32,14 +32,6 @@ class AcceptProposal extends Action
         $this->modalDescription('Tem certeza de que deseja aceitar esta proposta? Isto iniciará a Campanha.');
         $this->modalSubmitActionLabel('Aceitar')->color('primary');
 
-        $this->successRedirectUrl(function (Proposal $record): string {
-            $agencyName = $record->agency->name ?? '';
-
-            return route('filament.admin.resources.campaigns.index', [
-                'search' => $agencyName,
-            ]);
-        });
-
         $this->action(function (Proposal $record) {
             DB::beginTransaction();
 

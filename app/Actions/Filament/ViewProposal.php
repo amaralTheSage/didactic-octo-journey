@@ -10,6 +10,8 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Columns\Layout\Split;
 
 class ViewProposal
 {
@@ -22,13 +24,11 @@ class ViewProposal
             ->schema(fn($record) => [
                 Section::make('Campanha')
                     ->schema([
-                        ImageEntry::make('announcement.company.avatar_url')
-                            ->label('Empresa')
-                            ->circular()
-                            ->imageSize(60),
                         TextEntry::make('announcement.name')
-                            ->label('Nome da Campanha')
+                            ->label('Campanha')
                             ->weight(FontWeight::Bold),
+
+
                         TextEntry::make('announcement.product.name')
                             ->label('Produto'),
                         TextEntry::make('announcement.budget')
@@ -40,7 +40,7 @@ class ViewProposal
                     ])
                     ->columns(2),
 
-                Section::make('Proposta')
+                Section::make('Proposta da Agência')
                     ->schema([
                         TextEntry::make('message')
                             ->label('Mensagem')
