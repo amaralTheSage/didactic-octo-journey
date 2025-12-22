@@ -27,7 +27,6 @@ class InfluencerResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'grupo_nome';
 
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     public static function getEloquentQuery(): Builder

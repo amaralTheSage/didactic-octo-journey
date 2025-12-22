@@ -2,21 +2,16 @@
 
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
-use App\Actions\Filament\ChatAction;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Size;
 use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 
 class CampaignAnnouncementInfolist
 {
-
-
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -55,18 +50,15 @@ class CampaignAnnouncementInfolist
                                     ->size(TextSize::Large)
                                     ->weight('bold'),
 
-
                                 TextEntry::make('agency_cut')
                                     ->label('Porcentagem da Agência')
                                     ->suffix('%')
                                     ->numeric()
                                     ->columnSpan(3)
                                     ->size(TextSize::Large)
-                                    ->weight('bold')
+                                    ->weight('bold'),
 
                             ])->columnSpan(2),
-
-
 
                         TextEntry::make('created_at')
                             ->label('Criada em')
@@ -100,11 +92,10 @@ class CampaignAnnouncementInfolist
                         Action::make('viewCompany')
                             ->label('Ver Empresa')
                             ->icon('heroicon-o-building-office')
-                            ->url(fn($record) => route('filament.admin.resources.companies.index', [
+                            ->url(fn ($record) => route('filament.admin.resources.companies.index', [
                                 'search' => $record->company->name,
                             ])),
                     ]),
-
 
             ]);
     }

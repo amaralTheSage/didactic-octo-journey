@@ -17,7 +17,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class InfluencerCampaignResource extends Resource
 {
@@ -48,8 +47,6 @@ class InfluencerCampaignResource extends Resource
     {
         return false;
     }
-
-
 
     public static function canCreate(): bool
     {

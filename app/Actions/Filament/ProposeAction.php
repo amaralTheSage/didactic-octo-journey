@@ -2,13 +2,11 @@
 
 namespace App\Actions\Filament;
 
-use App\Models\Proposal;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -28,11 +26,8 @@ class ProposeAction extends Action
         $this->color('success');
         $this->icon('heroicon-o-hand-raised');
 
-
-
         $this->visible(
-            fn($record, $livewire) =>
-            $livewire->activeTab === 'announcements' &&
+            fn ($record, $livewire) => $livewire->activeTab === 'announcements' &&
                 Gate::allows('is_agency')
                 && ! $record->proposals()
                     ->where('agency_id', Auth::id())
@@ -40,7 +35,7 @@ class ProposeAction extends Action
         );
 
         $this->modalHeading('Enviar Proposta');
-        $this->modalDescription(fn($record) => "Envie sua proposta para a campanha: {$record->name}");
+        $this->modalDescription(fn ($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
         $this->modalWidth('lg');
 
@@ -68,8 +63,8 @@ class ProposeAction extends Action
                 ->inputMode('decimal')
                 ->minValue(0)
                 ->maxValue(100)
-                ->default(fn($record) => $record->agency_cut)
-                ->helperText(fn($record) => "Parcela original: {$record->agency_cut}%"),
+                ->default(fn ($record) => $record->agency_cut)
+                ->helperText(fn ($record) => "Parcela original: {$record->agency_cut}%"),
         ]);
 
         $this->action(function ($record, array $data) {
@@ -84,8 +79,8 @@ class ProposeAction extends Action
 
                 $record->company->notify(
                     Notification::make()
-                        ->title('Proposta recebida para a campanha ' . $record->name)
-                        ->body('A agência ' . Auth::user()->name . ' demonstrou interesse em sua campanha')
+                        ->title('Proposta recebida para a campanha '.$record->name)
+                        ->body('A agência '.Auth::user()->name.' demonstrou interesse em sua campanha')
                         ->toDatabase()
                 );
 
@@ -95,7 +90,7 @@ class ProposeAction extends Action
                     ->success()
                     ->send();
             } catch (\Exception $e) {
-                Log::error('Erro ao enviar proposta: ' . $e->getMessage());
+                Log::error('Erro ao enviar proposta: '.$e->getMessage());
 
                 Notification::make()
                     ->title('Erro ao enviar Proposta')

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Auth;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
@@ -41,8 +40,6 @@ class User extends Authenticatable implements HasAvatar
      *
      * @var list<string>
      */
-
-
     public function chats()
     {
         return $this->belongsToMany(Chat::class);
@@ -95,7 +92,7 @@ class User extends Authenticatable implements HasAvatar
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -104,16 +101,13 @@ class User extends Authenticatable implements HasAvatar
             return null;
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
-
-
 
     /**
      * Decide if this user may access the given panel.
      * Here, only users with verified emails are allowed.
      */
-
     protected $hidden = [
         'password',
         'two_factor_secret',

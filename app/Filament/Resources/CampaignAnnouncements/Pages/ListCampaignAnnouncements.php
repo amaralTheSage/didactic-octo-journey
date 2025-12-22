@@ -4,7 +4,6 @@ namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
 use App\Models\Proposal;
-use App\UserRoles;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -23,21 +22,21 @@ class ListCampaignAnnouncements extends ListRecords
         return [
             'announcements' => Tab::make('Anúncios')
                 ->modifyQueryUsing(
-                    fn(Builder $query) => $query->when(
+                    fn (Builder $query) => $query->when(
                         Gate::allows('is_company'),
-                        fn($q) => $q->where('company_id', Auth::id())
+                        fn ($q) => $q->where('company_id', Auth::id())
                     )
                 ),
-            'proposals' => Tab::make(fn() => Gate::allows('is_company') ? 'Propostas' : 'Nossas Propostas')
+            'proposals' => Tab::make(fn () => Gate::allows('is_company') ? 'Propostas' : 'Nossas Propostas')
                 ->modifyQueryUsing(
-                    fn() => Proposal::query()
+                    fn () => Proposal::query()
                         ->with(['agency', 'announcement'])
                         ->where(function ($query) {
-                            $query->whereHas('announcement', fn($q) => $q->where('company_id', Auth::id()))
+                            $query->whereHas('announcement', fn ($q) => $q->where('company_id', Auth::id()))
                                 ->orWhere('agency_id', Auth::id())
                                 ->orWhereHas(
                                     'influencers',
-                                    fn($q) => $q->where('users.id', Auth::id())
+                                    fn ($q) => $q->where('users.id', Auth::id())
                                 );
                         })
                 ),
@@ -47,7 +46,7 @@ class ListCampaignAnnouncements extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Anunciar Campanha')->visible(fn() => Gate::allows('is_company')),
+            CreateAction::make()->label('Anunciar Campanha')->visible(fn () => Gate::allows('is_company')),
         ];
     }
 }

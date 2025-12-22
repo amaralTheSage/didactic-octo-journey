@@ -23,6 +23,9 @@ class InfluencerInfo extends Model
         'facebook_followers',
         'youtube_followers',
         'tiktok_followers',
+        'reels_price',
+        'stories_price',
+        'carrousel_price',
     ];
 
     public function agency()

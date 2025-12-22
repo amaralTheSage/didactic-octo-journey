@@ -34,10 +34,7 @@ class AcceptProposal extends Action
 
         $this->action(function (Proposal $record) {
 
-
-
             try {
-
 
                 // OngoingCampaign::create([
                 //     'name' => $announcement->name,
@@ -56,7 +53,6 @@ class AcceptProposal extends Action
 
                 $record->update(['company_approval' => 'approved']);
 
-
                 Notification::make()
                     ->title('Proposta Aceita')
                     ->body('A proposta foi aprovada. ')
@@ -64,7 +60,7 @@ class AcceptProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao aceitar proposta: ' . $e->getMessage());
+                Log::error('Erro ao aceitar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao Aceitar Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -73,7 +69,7 @@ class AcceptProposal extends Action
             } finally {
                 $record->agency->notify(
                     Notification::make()
-                        ->title('Proposta de Campanha aceita por ' . Auth::user()->name)
+                        ->title('Proposta de Campanha aceita por '.Auth::user()->name)
                         ->body('A sua proposta de campanha foi aceita.')
                         ->toDatabase()
                 );

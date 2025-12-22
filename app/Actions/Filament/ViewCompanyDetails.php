@@ -25,7 +25,7 @@ class ViewCompanyDetails
                             ImageEntry::make('avatar_url')
                                 ->label('Avatar')
                                 ->circular()
-                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
+                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome'),
@@ -46,7 +46,7 @@ class ViewCompanyDetails
                             Action::make('viewCampaigns')
                                 ->label('Campanhas')
                                 ->icon('heroicon-o-presentation-chart-line')
-                                ->url(fn($record) => route('filament.admin.resources.campaign-announcements.index', [
+                                ->url(fn ($record) => route('filament.admin.resources.campaign-announcements.index', [
                                     'search' => $record->name,
                                 ])),
                             // ChatAction::make() BUG-> não funcionando dentro das ViewDetails

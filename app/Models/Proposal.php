@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Proposal extends Model
 {
@@ -18,7 +17,6 @@ class Proposal extends Model
         'company_approval',
         'agency_approval',
     ];
-
 
     protected $with = ['agency'];
 

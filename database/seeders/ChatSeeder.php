@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Chat;
 use App\Models\Message;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ChatSeeder extends Seeder
@@ -24,7 +23,6 @@ class ChatSeeder extends Seeder
 
             $chat->users()->attach($userIds);
         }
-
 
         // Messages
         Chat::with('users')->get()->each(function (Chat $chat) {

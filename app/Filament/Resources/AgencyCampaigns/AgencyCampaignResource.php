@@ -17,7 +17,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class AgencyCampaignResource extends Resource
 {
@@ -48,7 +47,6 @@ class AgencyCampaignResource extends Resource
     {
         return false;
     }
-
 
     public static function canCreate(): bool
     {

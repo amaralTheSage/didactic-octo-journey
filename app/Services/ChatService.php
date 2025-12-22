@@ -7,13 +7,13 @@ use App\Models\User;
 use App\UserRoles;
 use Illuminate\Support\Facades\Auth;
 
-//      Criei essa classe como forma de organizar a 
-//      lógica dos chats. Caso necessário adições ao 
+//      Criei essa classe como forma de organizar a
+//      lógica dos chats. Caso necessário adições ao
 //      sistema do chat, o ideal é que seja organizado aqui.
 
 class ChatService
 {
-    public static function createChat(array $selectedUserIds,  ?int $proposalId = null): Chat|array
+    public static function createChat(array $selectedUserIds, ?int $proposalId = null): Chat|array
     {
 
         $finalUserIds = self::processChatParticipants(Auth::user(), $selectedUserIds);
@@ -22,7 +22,7 @@ class ChatService
             return $finalUserIds;
         }
 
-        $chat = Chat::create(['proposal_id' => $proposalId,]);
+        $chat = Chat::create(['proposal_id' => $proposalId]);
         $chat->users()->attach($finalUserIds);
         $chat->load('users');
 
@@ -36,9 +36,9 @@ class ChatService
 
         foreach ($selectedUsers as $user) {
             $result = match ($currentUser->role) {
-                UserRoles::Company =>  self::handleCompanyChat($currentUser, $user, $finalUserIds),
-                UserRoles::Agency =>  self::handleAgencyChat($currentUser, $user, $finalUserIds),
-                UserRoles::Influencer =>  self::handleInfluencerChat($currentUser, $user, $finalUserIds),
+                UserRoles::Company => self::handleCompanyChat($currentUser, $user, $finalUserIds),
+                UserRoles::Agency => self::handleAgencyChat($currentUser, $user, $finalUserIds),
+                UserRoles::Influencer => self::handleInfluencerChat($currentUser, $user, $finalUserIds),
                 default => $finalUserIds,
             };
 
@@ -56,6 +56,7 @@ class ChatService
     {
         if ($targetUser->role === UserRoles::Agency) {
             $currentParticipants[] = $targetUser->id;
+
             return $currentParticipants;
         }
 
@@ -82,6 +83,7 @@ class ChatService
     {
         if ($targetUser->role === UserRoles::Company) {
             $currentParticipants[] = $targetUser->id;
+
             return $currentParticipants;
         }
 
@@ -93,18 +95,20 @@ class ChatService
             }
 
             $currentParticipants[] = $targetUser->id;
+
             return $currentParticipants;
         }
 
         if ($targetUser->role === UserRoles::Agency) {
             $currentParticipants[] = $targetUser->id;
+
             return $currentParticipants;
         }
 
         return $currentParticipants;
     }
 
-    protected static function  handleInfluencerChat(User $influencer, User $targetUser, array $currentParticipants): array
+    protected static function handleInfluencerChat(User $influencer, User $targetUser, array $currentParticipants): array
     {
         if (in_array($targetUser->role, [UserRoles::Company, UserRoles::Agency, UserRoles::Influencer])) {
             $currentParticipants[] = $targetUser->id;
@@ -113,7 +117,7 @@ class ChatService
         return $currentParticipants;
     }
 
-    public  static function validateChatPermission(User $currentUser, User $targetUser): array
+    public static function validateChatPermission(User $currentUser, User $targetUser): array
     {
         if ($currentUser->id === $targetUser->id) {
             return ['allowed' => false, 'message' => 'You cannot chat with yourself.'];
@@ -124,18 +128,19 @@ class ChatService
         }
 
         return match ($currentUser->role) {
-            UserRoles::Company =>  self::validateCompanyPermission($targetUser),
-            UserRoles::Agency =>  self::validateAgencyPermission($currentUser, $targetUser),
+            UserRoles::Company => self::validateCompanyPermission($targetUser),
+            UserRoles::Agency => self::validateAgencyPermission($currentUser, $targetUser),
             UserRoles::Influencer => self::validateInfluencerPermission($targetUser),
             default => ['allowed' => false],
         };
     }
 
-    protected static  function validateCompanyPermission(User $targetUser): array
+    protected static function validateCompanyPermission(User $targetUser): array
     {
         if (in_array($targetUser->role, [UserRoles::Agency, UserRoles::Influencer])) {
             return ['allowed' => true];
         }
+
         return ['allowed' => false, 'message' => 'Companies can only chat with agencies and influencers.'];
     }
 
@@ -160,6 +165,7 @@ class ChatService
         if (in_array($targetUser->role, [UserRoles::Company, UserRoles::Agency])) {
             return ['allowed' => true];
         }
+
         return ['allowed' => false, 'message' => 'Influencers can only chat with companies and agencies.'];
     }
 }

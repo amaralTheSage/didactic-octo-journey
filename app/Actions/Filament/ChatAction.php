@@ -24,22 +24,18 @@ class ChatAction extends Action
     {
         parent::setUp();
 
-
-
-
         $this->icon(Heroicon::OutlinedChatBubbleLeftEllipsis);
         $this->label(__('Chat'));
         $this->defaultColor('secondary');
         $this->tableIcon(icon: Heroicon::OutlinedChatBubbleLeftEllipsis);
 
-        $this->modalHeading(fn(User $record) => "Chat com {$record->name}");
+        $this->modalHeading(fn (User $record) => "Chat com {$record->name}");
         $this->modalDescription('Deseja iniciar uma nova conversa ou continuar uma conversa existente?');
         $this->modalSubmitAction(false);
         $this->modalCancelAction(false);
         $this->modalWidth(Width::Large);
 
         $this->modalFooterActions(function (User $record) {
-
 
             return [
                 Action::make('newChat')
@@ -55,6 +51,7 @@ class ChatAction extends Action
                                 ->body($chat['error'])
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -65,7 +62,7 @@ class ChatAction extends Action
                     ->label('Ver todas conversas')
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->color('gray')
-                    ->action(fn() => redirect()->route('chats.index')),
+                    ->action(fn () => redirect()->route('chats.index')),
             ];
         });
 
@@ -76,7 +73,7 @@ class ChatAction extends Action
         $this->before(function (User $record) {
             $validation = ChatService::validateChatPermission(Auth::user(), $record);
 
-            if (!$validation['allowed']) {
+            if (! $validation['allowed']) {
                 $this->halt();
                 $this->sendNotification(
                     title: 'Cannot Start Chat',
@@ -90,6 +87,7 @@ class ChatAction extends Action
     public function redirectUrlUsing(?Closure $callback): static
     {
         $this->redirectUrlUsing = $callback;
+
         return $this;
     }
 }

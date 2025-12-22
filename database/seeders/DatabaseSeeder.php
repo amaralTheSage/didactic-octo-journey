@@ -21,9 +21,9 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(20) . '.jpg';
+            $filename = Str::random(20).'.jpg';
 
-            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
+            $url = 'https://picsum.photos/300/300?random='.Str::random(10);
 
             $imageData = file_get_contents($url);
 
@@ -102,6 +102,10 @@ class DatabaseSeeder extends Seeder
                 'instagram' => fake()->userName(),
                 'instagram_followers' => rand(1000, 100000),
                 'association_status' => collect(['approved', 'pending'])->random(),
+
+                'reels_price' => rand(500, 5000),
+                'stories_price' => rand(200, 2000),
+                'carrousel_price' => rand(300, 3000),
             ]);
             $influencers->push($user);
         }
@@ -112,7 +116,7 @@ class DatabaseSeeder extends Seeder
         $companies->each(function ($company) {
             foreach (range(1, 5) as $i) {
                 Product::create([
-                    'name' => fake()->colorName() . ' ' . fake()->streetName,
+                    'name' => fake()->colorName().' '.fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
                     'company_id' => $company->id,
@@ -182,7 +186,6 @@ class DatabaseSeeder extends Seeder
             $categories->push($category);
         }
 
-
         // -------------------------------------------------------
         // MANUAL TEST USERS
         // -------------------------------------------------------
@@ -219,6 +222,10 @@ class DatabaseSeeder extends Seeder
             'user_id' => $influencerA1->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
+
+            'reels_price' => rand(500, 5000),
+            'stories_price' => rand(200, 2000),
+            'carrousel_price' => rand(300, 3000),
         ]);
 
         $influencerA2 = User::create([
@@ -234,8 +241,11 @@ class DatabaseSeeder extends Seeder
             'user_id' => $influencerA2->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'pending',
-        ]);
 
+            'reels_price' => rand(500, 5000),
+            'stories_price' => rand(200, 2000),
+            'carrousel_price' => rand(300, 3000),
+        ]);
 
         // -------------------------------------------------------
         // Products for Test Company
@@ -244,7 +254,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 5) as $i) {
             $testProducts->push(
                 Product::create([
-                    'name' => fake()->colorName() . ' ' . fake()->streetName,
+                    'name' => fake()->colorName().' '.fake()->streetName,
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,
@@ -277,7 +287,6 @@ class DatabaseSeeder extends Seeder
                 'category_id' => $categories->random()->id,
             ]);
         }
-
 
         // -------------------------------------------------------
         // Proposals

@@ -2,12 +2,9 @@
 
 namespace App\Actions\Filament;
 
-use App\ApprovalStatus;
-use App\Models\OngoingCampaign;
 use App\Models\Proposal;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
-use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -30,18 +27,14 @@ class RejectProposal extends Action
 
         $this->button();
         $this->visible(
-            fn($record, $livewire) =>
-
-            Gate::allows('is_company')
+            fn ($record, $livewire) => Gate::allows('is_company')
                 && $record
-                ->exists()
+                    ->exists()
         );
-
 
         $this->action(function (Proposal $record) {
             try {
                 $record->update(['company_approval' => 'rejected']);
-
 
                 Notification::make()
                     ->title('Proposta rejeitar')
@@ -50,7 +43,7 @@ class RejectProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao rejeitar proposta: ' . $e->getMessage());
+                Log::error('Erro ao rejeitar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao rejeitarr Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -59,7 +52,7 @@ class RejectProposal extends Action
             } finally {
                 $record->agency->notify(
                     Notification::make()
-                        ->title('Proposta de Campanha rejeitada por ' . Auth::user()->name)
+                        ->title('Proposta de Campanha rejeitada por '.Auth::user()->name)
                         ->body('A sua proposta de campanha foi rejeitada.')
                         ->toDatabase()
                 );

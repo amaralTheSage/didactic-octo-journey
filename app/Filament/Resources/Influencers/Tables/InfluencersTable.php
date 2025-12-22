@@ -36,7 +36,6 @@ class InfluencersTable
     {
         $table->recordAction('viewInfluencerDetails');
 
-
         return $table
             ->columns([
                 ImageColumn::make('avatar_url')
@@ -77,7 +76,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -89,7 +88,7 @@ class InfluencersTable
                     ),
 
                 ChatAction::make(),
-                ViewInfluencerDetails::make()
+                ViewInfluencerDetails::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

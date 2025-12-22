@@ -29,6 +29,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('agency_id')->nullable()->constrained('users')->nullOnDelete();
 
+            $table->decimal('reels_price', 11, 2)->nullable();
+            $table->decimal('stories_price', 11, 2)->nullable();
+            $table->decimal('carrousel_price', 11, 2)->nullable();
+
             $table->enum('association_status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

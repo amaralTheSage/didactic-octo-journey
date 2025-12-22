@@ -20,36 +20,36 @@ class ProductsTable
             $table->modifyQueryUsing(function (Builder $query) {
                 $query->where('company_id', Auth::user()->id);
             })
-            ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('price')
-                    ->money('BRL')
-                    ->sortable(),
-                TextColumn::make('description')
-                    ->limit(30),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
-                ActionGroup::make([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ]),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                ->columns([
+                    TextColumn::make('name')
+                        ->searchable(),
+                    TextColumn::make('price')
+                        ->money('BRL')
+                        ->sortable(),
+                    TextColumn::make('description')
+                        ->limit(30),
+                    TextColumn::make('created_at')
+                        ->dateTime()
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+                    TextColumn::make('updated_at')
+                        ->dateTime()
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+                ])
+                ->filters([
+                    //
+                ])
+                ->recordActions([
+                    ActionGroup::make([
+                        EditAction::make(),
+                        DeleteAction::make(),
+                    ]),
+                ])
+                ->toolbarActions([
+                    BulkActionGroup::make([
+                        DeleteBulkAction::make(),
+                    ]),
+                ]);
     }
 }
