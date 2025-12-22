@@ -32,7 +32,7 @@ class CampaignAnnouncementsTable
                     ->searchable()->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
                 TextColumn::make('name')->label('Campanha')
                     ->searchable()->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
-                TextColumn::make('description')->label("Descrição")->limit(40)
+                TextColumn::make('description')->label("Descrição")->limit(40)->tooltip(fn($record) => $record->description)
                     ->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
                 TextColumn::make('budget')->label('Orçamento')->money('BRL')
                     ->sortable()->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
@@ -88,10 +88,9 @@ class CampaignAnnouncementsTable
 
                 TextColumn::make('message')
                     ->label('Mensagem')
-                    ->limit(50)
+                    ->limit(40)
                     ->tooltip(fn($record) => $record->message)
-                    ->visible(fn($livewire) => $livewire->activeTab === 'proposals')
-                    ->wrap(),
+                    ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
 
                 TextColumn::make('proposed_agency_cut')
                     ->label('Parcela Proposta')
@@ -99,11 +98,6 @@ class CampaignAnnouncementsTable
                     ->suffix('%')
                     ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
 
-                TextColumn::make('created_at')
-                    ->label('Enviada em')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
             ])
             ->filters([
                 //
