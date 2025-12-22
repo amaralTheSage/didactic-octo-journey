@@ -17,6 +17,8 @@ class CampaignAnnouncement extends Model
         'category_id',
     ];
 
+    protected $with = ['proposals'];
+
     public function proposals()
     {
         return $this->hasMany(Proposal::class);

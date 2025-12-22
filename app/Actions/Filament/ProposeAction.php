@@ -28,9 +28,12 @@ class ProposeAction extends Action
         $this->color('success');
         $this->icon('heroicon-o-hand-raised');
 
+
+
         $this->visible(
-            fn($record) =>
-            Gate::allows('is_agency')
+            fn($record, $livewire) =>
+            $livewire->activeTab === 'announcements' &&
+                Gate::allows('is_agency')
                 && ! $record->proposals()
                     ->where('agency_id', Auth::id())
                     ->exists()

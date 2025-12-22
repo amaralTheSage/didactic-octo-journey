@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CampaignAnnouncements\Tables;
 
+use App\Actions\Filament\EditProposalAction;
 use App\Actions\Filament\ProposeAction;
 use App\Actions\Filament\ViewProposal;
 use App\ApprovalStatus;
@@ -11,8 +12,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconPosition;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -112,23 +116,39 @@ class CampaignAnnouncementsTable
 
                 ColumnGroup::make('Aprovação')->columns([
 
+                    // APROVAÇÃO DA EMPRESA
+
                     TextColumn::make('company_approval')
-                        ->label('company')
+                        ->label('Empresa')
                         ->badge()
                         ->color($colorByStatus)
-                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals')->formatStateUsing(fn($state): string => __("approval_status.$state")),
+                        ->icon(fn() => Gate::allows('is_company') ? Heroicon::OutlinedCursorArrowRays : null)->iconPosition(IconPosition::After)
+                        ->action(EditProposalAction::make()->disabled(Gate::denies('is_company')))
+                        ->formatStateUsing(fn($state): string => __("approval_status.$state"))
+                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
+
+
+                    // APROVAÇÃO DA AGÊNCIA
 
                     TextColumn::make('agency_approval')
                         ->label('Agência')
                         ->badge()
                         ->color($colorByStatus)
-                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals')->formatStateUsing(fn($state): string => __("approval_status.$state")),
+                        ->icon(fn() => Gate::allows('is_agency') ? Heroicon::OutlinedCursorArrowRays : null)
+                        ->action(EditProposalAction::make()->disabled(Gate::denies('is_agency')))
+                        ->formatStateUsing(fn($state): string => __("approval_status.$state"))
+                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
+
+
+                    // APROVAÇÃO DO INFLUENCIADOR
 
                     TextColumn::make('influencer_approval')
-                        ->label('influencer')->badge()
+                        ->label('Influenciador')->badge()
                         ->color($colorByStatus)
-                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals')->formatStateUsing(fn($state): string => __("approval_status.$state")),
-
+                        ->icon(fn() => Gate::allows('is_influencer') ? Heroicon::OutlinedCursorArrowRays : null)
+                        ->action(EditProposalAction::make()->disabled(Gate::denies('is_influencer')))
+                        ->formatStateUsing(fn($state): string => __("approval_status.$state"))
+                        ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
                 ]),
 
 
@@ -142,7 +162,11 @@ class CampaignAnnouncementsTable
                     ->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
 
                 EditAction::make()
-                    ->visible(fn($record) => Auth::id() === $record->company_id),
+                    ->visible(fn($record, $livewire) => Auth::id() === $record->company_id &&  $livewire->activeTab === 'announcements'),
+
+                EditProposalAction::make(),
+                // EditAction::make()->label('Editar Proposta')
+                //     ->visible(fn($record, $livewire) => Auth::id() === $record->agency_id &&  $livewire->activeTab === 'proposals'),
 
                 ViewProposal::make()
                     ->visible(fn($livewire) => $livewire->activeTab === 'proposals'),
@@ -151,10 +175,10 @@ class CampaignAnnouncementsTable
 
                 Action::make('remove_proposal')
                     ->label('Remover Interesse')
-                    ->color('danger')
-                    ->visible(
-                        fn($record) =>
-                        Gate::allows('is_agency')
+                    ->color('danger')->visible(
+                        fn($record, $livewire) =>
+                        $livewire->activeTab === 'announcements' &&
+                            Gate::allows('is_agency')
                             && $record->proposals()
                             ->where('agency_id', Auth::id())
                             ->exists()

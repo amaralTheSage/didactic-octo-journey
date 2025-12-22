@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
 use App\Models\Proposal;
+use App\UserRoles;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -19,24 +20,23 @@ class ListCampaignAnnouncements extends ListRecords
 
     public function getTabs(): array
     {
-        if (Gate::denies('is_company')) {
-            return [];
-        }
-
         return [
             'announcements' => Tab::make('Anúncios')
                 ->modifyQueryUsing(
-                    fn(Builder $query) => $query->where('company_id', Auth::id())
+                    fn(Builder $query) => $query->when(
+                        Gate::allows('is_company'),
+                        fn($q) => $q->where('company_id', Auth::id())
+                    )
                 ),
-
-            'proposals' => Tab::make('Propostas')
+            'proposals' => Tab::make(fn() => Gate::allows('is_company') ? 'Propostas' : 'Nossas Propostas')
                 ->modifyQueryUsing(
                     fn() => Proposal::query()
                         ->with(['agency', 'announcement'])
-                        ->whereHas(
-                            'announcement',
-                            fn(Builder $q) => $q->where('company_id', Auth::id())
-                        )
+                        ->where(function ($query) {
+                            $query->whereHas('announcement', fn($q) => $q->where('company_id', Auth::id()))
+                                ->orWhere('agency_id', Auth::id())
+                                ->orWhere('influencer_id', Auth::id());
+                        })
                 ),
         ];
     }
