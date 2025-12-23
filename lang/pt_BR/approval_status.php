@@ -2,6 +2,6 @@
 
 return [
     'pending' => 'Pendente',
-    'approved' => 'Aprovado',
-    'rejected' => 'Rejeitado',
+    'approved' => 'Aprovou',
+    'rejected' => 'Rejeitou',
 ];

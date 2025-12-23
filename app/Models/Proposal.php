@@ -12,10 +12,14 @@ class Proposal extends Model
         'agency_id',
         'campaign_announcement_id',
         'message',
+
         'proposed_agency_cut',
-        'influencer_approval',
+        'proposed_budget',
+
         'company_approval',
         'agency_approval',
+
+        'status'
     ];
 
     protected $with = ['agency'];
@@ -29,6 +33,8 @@ class Proposal extends Model
     {
         return $this->belongsTo(CampaignAnnouncement::class, 'campaign_announcement_id');
     }
+
+
 
     public function influencers(): BelongsToMany
     {

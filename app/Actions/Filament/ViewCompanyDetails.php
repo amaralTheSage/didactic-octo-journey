@@ -2,13 +2,16 @@
 
 namespace App\Actions\Filament;
 
+use App\Services\ChatService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Icons\Heroicon;
 
 class ViewCompanyDetails
 {
@@ -23,9 +26,9 @@ class ViewCompanyDetails
                     ->schema([
                         Group::make()->columns(2)->schema([
                             ImageEntry::make('avatar_url')
-                                ->label('Avatar')
+                                ->hiddenLabel()
                                 ->circular()
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome'),
@@ -43,10 +46,36 @@ class ViewCompanyDetails
                             ->markdown(),
 
                         Actions::make([
+                            Action::make('newChat')
+                                ->label('Conversar')
+                                ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+                                ->color('secondary')
+                                ->action(function ($record) {
+
+                                    $chat = ChatService::createChat(
+                                        [
+                                            $record->id,
+                                        ]
+
+                                    );
+
+                                    if (is_array($chat) && isset($chat['error'])) {
+                                        Notification::make()
+                                            ->title('Erro')
+                                            ->body($chat['error'])
+                                            ->danger()
+                                            ->send();
+
+                                        return;
+                                    }
+
+                                    return redirect()->route('chats.show', ['chat' => $chat]);
+                                }),
+
                             Action::make('viewCampaigns')
                                 ->label('Campanhas')
                                 ->icon('heroicon-o-presentation-chart-line')
-                                ->url(fn ($record) => route('filament.admin.resources.campaign-announcements.index', [
+                                ->url(fn($record) => route('filament.admin.resources.campaign-announcements.index', [
                                     'search' => $record->name,
                                 ])),
                             // ChatAction::make() BUG-> não funcionando dentro das ViewDetails

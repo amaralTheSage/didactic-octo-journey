@@ -27,7 +27,7 @@ class ViewProposal
             ->slideOver()
 
             ->modalWidth('xl')
-            ->schema(fn ($record) => [
+            ->schema(fn($record) => [
                 Section::make('Campanha')
                     ->schema([
                         TextEntry::make('announcement.name')
@@ -56,18 +56,25 @@ class ViewProposal
 
                             TextEntry::make('agency.name')->weight(FontWeight::Bold)
                                 ->hiddenLabel()->columnSpan(2)->alignStart(),
-                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRoles $state): string => __("roles.$state->value"))
+                            TextEntry::make('agency.role')->formatStateUsing(fn(UserRoles $state): string => __("roles.$state->value"))
                                 ->hiddenLabel()->badge()->alignStart(),
 
                         ])->columns(5)->columnSpan(2),
 
                         TextEntry::make('message')
-                            ->label('Mensagem')
+                            ->label('Mensagem')->visible(fn($record) => isset($record->message))
                             ->columnSpanFull(),
+
                         TextEntry::make('proposed_agency_cut')
-                            ->label('Parcela Proposta')
+                            ->label('Porcentagem Proposta')
                             ->suffix('%')
                             ->weight(FontWeight::Bold),
+
+                        TextEntry::make('proposed_budget')
+                            ->label('Orçamento Proposto')
+                            ->money('BRL')
+                            ->weight(FontWeight::Bold),
+
                         TextEntry::make('created_at')
                             ->label('Enviada em')
                             ->dateTime('d/m/Y H:i'),
@@ -76,13 +83,14 @@ class ViewProposal
                             ->label('Conversar')
                             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                             ->color('secondary')
+                            ->visible(fn($record) => $record->agency_id !== Auth::id())
                             ->action(function ($record) {
 
                                 $proposalId = $record->id;
 
                                 $chat = \App\Models\Chat::query()
                                     ->where('proposal_id', $proposalId)
-                                    ->whereHas('users', fn ($q) => $q->where('users.id', Auth::id()))
+                                    ->whereHas('users', fn($q) => $q->where('users.id', Auth::id()))
                                     ->first();
 
                                 if (! $chat) {
@@ -130,7 +138,7 @@ class ViewProposal
 
                                         TextEntry::make('role')
                                             ->formatStateUsing(
-                                                fn (UserRoles $state): string => __("roles.$state->value")
+                                                fn(UserRoles $state): string => __("roles.$state->value")
                                             )
                                             ->hiddenLabel()
                                             ->badge(),
@@ -143,56 +151,98 @@ class ViewProposal
                                     ->schema([
                                         TextEntry::make('influencer_info.reels_price')
                                             ->label('Reels')
-                                            ->money('BRL')
+                                            ->money('BRL')->weight(FontWeight::SemiBold)
                                             ->placeholder('-'),
 
                                         TextEntry::make('influencer_info.stories_price')
                                             ->label('Stories')
-                                            ->money('BRL')
+                                            ->money('BRL')->weight(FontWeight::SemiBold)
                                             ->placeholder('-'),
 
                                         TextEntry::make('influencer_info.carrousel_price')
                                             ->label('Carrossel')
-                                            ->money('BRL')
+                                            ->money('BRL')->weight(FontWeight::SemiBold)
                                             ->placeholder('-'),
                                     ])
                                     ->columns(3)
                                     ->columnSpanFull(),
 
-                                Section::make('Redes Sociais')->collapsible()->collapsed()
+                                Section::make('Redes Sociais')
+                                    ->collapsible()
+                                    ->collapsed()
                                     ->schema([
-                                        TextEntry::make('influencer_info.instagram_followers')
-                                            ->label('Instagram')
-                                            ->numeric()
-                                            ->icon('heroicon-o-camera')
-                                            ->placeholder('-'),
+                                        Group::make()
+                                            ->columns(3)
+                                            ->schema([
+                                                TextEntry::make('social_label')->hiddenLabel()
+                                                    ->state('Rede')
+                                                    ->weight(FontWeight::SemiBold),
 
-                                        TextEntry::make('influencer_info.youtube_followers')
-                                            ->label('YouTube')
-                                            ->numeric()
-                                            ->icon('heroicon-o-play')
-                                            ->placeholder('-'),
+                                                TextEntry::make('social_user')->hiddenLabel()
+                                                    ->state('Usuário')
+                                                    ->weight(FontWeight::SemiBold),
 
-                                        TextEntry::make('influencer_info.tiktok_followers')
-                                            ->label('TikTok')
-                                            ->numeric()
-                                            ->icon('heroicon-o-music-note')
-                                            ->placeholder('-'),
+                                                TextEntry::make('social_followers')->hiddenLabel()
+                                                    ->state('Seguidores')
+                                                    ->weight(FontWeight::SemiBold),
+                                            ]),
+                                        Group::make()->columns(3)->schema([
+                                            TextEntry::make('instagram_label')->hiddenLabel()->state('Instagram'),
+                                            TextEntry::make('influencer_info.instagram')->hiddenLabel()
+                                                ->prefix('@')->badge()->copyable()
+                                                ->placeholder('-'),
+                                            TextEntry::make('influencer_info.instagram_followers')->hiddenLabel()
+                                                ->numeric()
+                                                ->icon('heroicon-o-users')
+                                                ->placeholder('-'),
+                                        ]),
 
-                                        TextEntry::make('influencer_info.twitter_followers')
-                                            ->label('Twitter')
-                                            ->numeric()
-                                            ->icon('heroicon-o-chat-bubble-left-right')
-                                            ->placeholder('-'),
+                                        Group::make()->columns(3)->schema([
+                                            TextEntry::make('youtube_label')->hiddenLabel()->state('YouTube'),
+                                            TextEntry::make('influencer_info.youtube')->hiddenLabel()
+                                                ->prefix('@')->badge()->copyable()
+                                                ->placeholder('-'),
+                                            TextEntry::make('influencer_info.youtube_followers')->hiddenLabel()
+                                                ->numeric()
+                                                ->icon('heroicon-o-users')
+                                                ->placeholder('-'),
+                                        ]),
 
-                                        TextEntry::make('influencer_info.facebook_followers')
-                                            ->label('Facebook')
-                                            ->numeric()
-                                            ->icon('heroicon-o-users')
-                                            ->placeholder('-'),
+                                        Group::make()->columns(3)->schema([
+                                            TextEntry::make('tiktok_label')->hiddenLabel()->state('TikTok'),
+                                            TextEntry::make('influencer_info.tiktok')->hiddenLabel()
+                                                ->prefix('@')->badge()->copyable()
+                                                ->placeholder('-'),
+                                            TextEntry::make('influencer_info.tiktok_followers')->hiddenLabel()
+                                                ->numeric()
+                                                ->icon('heroicon-o-users')
+                                                ->placeholder('-'),
+                                        ]),
+
+                                        Group::make()->columns(3)->schema([
+                                            TextEntry::make('twitter_label')->hiddenLabel()->state('Twitter'),
+                                            TextEntry::make('influencer_info.twitter')->hiddenLabel()
+                                                ->prefix('@')->badge()->copyable()
+                                                ->placeholder('-'),
+                                            TextEntry::make('influencer_info.twitter_followers')->hiddenLabel()
+                                                ->numeric()
+                                                ->icon('heroicon-o-users')
+                                                ->placeholder('-'),
+                                        ]),
+
+                                        Group::make()->columns(3)->schema([
+                                            TextEntry::make('facebook_label')->hiddenLabel()->state('Facebook'),
+                                            TextEntry::make('influencer_info.facebook')->hiddenLabel()
+                                                ->prefix('@')->badge()->copyable()
+                                                ->placeholder('-'),
+                                            TextEntry::make('influencer_info.facebook_followers')->hiddenLabel()
+                                                ->numeric()
+                                                ->icon('heroicon-o-users')
+                                                ->placeholder('-'),
+                                        ]),
                                     ])
-                                    ->columns(3)
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+
 
                             ])
                             ->columns(5),
@@ -223,12 +273,12 @@ class ViewProposal
                     Action::make('remove_proposal')
                         ->label('Remover Interesse')
                         ->color('danger')->visible(
-                            fn ($record, $livewire) => Gate::allows('is_agency')
+                            fn($record, $livewire) => Gate::allows('is_agency')
                                 && $record
-                                    ->exists()
+                                ->exists()
                         )->button()
                         ->action(
-                            fn ($record) => $record->delete()
+                            fn($record) => $record->delete()
                         ),
                 ]),
 

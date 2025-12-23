@@ -3,8 +3,10 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\Category;
+use App\Models\Subcategory;
 use App\Models\User;
 use App\UserRoles;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
@@ -29,6 +31,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\Width;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -37,6 +40,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Js;
@@ -134,7 +138,7 @@ class EditProfile extends BaseEditProfile
         if (filled(static::getCluster())) {
             Route::name(static::prependClusterRouteBaseName($panel, ''))
                 ->prefix(static::prependClusterSlug($panel, ''))
-                ->group(fn () => static::routes($panel));
+                ->group(fn() => static::routes($panel));
 
             return;
         }
@@ -146,7 +150,7 @@ class EditProfile extends BaseEditProfile
     {
         $panel ??= Filament::getCurrentOrDefaultPanel();
 
-        return $panel->generateRouteName('auth.'.static::getRelativeRouteName($panel));
+        return $panel->generateRouteName('auth.' . static::getRelativeRouteName($panel));
     }
 
     /**
@@ -216,7 +220,7 @@ class EditProfile extends BaseEditProfile
 
         if (request()->hasSession() && array_key_exists('password', $data)) {
             request()->session()->put([
-                'password_hash_'.Filament::getAuthGuard() => $data['password'],
+                'password_hash_' . Filament::getAuthGuard() => $data['password'],
             ]);
         }
 
@@ -339,8 +343,8 @@ class EditProfile extends BaseEditProfile
             ->rule(Password::default())
             ->showAllValidationMessages()
             ->autocomplete('new-password')
-            ->dehydrated(fn ($state): bool => filled($state))
-            ->dehydrateStateUsing(fn ($state): string => Hash::make($state))
+            ->dehydrated(fn($state): bool => filled($state))
+            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
             ->live(debounce: 500)
             ->same('passwordConfirmation');
     }
@@ -354,7 +358,7 @@ class EditProfile extends BaseEditProfile
             ->autocomplete('new-password')
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')))
+            ->visible(fn(Get $get): bool => filled($get('password')))
             ->dehydrated(false);
     }
 
@@ -369,7 +373,7 @@ class EditProfile extends BaseEditProfile
             ->currentPassword(guard: Filament::getAuthGuard())
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')))
+            ->visible(fn(Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')))
             ->dehydrated(false);
     }
 
@@ -388,10 +392,186 @@ class EditProfile extends BaseEditProfile
     // -----------------------------------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------------------
 
+    protected function getBaseInfoColumn(): Group
+    {
+        return Group::make()
+            ->schema([
+                $this->getNameFormComponent(),
+
+                Textarea::make('bio')
+                    ->rows(5)
+                    ->placeholder('Sou criador de conteúdo...')
+                    ->required(),
+
+                Select::make('subcategories')
+                    ->multiple()
+                    ->label('Categoria')
+                    ->options(
+                        Category::with('subcategories')->get()
+                            ->mapWithKeys(fn($category) => [
+                                $category->title =>
+                                $category->subcategories
+                                    ->pluck('title', 'id')
+                                    ->toArray(),
+                            ])
+                            ->toArray()
+                    )
+                    ->rules([
+                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                            $categories = Subcategory::whereIn('id', $value)
+                                ->distinct('category_id')
+                                ->count('category_id');
+
+                            if ($categories > 1) {
+                                $fail('Selecione subcategorias de apenas uma categoria.');
+                            }
+                        },
+                    ])
+                    ->visible(fn(Get $get) => $get('role') === 'influencer'),
+            ]);
+    }
+
+
+    protected function getInfluencerColumn(): Group
+    {
+        return Group::make()
+            ->statePath('influencer_data')
+            ->dehydrated()
+            ->schema([
+
+                Section::make('Dados do Influenciador')
+                    ->schema([
+                        Select::make('agency_id')
+                            ->label('Agência Vinculada')
+                            ->searchable()
+                            ->preload()
+                            ->getSearchResultsUsing(
+                                fn(string $search): array =>
+                                User::where('role', UserRoles::Agency)
+                                    ->where('name', 'ilike', "%{$search}%")
+                                    ->limit(50)
+                                    ->pluck('name', 'id')
+                                    ->toArray()
+                            )
+                            ->getOptionLabelUsing(
+                                fn($value) => User::find($value)?->name
+                            ),
+
+
+                        Group::make()->columns(2)->schema([
+
+                            Select::make('state')
+                                ->label('Estado')
+                                ->options([
+                                    'AC' => 'AC',
+                                    'AL' => 'AL',
+                                    'AP' => 'AP',
+                                    'AM' => 'AM',
+                                    'BA' => 'BA',
+                                    'CE' => 'CE',
+                                    'DF' => 'DF',
+                                    'ES' => 'ES',
+                                    'GO' => 'GO',
+                                    'MA' => 'MA',
+                                    'MT' => 'MT',
+                                    'MS' => 'MS',
+                                    'MG' => 'MG',
+                                    'PA' => 'PA',
+                                    'PB' => 'PB',
+                                    'PR' => 'PR',
+                                    'PE' => 'PE',
+                                    'PI' => 'PI',
+                                    'RJ' => 'RJ',
+                                    'RN' => 'RN',
+                                    'RS' => 'RS',
+                                    'RO' => 'RO',
+                                    'RR' => 'RR',
+                                    'SC' => 'SC',
+                                    'SP' => 'SP',
+                                    'SE' => 'SE',
+                                    'TO' => 'TO'
+                                ])
+                                ->live()->placeholder('-')
+                                ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                                ->searchable()
+                                ->required(),
+
+                            Select::make('city')
+                                ->label('Cidade')->placeholder('-')
+                                ->options(function (Get $get) {
+                                    $state = $get('state');
+                                    if (! $state) {
+                                        return [];
+                                    }
+
+                                    return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
+                                        ->collect()
+                                        ->pluck('nome', 'nome')
+                                        ->toArray();
+                                })
+                                ->searchable()
+                                ->required()
+                                ->disabled(fn(Get $get) => ! $get('state')),
+                        ]),
+
+                        Section::make('Redes Sociais')->collapsed()->collapsible()
+                            ->schema([
+                                Group::make()->columns(2)->schema([
+                                    TextInput::make('instagram')->placeholder('@Instagram'),
+                                    TextInput::make('instagram_followers')->numeric(),
+
+                                    TextInput::make('youtube')->placeholder('@YouTube'),
+                                    TextInput::make('youtube_followers')->numeric(),
+
+                                    TextInput::make('tiktok')->placeholder('@TikTok'),
+                                    TextInput::make('tiktok_followers')->numeric(),
+
+                                    TextInput::make('twitter')->placeholder('@Twitter'),
+                                    TextInput::make('twitter_followers')->numeric(),
+
+                                    TextInput::make('facebook')->placeholder('@Facebook'),
+                                    TextInput::make('facebook_followers')->numeric(),
+                                ]),
+                            ]),
+
+                        Section::make('Tabela de Preços')
+                            ->schema([
+                                Group::make()->columns(2)->schema([
+                                    TextInput::make('reels_price')
+                                        ->label('Reels')
+                                        ->numeric()
+                                        ->inputMode('decimal')
+                                        ->prefix('R$'),
+
+                                    TextInput::make('stories_price')
+                                        ->label('Stories')
+                                        ->numeric()->inputMode('decimal')
+                                        ->prefix('R$'),
+
+                                    TextInput::make('carrousel_price')
+                                        ->label('Carrossel')
+                                        ->numeric()->inputMode('decimal')
+                                        ->prefix('R$'),
+                                ]),
+                            ]),
+                    ]),
+            ])
+            ->visible(fn(Get $get) => $get('role') === 'influencer');
+    }
+
+    public function getMaxContentWidth(): Width
+    {
+        return ($this->data['role'] ?? null) === 'influencer'
+            ? Width::FiveExtraLarge
+            : Width::Medium;
+    }
+
+
     public function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
+        return $schema->components([
+
+            Group::make()->schema([
 
                 FileUpload::make('avatar')
                     ->label('Avatar')
@@ -400,83 +580,27 @@ class EditProfile extends BaseEditProfile
                     ->alignCenter()
                     ->image()
                     ->avatar()
-                    ->circleCropper()
-                    ->imageEditor()
-                    ->imagePreviewHeight('100'),
+                    ->circleCropper(),
 
-                $this->getNameFormComponent(),
-                Textarea::make('bio')->rows(5)->placeholder('Sou Youtuber e Streamer na área da tecnologia...')->required(),
 
-                Section::make()->schema([
 
-                    Section::make('Canais de Mídia Social')
-                        ->description('Atualize o @ do seu perfil e número de seguidores em cada plataforma.')
-                        ->schema([
+                $this->getBaseInfoColumn(),
 
-                            Select::make('subcategories')
-                                ->multiple()
-                                ->label('Categoria')
-                                ->dehydrated(true)
-                                ->options(
-                                    Category::with('subcategories')->get()
-                                        ->mapWithKeys(function ($category) {
-                                            return [
-                                                $category->title => $category->subcategories
-                                                    ->filter(fn ($subcategory) => $subcategory->title !== null)
-                                                    ->pluck('title', 'id')
-                                                    ->toArray(),
-                                            ];
-                                        })
-                                        ->toArray()
-                                ),
 
-                            Group::make()->columns(2)->dehydrated()->statePath('influencer_data')->schema([
-                                Select::make('agency_id')
-                                    ->label('Agência Vinculada')->columnSpan(2)
-                                    ->helperText('Selecione a agência responsável pelo seu perfil.')
-                                    ->searchable()
-                                    ->preload()
-                                    ->getSearchResultsUsing(
-                                        fn (string $search): array => User::query()
-                                            ->where('role', UserRoles::Agency)
-                                            ->where('name', 'ilike', "%{$search}%")
-                                            ->limit(50)
-                                            ->pluck('name', 'id')
-                                            ->toArray()
-                                    )
-                                    ->getOptionLabelUsing(fn ($value): ?string => User::find($value)?->name),
-
-                                Group::make()->columns(2)->schema([
-                                    TextEntry::make('handle_label')->label('@ do Perfil'),
-                                    TextEntry::make('followers_label')->label('Seguidores'),
-                                ])->columnSpan(2),
-
-                                Group::make()->schema([
-                                    TextInput::make('instagram')->hiddenLabel()->placeholder('@ do Instagram'),
-                                    TextInput::make('twitter')->hiddenLabel()->placeholder('@ do Twitter'),
-                                    TextInput::make('youtube')->hiddenLabel()->placeholder('@ do Youtube'),
-                                    TextInput::make('tiktok')->hiddenLabel()->placeholder('@ do TikTok'),
-                                    TextInput::make('facebook')->hiddenLabel()->placeholder('@ do Facebook'),
-                                ]),
-
-                                Group::make()->schema([
-                                    TextInput::make('instagram_followers')->hiddenLabel()->numeric(),
-                                    TextInput::make('twitter_followers')->hiddenLabel()->numeric(),
-                                    TextInput::make('youtube_followers')->hiddenLabel()->numeric(),
-                                    TextInput::make('tiktok_followers')->hiddenLabel()->numeric(),
-                                    TextInput::make('facebook_followers')->hiddenLabel()->numeric(),
-                                ]),
-                            ]),
-                        ]),
-                ])
-                    ->visible(fn (): bool => Auth::user()->role === UserRoles::Influencer),
 
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
+            ]),
 
-            ]);
+
+            $this->getInfluencerColumn()
+        ])->columns(fn() => ($this->data['role'] ?? null) === 'influencer'
+            ? 2
+            : 1);
     }
+
+
 
     // -----------------------------------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------------------
@@ -543,8 +667,8 @@ class EditProfile extends BaseEditProfile
             ->label(__('filament-panels::auth/pages/edit-profile.actions.cancel.label'))
             ->alpineClickHandler(
                 FilamentView::hasSpaMode($url)
-                    ? 'document.referrer ? window.history.back() : Livewire.navigate('.Js::from($url).')'
-                    : 'document.referrer ? window.history.back() : (window.location.href = '.Js::from($url).')',
+                    ? 'document.referrer ? window.history.back() : Livewire.navigate(' . Js::from($url) . ')'
+                    : 'document.referrer ? window.history.back() : (window.location.href = ' . Js::from($url) . ')',
             )
             ->color('gray');
     }
@@ -595,8 +719,8 @@ class EditProfile extends BaseEditProfile
             ->divided()
             ->secondary()
             ->schema(collect(Filament::getMultiFactorAuthenticationProviders())
-                ->sort(fn (MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): int => $multiFactorAuthenticationProvider->isEnabled($user) ? 0 : 1)
-                ->map(fn (MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): Component => Group::make($multiFactorAuthenticationProvider->getManagementSchemaComponents())
+                ->sort(fn(MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): int => $multiFactorAuthenticationProvider->isEnabled($user) ? 0 : 1)
+                ->map(fn(MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): Component => Group::make($multiFactorAuthenticationProvider->getManagementSchemaComponents())
                     ->statePath($multiFactorAuthenticationProvider->getId()))
                 ->all());
     }

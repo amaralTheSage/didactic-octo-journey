@@ -13,19 +13,27 @@ class InfluencerInfo extends Model
         'user_id',
         'agency_id',
         'association_status',
+
+
+        'state',
+        'city',
+
         'instagram',
         'twitter',
         'facebook',
         'youtube',
         'tiktok',
+
         'instagram_followers',
         'twitter_followers',
         'facebook_followers',
         'youtube_followers',
         'tiktok_followers',
+
         'reels_price',
         'stories_price',
         'carrousel_price',
+
     ];
 
     public function agency()

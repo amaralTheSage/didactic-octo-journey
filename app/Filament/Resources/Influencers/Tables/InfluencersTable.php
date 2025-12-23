@@ -47,7 +47,7 @@ class InfluencersTable
                     ->searchable(),
 
                 TextColumn::make('first_category')
-                    ->label('Categoria')
+                    ->label('Categoria')->placeholder('-')
                     ->state(function (Model $record) {
                         return $record->subcategories->first()?->category?->title;
                     })
@@ -76,7 +76,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })

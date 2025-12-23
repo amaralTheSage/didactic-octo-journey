@@ -40,6 +40,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Password;
 use LogicException;
@@ -126,9 +127,11 @@ class Register extends SimplePage
 
         $agency = User::whereId($data['influencer_data']['agency_id'])->first();
 
-        $agency->notify(
-            Notification::make()->title('Convite de associação de '.$user->name)->body('Revise o pedido na página de influenciadores.')->toDatabase()
-        );
+        if ($data['role'] === 'influencer' && isset($agency)) {
+            $agency->notify(
+                Notification::make()->title('Convite de associação de ' . $user->name)->body('Revise o pedido na página de influenciadores.')->toDatabase()
+            );
+        }
 
         event(new Registered($user));
 
@@ -237,14 +240,14 @@ class Register extends SimplePage
                                     ->mapWithKeys(function ($category) {
                                         return [
                                             $category->title => $category->subcategories
-                                                ->filter(fn ($subcategory) => $subcategory->title !== null)
+                                                ->filter(fn($subcategory) => $subcategory->title !== null)
                                                 ->pluck('title', 'id')
                                                 ->toArray(),
                                         ];
                                     })
                                     ->toArray()
                             )->rules([
-                                fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                fn(): Closure => function (string $attribute, $value, Closure $fail) {
                                     $categories = Subcategory::whereIn('id', $value)
                                         ->distinct('category_id')
                                         ->count('category_id');
@@ -263,14 +266,68 @@ class Register extends SimplePage
                                 ->preload()
 
                                 ->getSearchResultsUsing(
-                                    fn (string $search): array => User::query()
+                                    fn(string $search): array => User::query()
                                         ->where('role', UserRoles::Agency)
                                         ->where('name', 'ilike', "%{$search}%")
                                         ->limit(50)
                                         ->pluck('name', 'id')
                                         ->toArray()
                                 )
-                                ->getOptionLabelUsing(fn ($value): ?string => User::find($value)?->name),
+                                ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
+
+                            Select::make('state')
+                                ->label('Estado')
+                                ->options([
+                                    'AC' => 'AC',
+                                    'AL' => 'AL',
+                                    'AP' => 'AP',
+                                    'AM' => 'AM',
+                                    'BA' => 'BA',
+                                    'CE' => 'CE',
+                                    'DF' => 'DF',
+                                    'ES' => 'ES',
+                                    'GO' => 'GO',
+                                    'MA' => 'MA',
+                                    'MT' => 'MT',
+                                    'MS' => 'MS',
+                                    'MG' => 'MG',
+                                    'PA' => 'PA',
+                                    'PB' => 'PB',
+                                    'PR' => 'PR',
+                                    'PE' => 'PE',
+                                    'PI' => 'PI',
+                                    'RJ' => 'RJ',
+                                    'RN' => 'RN',
+                                    'RS' => 'RS',
+                                    'RO' => 'RO',
+                                    'RR' => 'RR',
+                                    'SC' => 'SC',
+                                    'SP' => 'SP',
+                                    'SE' => 'SE',
+                                    'TO' => 'TO'
+                                ])
+                                ->live()->placeholder('-')
+                                ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                                ->searchable()
+                                ->required(),
+
+                            Select::make('city')
+                                ->label('Cidade')->placeholder('-')
+                                ->options(function (Get $get) {
+                                    $state = $get('state');
+                                    if (! $state) {
+                                        return [];
+                                    }
+
+                                    // Busca cidades na API do IBGE no estado selecionado
+                                    return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
+                                        ->collect()
+                                        ->pluck('nome', 'nome')
+                                        ->toArray();
+                                })
+                                ->searchable()
+                                ->required()
+                                ->disabled(fn(Get $get) => ! $get('state')),
 
                             Group::make()->columns(2)->schema([
                                 TextEntry::make('handle_label')->label('@ do Perfil'),
@@ -278,11 +335,11 @@ class Register extends SimplePage
                             ])->columnSpan(2),
 
                             Group::make()->schema([
-                                TextInput::make('instagram')->hiddenLabel()->placeholder('@ do Instagram'),
-                                TextInput::make('twitter')->hiddenLabel()->placeholder('@ do Twitter'),
-                                TextInput::make('youtube')->hiddenLabel()->placeholder('@ do Youtube'),
-                                TextInput::make('tiktok')->hiddenLabel()->placeholder('@ do TikTok'),
-                                TextInput::make('facebook')->hiddenLabel()->placeholder('@ do Facebook'),
+                                TextInput::make('instagram')->hiddenLabel()->prefix('@')->placeholder('Instagram'),
+                                TextInput::make('twitter')->hiddenLabel()->prefix('@')->placeholder('Twitter'),
+                                TextInput::make('youtube')->hiddenLabel()->prefix('@')->placeholder('Youtube'),
+                                TextInput::make('tiktok')->hiddenLabel()->prefix('@')->placeholder('TikTok'),
+                                TextInput::make('facebook')->hiddenLabel()->prefix('@')->placeholder('Facebook'),
                             ])->columnSpan(1),
 
                             Group::make()->schema([
@@ -292,9 +349,30 @@ class Register extends SimplePage
                                 TextInput::make('tiktok_followers')->hiddenLabel()->numeric(),
                                 TextInput::make('facebook_followers')->hiddenLabel()->numeric(),
                             ])->columnSpan(1),
+
+                            Group::make()
+                                ->schema([
+                                    Group::make()->columns(1)->schema([
+                                        TextInput::make('reels_price')
+                                            ->label('Preço de Reels')
+                                            ->numeric()
+                                            ->inputMode('decimal')
+                                            ->prefix('R$'),
+
+                                        TextInput::make('stories_price')
+                                            ->label('Preço de Stories')
+                                            ->numeric()->inputMode('decimal')
+                                            ->prefix('R$'),
+
+                                        TextInput::make('carrousel_price')
+                                            ->label('Preço de Carrossel')
+                                            ->numeric()->inputMode('decimal')
+                                            ->prefix('R$'),
+                                    ]),
+                                ])->columnSpan(2),
                         ]),
                     ])
-                    ->visible(fn (Get $get): bool => $get('role') === 'influencer'),
+                    ->visible(fn(Get $get): bool => $get('role') === 'influencer'),
             ]),
 
             $this->getEmailFormComponent(),
@@ -337,7 +415,7 @@ class Register extends SimplePage
             ->required()
             ->rule(Password::default())
             ->showAllValidationMessages()
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationAttribute(__('filament-panels::auth/pages/register.form.password.validation_attribute'));
     }
@@ -426,7 +504,7 @@ class Register extends SimplePage
             return null;
         }
 
-        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before').' '.$this->loginAction->toHtml());
+        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before') . ' ' . $this->loginAction->toHtml());
     }
 
     public function content(Schema $schema): Schema

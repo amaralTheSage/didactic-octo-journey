@@ -90,9 +90,12 @@ class User extends Authenticatable implements HasAvatar
     //  Filament Stuff
     // --------------------------
 
+
     public function getFilamentAvatarUrl(): ?string
     {
-        return asset('storage/'.$this->avatar);
+        return $this->avatar
+            ? asset('storage/' . $this->avatar)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -101,7 +104,7 @@ class User extends Authenticatable implements HasAvatar
             return null;
         }
 
-        return asset('storage/'.$this->avatar);
+        return asset('storage/' . $this->avatar);
     }
 
     /**

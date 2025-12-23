@@ -2,13 +2,16 @@
 
 namespace App\Actions\Filament;
 
+use App\Services\ChatService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Icons\Heroicon;
 
 class ViewAgencyDetails
 {
@@ -22,10 +25,10 @@ class ViewAgencyDetails
                 Section::make('Detalhes da Agência')
                     ->schema([
                         Group::make()->columns(2)->schema([
-                            ImageEntry::make('avatar')
+                            ImageEntry::make('avatar_url')
                                 ->label('Avatar')
                                 ->circular()
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome'),
@@ -43,6 +46,32 @@ class ViewAgencyDetails
                             ->markdown(),
 
                         Actions::make([
+                            Action::make('newChat')
+                                ->label('Conversar')
+                                ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+                                ->color('secondary')
+                                ->action(function ($record) {
+
+                                    $chat = ChatService::createChat(
+                                        [
+                                            $record->id,
+                                        ]
+
+                                    );
+
+                                    if (is_array($chat) && isset($chat['error'])) {
+                                        Notification::make()
+                                            ->title('Erro')
+                                            ->body($chat['error'])
+                                            ->danger()
+                                            ->send();
+
+                                        return;
+                                    }
+
+                                    return redirect()->route('chats.show', ['chat' => $chat]);
+                                }),
+
                             Action::make('viewInfluencers')
                                 ->label('Ver Influenciadores desta Agência')
                                 ->button()

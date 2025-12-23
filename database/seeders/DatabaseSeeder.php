@@ -21,9 +21,9 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(20).'.jpg';
+            $filename = Str::random(10) . '.jpg';
 
-            $url = 'https://picsum.photos/300/300?random='.Str::random(10);
+            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
 
             $imageData = file_get_contents($url);
 
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
         // COMPANIES
         // -------------------------------------------------------
         $companies = collect();
-        foreach (range(1, 10) as $i) {
+        foreach (range(1, 5) as $i) {
             $companies->push(
                 User::create([
                     'name' => fake()->company(),
@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
         // AGENCIES
         // -------------------------------------------------------
         $agencies = collect();
-        foreach (range(1, 10) as $i) {
+        foreach (range(1, 5) as $i) {
             $agencies->push(
                 User::create([
                     'name' => fake()->company(),
@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder
         // INFLUENCERS
         // -------------------------------------------------------
         $influencers = collect();
-        foreach (range(1, 30) as $i) {
+        foreach (range(1, 20) as $i) {
             $user = User::create([
                 'name' => fake()->name(),
                 'email' => "influencer$i@gmail.com",
@@ -99,6 +99,10 @@ class DatabaseSeeder extends Seeder
             InfluencerInfo::create([
                 'user_id' => $user->id,
                 'agency_id' => $agencies->random()->id,
+
+                'city' => 'Pelotas',
+                'state' => 'RS',
+
                 'instagram' => fake()->userName(),
                 'instagram_followers' => rand(1000, 100000),
                 'association_status' => collect(['approved', 'pending'])->random(),
@@ -114,9 +118,9 @@ class DatabaseSeeder extends Seeder
         // Products
         // -------------------------------------------------------
         $companies->each(function ($company) {
-            foreach (range(1, 5) as $i) {
+            foreach (range(1, 3) as $i) {
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
                     'company_id' => $company->id,
@@ -209,6 +213,40 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        $gabriel = User::create([
+            'name' => 'Gabriel Amaral',
+            'email' => 'gabriel@gmail.com',
+            'avatar' => $createAvatar(),
+            'bio' => fake()->paragraph(),
+            'password' => Hash::make('senha123'),
+            'role' => 'influencer',
+            'email_verified_at' => now(),
+        ]);
+        InfluencerInfo::create([
+            'user_id' => $gabriel->id,
+            'agency_id' => $agenciaA->id,
+            'association_status' => 'approved',
+
+            'city' => 'Pelotas',
+            'state' => 'RS',
+
+            'instagram' => fake()->word() . '_ig',
+            'twitter' => fake()->word() . '_tw',
+            'facebook' => fake()->word() . '_fb',
+            'youtube' => fake()->word() . '_yt',
+            'tiktok' => fake()->word() . '_tt',
+
+            'instagram_followers' => rand(5000, 50000),
+            'twitter_followers' => rand(5000, 50000),
+            'facebook_followers' => rand(5000, 50000),
+            'youtube_followers' => rand(5000, 50000),
+            'tiktok_followers' => rand(5000, 50000),
+
+            'reels_price' => rand(500, 5000),
+            'stories_price' => rand(200, 2000),
+            'carrousel_price' => rand(300, 3000),
+        ]);
+
         $influencerA1 = User::create([
             'name' => '1 Influencer',
             'email' => 'influencer@gmail.com',
@@ -222,6 +260,9 @@ class DatabaseSeeder extends Seeder
             'user_id' => $influencerA1->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
+
+            'city' => 'Pelotas',
+            'state' => 'RS',
 
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
@@ -242,6 +283,9 @@ class DatabaseSeeder extends Seeder
             'agency_id' => $agenciaA->id,
             'association_status' => 'pending',
 
+            'city' => 'Pelotas',
+            'state' => 'RS',
+
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
@@ -254,7 +298,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 5) as $i) {
             $testProducts->push(
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,
@@ -295,7 +339,7 @@ class DatabaseSeeder extends Seeder
 
         $campaignAnnouncements->each(function ($announcement) use ($agencies, $influencers) {
             // Each announcement gets 2-5 proposals from different agencies
-            $numberOfProposals = rand(2, 5);
+            $numberOfProposals = rand(2, 2);
             $selectedAgencies = $agencies->random(min($numberOfProposals, $agencies->count()));
 
             $selectedAgencies->each(function ($agency) use ($announcement, $influencers) {
@@ -307,11 +351,12 @@ class DatabaseSeeder extends Seeder
 
                 $proposal = \App\Models\Proposal::create([
                     'message' => fake()->paragraph(2),
-                    'proposed_agency_cut' => rand(5, 35) + (rand(0, 99) / 100),
+                    'proposed_agency_cut' => rand(5, 10) + (rand(0, 99) / 100),
                     'campaign_announcement_id' => $announcement->id,
                     'agency_id' => $agency->id,
                     'agency_approval' => collect(['pending', 'approved', 'rejected'])->random(),
                     'company_approval' => collect(['pending', 'approved', 'rejected'])->random(),
+                    'status' => collect(['draft', 'approved', 'cancelled', 'finished'])->random(),
                 ]);
 
                 if ($agencyInfluencers->isNotEmpty()) {

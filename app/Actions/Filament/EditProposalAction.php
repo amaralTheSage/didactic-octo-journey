@@ -36,16 +36,16 @@ class EditProposalAction extends Action
     {
         parent::setUp();
 
-        $this->label(fn () => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
+        $this->label(fn() => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
 
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
         $this->groupedIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION_GROUPED) ?? Heroicon::PencilSquare);
 
-        $this->modalHeading(fn () => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
+        $this->modalHeading(fn() => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
 
         $this->modalWidth('lg');
 
-        $this->visible(fn ($livewire) => $livewire->activeTab === 'proposals' && Gate::allows('is_agency'));
+        $this->visible(fn($livewire) => $livewire->activeTab === 'proposals' && Gate::allows('is_agency'));
 
         $this->schema([
 
@@ -53,52 +53,64 @@ class EditProposalAction extends Action
                 ->label('Mensagem')
                 ->rows(4)
                 ->maxLength(1000)
-                ->visible(fn () => Gate::allows('is_agency')),
+                ->visible(fn() => Gate::allows('is_agency')),
 
             Select::make('influencer_ids')
                 ->label('Influenciadores')
                 ->multiple()
                 ->options(
-                    fn () => Auth::user()
+                    fn() => Auth::user()
                         ->influencers()
                         ->pluck('name', 'users.id')
                 )
                 ->searchable()
-                ->visible(fn () => Gate::allows('is_agency')),
+                ->visible(fn() => Gate::allows('is_agency')),
 
             TextInput::make('proposed_agency_cut')
                 ->label('Parcela da Agência (%)')
                 ->numeric()
-                ->minValue(0)
+                ->minValue(0)->placeholder(fn($record) => "{$record->announcement->agency_cut}")
                 ->maxValue(100)
-                ->visible(fn () => Gate::allows('is_agency')),
+                ->visible(fn() => Gate::allows('is_agency')),
 
-            // Select::make('company_approval')
-            //     ->label('Aprovação da Empresa')
-            //     ->options([
-            //         'pending'  => 'Pendente',
-            //         'approved' => 'Aprovado',
-            //         'rejected' => 'Rejeitado',
-            //     ])
-            //     ->visible(fn() => Gate::allows('is_company')),
+            TextInput::make('proposed_budget')
+                ->label('Orçamento Proposto')
+                ->numeric()->placeholder(fn($record) => "{$record->announcement->budget}")
+                ->inputMode('decimal')
+                ->minValue(0)
+                ->prefix('R$')
+                ->visible(fn() => Gate::allows('is_agency')),
 
-            // Select::make('agency_approval')
-            //     ->label('Aprovação da Agência')
-            //     ->options([
-            //         'pending'  => 'Pendente',
-            //         'approved' => 'Aprovado',
-            //         'rejected' => 'Rejeitado',
-            //     ])
-            //     ->visible(fn() => Gate::allows('is_agency')),
+            // _________________________________________________________________________________
+            // ________________________________________________________________________________
+            // _______________________________________________________________________________
 
-            // Select::make('influencer_approval')
-            //     ->label('Aprovação do Influenciador')
-            //     ->options([
-            //         'pending'  => 'Pendente',
-            //         'approved' => 'Aprovado',
-            //         'rejected' => 'Rejeitado',
-            //     ])
-            //     ->visible(fn() => Gate::allows('is_influencer')),
+            Select::make('company_approval')
+                ->label('Aprovação da Empresa')
+                ->options([
+                    'pending'  => 'Pendente',
+                    'approved' => 'Aprovado',
+                    'rejected' => 'Rejeitado',
+                ])
+                ->visible(fn() => Gate::allows('is_company')),
+
+            Select::make('agency_approval')
+                ->label('Aprovação da Agência')
+                ->options([
+                    'pending'  => 'Pendente',
+                    'approved' => 'Aprovado',
+                    'rejected' => 'Rejeitado',
+                ])
+                ->visible(fn() => Gate::allows('is_agency')),
+
+            Select::make('influencer_approval')
+                ->label('Aprovação do Influenciador')
+                ->options([
+                    'pending'  => 'Pendente',
+                    'approved' => 'Aprovado',
+                    'rejected' => 'Rejeitado',
+                ])
+                ->visible(fn() => Gate::allows('is_influencer')),
         ]);
 
         $this->fillForm(function (HasActions&HasSchemas $livewire, Model $record, ?Table $table): array {
