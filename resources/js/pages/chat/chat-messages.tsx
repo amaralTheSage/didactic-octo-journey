@@ -85,9 +85,15 @@ export function ChatMessages({
                         {attachment.size}
                     </p>
                 </div>
-                <button className="rounded-lg p-2 transition-colors hover:bg-background/50">
+                <a
+                    href={attachment.url}
+                    download={attachment.name}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg p-2 transition-colors hover:bg-background/50"
+                >
                     <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
+                </a>
             </div>
         );
     };

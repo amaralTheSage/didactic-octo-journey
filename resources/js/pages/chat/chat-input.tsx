@@ -9,38 +9,33 @@ import type { Attachment } from './types';
 
 interface ChatInputProps {
     chatId: number;
-    onSendMessage?: (content: string, attachments: Attachment[]) => void;
 }
 
 export function ChatInput({ chatId }: ChatInputProps) {
-    const [message, setMessage] = useState('');
-    const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [showAttachMenu, setShowAttachMenu] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [attachments, setAttachments] = useState<Attachment[]>([]);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
-    const { data, setData, processing, errors, reset, submit } = useForm({
+    const { data, setData, submit } = useForm({
         content: '',
+        files: [] as File[],
     });
-
-    useEffect(() => {
-        setData({ content: message });
-    }, [message]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!message.trim() || isSending) return;
+        if (!data.content.trim() && data.files.length === 0) return;
+        if (isSending) return;
 
         setIsSending(true);
 
         submit(store(chatId), {
+            forceFormData: true,
             onSuccess: () => {
-                setMessage('');
+                setData({ content: '', files: [] });
                 setAttachments([]);
-            },
-            onError: (errors) => {
-                console.error('Error sending message:', errors);
             },
             onFinish: () => {
                 setIsSending(false);
@@ -52,20 +47,35 @@ export function ChatInput({ chatId }: ChatInputProps) {
         e: React.ChangeEvent<HTMLInputElement>,
         type: 'image' | 'file',
     ) => {
-        const files = e.target.files;
-        if (files) {
-            const newAttachments: Attachment[] = Array.from(files).map(
-                (file, i) => ({
-                    id: `temp-${Date.now()}-${i}`,
-                    type,
-                    name: file.name,
-                    url: type === 'image' ? URL.createObjectURL(file) : '#',
-                    size: formatFileSize(file.size),
-                }),
-            );
-            setAttachments([...attachments, ...newAttachments]);
-        }
+        const files = Array.from(e.target.files ?? []);
+        if (!files.length) return;
+
+        setData('files', [...data.files, ...files]);
+
+        setAttachments((prev) => [
+            ...prev,
+            ...files.map((file) => ({
+                id: crypto.randomUUID(),
+                type,
+                name: file.name,
+                url: type === 'image' ? URL.createObjectURL(file) : '#',
+                size: formatFileSize(file.size),
+            })),
+        ]);
+
         setShowAttachMenu(false);
+        e.target.value = '';
+    };
+
+    const removeAttachment = (id: string) => {
+        const index = attachments.findIndex((a) => a.id === id);
+        if (index === -1) return;
+
+        setAttachments((prev) => prev.filter((a) => a.id !== id));
+        setData(
+            'files',
+            data.files.filter((_, i) => i !== index),
+        );
     };
 
     const formatFileSize = (bytes: number) => {
@@ -74,9 +84,9 @@ export function ChatInput({ chatId }: ChatInputProps) {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    const removeAttachment = (id: string) => {
-        setAttachments(attachments.filter((a) => a.id !== id));
-    };
+    useEffect(() => {
+        console.log(data);
+    }, [data]);
 
     return (
         <form
@@ -89,7 +99,6 @@ export function ChatInput({ chatId }: ChatInputProps) {
                 }
             }}
         >
-            {/* Attachment Preview */}
             {attachments.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2 rounded-sm p-2">
                     {attachments.map((attachment) => (
@@ -97,9 +106,7 @@ export function ChatInput({ chatId }: ChatInputProps) {
                             {attachment.type === 'image' ? (
                                 <div className="relative aspect-auto h-20 overflow-hidden rounded-lg bg-white">
                                     <img
-                                        src={
-                                            attachment.url || '/placeholder.svg'
-                                        }
+                                        src={attachment.url}
                                         alt={attachment.name}
                                         className="h-full w-full object-cover"
                                     />
@@ -113,6 +120,7 @@ export function ChatInput({ chatId }: ChatInputProps) {
                                 </div>
                             )}
                             <button
+                                type="button"
                                 onClick={() => removeAttachment(attachment.id)}
                                 className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive p-1 text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
                             >
@@ -173,11 +181,9 @@ export function ChatInput({ chatId }: ChatInputProps) {
 
                 <div className="flex flex-1 items-end gap-2 rounded-sm border border-border px-4 py-[9px]">
                     <textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        value={data.content}
+                        onChange={(e) => setData('content', e.target.value)}
                         placeholder="Type a message..."
-                        name="content"
-                        id="content"
                         rows={1}
                         disabled={isSending}
                         className="max-h-32 flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
@@ -185,12 +191,15 @@ export function ChatInput({ chatId }: ChatInputProps) {
                 </div>
 
                 <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={!message.trim() || isSending}
+                    type="submit"
+                    disabled={
+                        (!data.content.trim() && data.files.length === 0) ||
+                        isSending
+                    }
                     className={cn(
                         'cursor-pointer rounded-sm p-2 transition-all',
-                        message.trim() && !isSending
+                        (data.content.trim() || data.files.length > 0) &&
+                            !isSending
                             ? 'text-primary hover:bg-primary/10'
                             : 'text-muted-foreground opacity-50',
                     )}

@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    protected $fillable = ['content', 'user_id', 'chat_id'];
+    protected $fillable = ['content', 'user_id', 'chat_id',    'attachments'];
+
+
+    protected $casts = [
+        'attachments' => 'array',
+    ];
 
     public function sender()
     {
