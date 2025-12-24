@@ -18,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { getTranslatedRole } from '@/lib/utils';
 import type { User } from '@/types';
-import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Loader2, Search, Users } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -30,14 +30,12 @@ export default function AddUsersDialog({
     children: ReactNode;
     chatId: number;
 }) {
-    const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const [users, setUsers] = useState<User[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-
-    const form = useForm({
-        users: [] as number[],
-    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const searchUsers = async (searchTerm: string) => {
         setIsLoading(true);
@@ -60,7 +58,7 @@ export default function AddUsersDialog({
 
     useEffect(() => {
         if (open) {
-            searchUsers(''); // Load initial users when dialog opens
+            searchUsers('');
         }
     }, [open]);
 
@@ -71,32 +69,43 @@ export default function AddUsersDialog({
     }, [search, open]);
 
     const toggleUser = (userId: number) => {
-        if (form.data.users.includes(userId)) {
-            form.setData(
-                'users',
-                form.data.users.filter((id) => id !== userId),
-            );
-        } else {
-            form.setData('users', [...form.data.users, userId]);
-        }
+        setSelectedUsers((prev) =>
+            prev.includes(userId)
+                ? prev.filter((id) => id !== userId)
+                : [...prev, userId],
+        );
     };
+
+    useEffect(() => {
+        console.log(selectedUsers);
+    }, [selectedUsers]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        form.post(`/chats/${chatId}/users`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setOpen(false);
-                form.reset();
-                setSearch('');
-                setUsers([]);
+        setIsSubmitting(true);
+
+        router.post(
+            `/chats/${chatId}/users`,
+            { users: selectedUsers },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setIsSubmitting(false);
+                },
+                onSuccess: () => {
+                    setOpen(false);
+                    setSelectedUsers([]);
+                    setSearch('');
+                    setUsers([]);
+                },
             },
-        });
+        );
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
+
             <DialogContent className="gap-0 border-border p-0 sm:max-w-[480px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader className="px-6 pt-6 pb-4">
@@ -142,21 +151,26 @@ export default function AddUsersDialog({
                                 </p>
                             </div>
                         ) : (
-                            <div className="divide-y">
+                            <div className="">
                                 {users.map((user) => {
-                                    const isSelected = form.data.users.includes(
+                                    const isSelected = selectedUsers.includes(
                                         user.id,
                                     );
+
                                     return (
                                         <div
                                             key={user.id}
-                                            className={`flex cursor-pointer items-center gap-4 border-b border-border px-6 py-3 transition-colors hover:bg-muted/50 ${
-                                                isSelected ? 'bg-muted/30' : ''
+                                            className={`flex items-center gap-4 border-b border-border px-6 py-3 transition-colors ${
+                                                isSelected
+                                                    ? 'bg-muted/30'
+                                                    : 'hover:bg-muted/50'
                                             }`}
-                                            onClick={() => toggleUser(user.id)}
                                         >
                                             <Checkbox
                                                 checked={isSelected}
+                                                onCheckedChange={() =>
+                                                    toggleUser(user.id)
+                                                }
                                                 className="shrink-0"
                                             />
 
@@ -175,7 +189,7 @@ export default function AddUsersDialog({
                                             </Avatar>
 
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate text-sm leading-none font-medium">
+                                                <p className="truncate text-sm font-medium">
                                                     {user.name}
                                                 </p>
                                                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -198,37 +212,29 @@ export default function AddUsersDialog({
 
                     <div className="flex items-center justify-between gap-4 px-6 py-4">
                         <p className="text-sm text-muted-foreground">
-                            {form.data.users.length > 0
-                                ? `${form.data.users.length} selecionado(s)`
+                            {selectedUsers.length > 0
+                                ? `${selectedUsers.length} selecionado(s)`
                                 : 'Nenhum selecionado'}
                         </p>
-
-                        {form.errors.users && (
-                            <p className="text-sm text-destructive">
-                                {form.errors.users}
-                            </p>
-                        )}
 
                         <div className="flex items-center gap-2">
                             <DialogClose asChild>
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    disabled={form.processing}
+                                    disabled={isSubmitting}
                                 >
                                     Cancelar
                                 </Button>
                             </DialogClose>
+
                             <Button
                                 type="submit"
                                 disabled={
-                                    form.processing ||
-                                    form.data.users.length === 0
+                                    isSubmitting || selectedUsers.length === 0
                                 }
                             >
-                                {form.processing
-                                    ? 'Adicionando...'
-                                    : 'Adicionar'}
+                                {isSubmitting ? 'Adicionando...' : 'Adicionar'}
                             </Button>
                         </div>
                     </div>
