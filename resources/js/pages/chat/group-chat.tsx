@@ -1,47 +1,20 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { ChatHeader } from './chat-header';
 import { ChatInfoPanel } from './chat-info-panel';
 import { ChatInput } from './chat-input';
 import { ChatMessages } from './chat-messages';
-import type { Attachment, ChatType } from './types';
-
+import type { ChatType, Message } from './types';
 export function GroupChat({
     chat,
     sidebarOpen,
     onToggleSidebar,
 }: {
+    chat: ChatType;
     sidebarOpen: boolean;
     onToggleSidebar: () => void;
-    allChats?: ChatType[];
 }) {
     const [infoPanelOpen, setInfoPanelOpen] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    console.log(chat);
-    const messages = chat.messages ?? [];
-    const users = chat.users ?? [];
-
-    const handleSendMessage = (content: string, attachments: Attachment[]) => {
-        console.log(content);
-        // const newMessage: Message = {
-        //     id: Date.now().toString(),
-        //     userId: '1', // current user
-        //     content,
-        //     timestamp: new Date(),
-        //     attachments: attachments.length ? attachments : undefined,
-        // };
-
-        // // optimistic update (adjust if using API)
-        // chat.messages.push(newMessage);
-
-        // setTimeout(() => {
-        //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        // }, 100);
-    };
-
-    const handleUpdateConversation = (updates: Partial<ChatType>) => {
-        Object.assign(chat, updates);
-    };
+    const [messages, setMessages] = useState<Message[]>(chat.messages ?? []);
 
     return (
         <div className="flex h-screen w-full">
@@ -55,18 +28,17 @@ export function GroupChat({
 
                 <ChatMessages
                     messages={messages}
-                    users={users}
-                    messagesEndRef={messagesEndRef}
+                    setMessages={setMessages}
+                    users={chat.users ?? []}
                 />
 
-                <ChatInput chatId={chat.id} onSendMessage={handleSendMessage} />
+                <ChatInput chatId={chat.id} setMessages={setMessages} />
             </div>
 
             <ChatInfoPanel
                 chat={chat}
                 isOpen={infoPanelOpen}
                 onClose={() => setInfoPanelOpen(false)}
-                onUpdateConversation={handleUpdateConversation}
             />
         </div>
     );

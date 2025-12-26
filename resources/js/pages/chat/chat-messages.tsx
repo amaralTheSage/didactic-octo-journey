@@ -3,8 +3,8 @@ import type React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, getTranslatedRole } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
-import { Download, FileText, Maximize2, X } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Download, FileText, Loader2, Maximize2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import type { Attachment, Message, User } from './types';
 
 import {
@@ -12,34 +12,66 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useEchoPublic } from '@laravel/echo-react';
+import { ReactFormState } from 'react-dom/client';
 
 interface ChatMessagesProps {
-    messages: Message[];
+    messages: Message[] & { is_sending: boolean };
     users: User[];
-    messagesEndRef: React.RefObject<HTMLDivElement | null>;
+    setMessages: React.Dispatch<ReactFormState>;
+}
+
+interface MessageWithStatus extends Message {
+    is_sending?: boolean;
 }
 
 export function ChatMessages({
     messages,
+    setMessages,
     users,
-    messagesEndRef,
 }: ChatMessagesProps) {
     const { auth } = usePage().props as any;
     const currentUserId = String(auth.user.id);
-
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+        });
+    }, [messages]);
+
+    useEchoPublic<{ message: Message }>(
+        'messages',
+        'MessageSent',
+        ({ message }) => {
+            console.log('PAYLOAD: ', message);
+
+            setMessages((prev) => {
+                const tempIndex = prev.findIndex(
+                    (m) =>
+                        m.is_sending &&
+                        m.user_id === message.user_id &&
+                        m.content === message.content,
+                );
+
+                if (tempIndex !== -1) {
+                    const copy = [...prev];
+                    copy[tempIndex] = { ...message, is_sending: false };
+                    return copy;
+                }
+
+                if (prev.some((m) => m.id === message.id)) {
+                    return prev;
+                }
+
+                return [...prev, { ...message, is_sending: false }];
+            });
+        },
+    );
     const getUser = (user_id: string | number) =>
         users.find((u) => String(u.id) === String(user_id));
-
-    const formatTime = (date: Date | string) => {
-        const d = typeof date === 'string' ? new Date(date) : date;
-
-        return d.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-        });
-    };
 
     const renderAttachment = (attachment: Attachment) => {
         if (attachment.type === 'image') {
@@ -161,11 +193,10 @@ export function ChatMessages({
                                             <TooltipContent
                                                 side="right"
                                                 align="end"
-                                                color=""
                                                 className={`${isCurrentUser && 'bg-secondary text-white'}`}
                                                 arrowClasses={`${isCurrentUser && 'bg-secondary fill-secondary'}`}
                                             >
-                                                {getTranslatedRole(user.role)}
+                                                {getTranslatedRole(user?.role)}
                                             </TooltipContent>
                                         </Tooltip>
                                     </div>
@@ -180,24 +211,36 @@ export function ChatMessages({
                                                 : 'rounded-bl-md bg-secondary text-secondary-foreground',
                                         )}
                                     >
-                                        {message.content}
+                                        <div className="relative flex items-center gap-2">
+                                            <span>{message.content}</span>
+                                            {isCurrentUser && (
+                                                <span className="relative top-2 left-2 inline-flex shrink-0">
+                                                    {message.is_sending ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin opacity-70" />
+                                                    ) : (
+                                                        <Check className="h-3 w-3 opacity-70" />
+                                                    )}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 
-                                {message.attachments?.length > 0 && (
-                                    <div
-                                        className={cn(
-                                            'mt-2 flex flex-wrap gap-2',
-                                            isCurrentUser
-                                                ? 'justify-end'
-                                                : 'justify-start',
-                                        )}
-                                    >
-                                        {message.attachments?.map(
-                                            renderAttachment,
-                                        )}
-                                    </div>
-                                )}
+                                {message.attachments &&
+                                    message.attachments.length > 0 && (
+                                        <div
+                                            className={cn(
+                                                'mt-2 flex flex-wrap gap-2',
+                                                isCurrentUser
+                                                    ? 'justify-end'
+                                                    : 'justify-start',
+                                            )}
+                                        >
+                                            {message.attachments.map(
+                                                renderAttachment,
+                                            )}
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     );
@@ -226,3 +269,6 @@ export function ChatMessages({
         </>
     );
 }
+
+// Export setter for parent component
+export { type MessageWithStatus };

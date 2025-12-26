@@ -2,16 +2,20 @@ import type React from 'react';
 
 import { store } from '@/actions/App/Http/Controllers/MessageController';
 import { cn } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
+import { SharedData } from '@/types';
+import { useForm, usePage } from '@inertiajs/react';
 import { FileText, Image, Paperclip, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Attachment } from './types';
 
 interface ChatInputProps {
     chatId: number;
+    setMessages: any;
 }
 
-export function ChatInput({ chatId }: ChatInputProps) {
+export function ChatInput({ chatId, setMessages }: ChatInputProps) {
+    const { props } = usePage<SharedData>();
+
     const [showAttachMenu, setShowAttachMenu] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -27,18 +31,25 @@ export function ChatInput({ chatId }: ChatInputProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!data.content.trim() && data.files.length === 0) return;
-        if (isSending) return;
 
-        setIsSending(true);
+        const tempId = `temp-${crypto.randomUUID()}`;
+
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: tempId,
+                chat_id: chatId,
+                user_id: props.auth.user.id,
+                content: data.content,
+                attachments: [],
+                is_sending: true,
+            },
+        ]);
 
         submit(store(chatId), {
             forceFormData: true,
             onSuccess: () => {
                 setData({ content: '', files: [] });
-                setAttachments([]);
-            },
-            onFinish: () => {
-                setIsSending(false);
             },
         });
     };
@@ -83,10 +94,6 @@ export function ChatInput({ chatId }: ChatInputProps) {
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
-
-    useEffect(() => {
-        console.log(data);
-    }, [data]);
 
     return (
         <form

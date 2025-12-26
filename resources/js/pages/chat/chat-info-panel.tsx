@@ -44,10 +44,7 @@ export function ChatInfoPanel({ chat, isOpen, onClose }: ChatInfoPanelProps) {
         description: chat.description || '',
     });
 
-    useEffect(() => {
-        console.log('IMAGE: ', form.data.image);
-        console.log(form.data.image instanceof File);
-    }, [form.data]);
+
 
     const handleSaveNameAndDescription = () => {
         form.submit(update({ chat: chat.id }));

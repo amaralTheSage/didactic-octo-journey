@@ -76,10 +76,6 @@ export default function AddUsersDialog({
         );
     };
 
-    useEffect(() => {
-        console.log(selectedUsers);
-    }, [selectedUsers]);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
