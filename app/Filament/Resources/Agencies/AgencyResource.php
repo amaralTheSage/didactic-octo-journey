@@ -26,7 +26,9 @@ class AgencyResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
 
-    protected static string|UnitEnum|null $navigationGroup = 'grupo_nome';
+    protected static string|UnitEnum|null $navigationGroup = 'Mídia';
+
+    protected static ?int $navigationSort = 3;
 
     public static function getEloquentQuery(): Builder
     {

@@ -29,7 +29,7 @@ class ChatAction extends Action
         $this->defaultColor('secondary');
         $this->tableIcon(icon: Heroicon::OutlinedChatBubbleLeftEllipsis);
 
-        $this->modalHeading(fn (User $record) => "Chat com {$record->name}");
+        $this->modalHeading(fn(User $record) => "Chat com {$record->name}");
         $this->modalDescription('Deseja iniciar uma nova conversa ou continuar uma conversa existente?');
         $this->modalSubmitAction(false);
         $this->modalCancelAction(false);
@@ -55,14 +55,14 @@ class ChatAction extends Action
                             return;
                         }
 
-                        return redirect()->route('chats.show', ['chat' => $chat]);
+                        return route('chats.show', ['chat' => $chat]);
                     }),
 
                 Action::make('viewChats')
                     ->label('Ver todas conversas')
                     ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('gray')
-                    ->action(fn () => redirect()->route('chats.index')),
+                    ->color('gray')->openUrlInNewTab()
+                    ->action(fn() => route('chats.index')),
             ];
         });
 

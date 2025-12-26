@@ -38,19 +38,8 @@ class CompaniesTable
                 //
             ])
             ->recordActions([
-                //   ChatAction::make(),
-                // Action::make('viewCampaigns')
-                //     ->label('Campanhas')
-                //     ->icon('heroicon-o-presentation-chart-line')
-                //     ->url(fn($record) => route('filament.admin.resources.agency-campaigns.index', [
-                //         'search' => $record->name,
-                //     ]))->visible(
-                //         fn(Model $record) => $record->campaigns()
-                //             ->where('agency_id', Auth::id())
-                //             ->exists()
-                //     ),
-                ViewCompanyDetails::make(),
-                ChatAction::make(),
+                ViewCompanyDetails::make()->hiddenLabel(),
+                ChatAction::make()->hiddenLabel(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

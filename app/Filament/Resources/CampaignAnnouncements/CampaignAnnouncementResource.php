@@ -29,7 +29,8 @@ class CampaignAnnouncementResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartLine;
 
-    protected static string|UnitEnum|null $navigationGroup = 'grupo_nome';
+    protected static ?int $navigationSort = 1;
+
 
     public static function getEloquentQuery(): Builder
     {

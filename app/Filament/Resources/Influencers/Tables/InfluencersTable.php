@@ -39,23 +39,53 @@ class InfluencersTable
         return $table
             ->columns([
                 ImageColumn::make('avatar_url')
-                    ->label('')
+                    ->label('Nome')
                     ->circular(),
-                TextColumn::make('name')->label('Nome')
+                TextColumn::make('name')->label(' ')
                     ->searchable(),
                 TextColumn::make('influencer_info.agency.name')->label('Agência')->default('___')
                     ->searchable(),
 
-                TextColumn::make('first_category')
-                    ->label('Categoria')->placeholder('-')
+                TextColumn::make('subcategories')
+                    ->label('Subcategorias')
+                    ->placeholder('-')
+                    ->badge()->listWithLineBreaks()
+                    ->limitList(1)
+                    ->expandableLimitedList()
                     ->state(function (Model $record) {
-                        return $record->subcategories->first()?->category?->title;
+                        return $record->subcategories->pluck('title')->toArray();
                     })
-                    ->badge()
-                    ->sortable()
-                    ->tooltip(function (Model $record): string {
-                        return $record->subcategories->pluck('title')->join(', ');
-                    }),
+                    ->tooltip(
+                        fn(Model $record) =>
+                        $record->subcategories->pluck('title')->join(', ')
+                    )
+                    ->sortable(false)
+                    ->wrap(),
+
+                TextColumn::make('total_followers')
+                    ->label('Seguidores (Total)')
+                    ->state(function ($record) {
+                        $info = $record->influencer_info;
+                        if (! $info) {
+                            return 0;
+                        }
+
+                        return collect([
+                            $info->instagram_followers,
+                            $info->youtube_followers,
+                            $info->tiktok_followers,
+                            $info->twitter_followers,
+                            $info->facebook_followers,
+                        ])->sum();
+                    })
+                    ->numeric(),
+
+                TextColumn::make('influencer_info.city')
+                    ->label('Cidade / UF')
+                    ->placeholder('-')
+                    ->searchable()->description(fn($record) => $record->influencer_info->state),
+
+
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -87,8 +117,8 @@ class InfluencersTable
                             ->body('Vínculo com influenciador criado com sucesso.')
                     ),
 
-                ChatAction::make(),
-                ViewInfluencerDetails::make(),
+                ChatAction::make()->hiddenLabel(),
+                ViewInfluencerDetails::make()->hiddenLabel(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -31,15 +31,12 @@ class ViewAgencyDetails
                                 ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
-                                ->label('Nome'),
+                                ->label('Nome')->columnSpan(2),
                         ]),
                         TextEntry::make('role')->hiddenLabel()
                             ->badge()->alignRight()
                             ->color('success'),
-                        TextEntry::make('email')
-                            ->label('Email')
-                            ->copyable()
-                            ->icon('heroicon-o-envelope'),
+
                         TextEntry::make('bio')
                             ->label('Bio')
                             ->columnSpanFull()
@@ -69,7 +66,7 @@ class ViewAgencyDetails
                                         return;
                                     }
 
-                                    return redirect()->route('chats.show', ['chat' => $chat]);
+                                    return route('chats.show', ['chat' => $chat]);
                                 }),
 
                             Action::make('viewInfluencers')

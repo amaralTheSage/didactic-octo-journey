@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
 use App\Models\Proposal;
+use Asmit\ResizedColumn\HasResizableColumn;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 class ListCampaignAnnouncements extends ListRecords
 {
+
     protected static string $resource = CampaignAnnouncementResource::class;
 
     public ?string $activeTab = 'announcements';

@@ -80,54 +80,6 @@ class DatabaseSeeder extends Seeder
                 ])
             );
         }
-
-        // -------------------------------------------------------
-        // INFLUENCERS
-        // -------------------------------------------------------
-        $influencers = collect();
-        foreach (range(1, 20) as $i) {
-            $user = User::create([
-                'name' => fake()->name(),
-                'email' => "influencer$i@gmail.com",
-                'bio' => fake()->paragraph(),
-                'avatar' => $createAvatar(),
-                'password' => Hash::make('senha123'),
-                'role' => 'influencer',
-                'email_verified_at' => now(),
-            ]);
-
-            InfluencerInfo::create([
-                'user_id' => $user->id,
-                'agency_id' => $agencies->random()->id,
-
-                'city' => 'Pelotas',
-                'state' => 'RS',
-
-                'instagram' => fake()->userName(),
-                'instagram_followers' => rand(1000, 100000),
-                'association_status' => collect(['approved', 'pending'])->random(),
-
-                'reels_price' => rand(500, 5000),
-                'stories_price' => rand(200, 2000),
-                'carrousel_price' => rand(300, 3000),
-            ]);
-            $influencers->push($user);
-        }
-
-        // -------------------------------------------------------
-        // Products
-        // -------------------------------------------------------
-        $companies->each(function ($company) {
-            foreach (range(1, 3) as $i) {
-                Product::create([
-                    'name' => fake()->colorName() . ' ' . fake()->streetName,
-                    'description' => "Description for product {$i} from {$company->name}.",
-                    'price' => rand(10, 500),
-                    'company_id' => $company->id,
-                ]);
-            }
-        });
-
         // -------------------------------------------------------
         // Categories
         // -------------------------------------------------------
@@ -176,6 +128,7 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
+
         $categories = collect();
         foreach ($categoriesData as $categoryName => $subcategories) {
             $category = Category::create(['title' => $categoryName]);
@@ -189,6 +142,67 @@ class DatabaseSeeder extends Seeder
 
             $categories->push($category);
         }
+
+
+
+        // -------------------------------------------------------
+        // INFLUENCERS
+        // -------------------------------------------------------
+        $allSubcategories = Subcategory::all();
+
+        $influencers = collect();
+        foreach (range(1, 20) as $i) {
+            $user = User::create([
+                'name' => fake()->name(),
+                'email' => "influencer$i@gmail.com",
+                'bio' => fake()->paragraph(),
+                'avatar' => $createAvatar(),
+                'password' => Hash::make('senha123'),
+                'role' => 'influencer',
+                'email_verified_at' => now(),
+            ]);
+
+            $user->subcategories()->attach(
+                $allSubcategories->random(rand(1, 3))->pluck('id')
+            );
+
+            InfluencerInfo::create([
+                'user_id' => $user->id,
+                'agency_id' => $agencies->random()->id,
+
+                'city' => 'Pelotas',
+                'state' => 'RS',
+
+                'instagram' => fake()->userName(),
+                'instagram_followers' => rand(1000, 100000),
+                'association_status' => collect(['approved', 'pending'])->random(),
+
+                'reels_price' => rand(500, 5000),
+                'stories_price' => rand(200, 2000),
+                'carrousel_price' => rand(300, 3000),
+            ]);
+            $influencers->push($user);
+        }
+
+
+
+
+
+        // -------------------------------------------------------
+        // Products
+        // -------------------------------------------------------
+        $companies->each(function ($company) {
+            foreach (range(1, 3) as $i) {
+                Product::create([
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
+                    'description' => "Description for product {$i} from {$company->name}.",
+                    'price' => rand(10, 500),
+                    'category_id' => '1',
+
+                    'company_id' => $company->id,
+                ]);
+            }
+        });
 
         // -------------------------------------------------------
         // MANUAL TEST USERS
@@ -294,6 +308,8 @@ class DatabaseSeeder extends Seeder
         // -------------------------------------------------------
         // Products for Test Company
         // -------------------------------------------------------
+
+
         $testProducts = collect();
         foreach (range(1, 5) as $i) {
             $testProducts->push(
@@ -302,6 +318,7 @@ class DatabaseSeeder extends Seeder
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,
+                    'category_id' => $categories->random()->id,
                 ])
             );
         }

@@ -27,7 +27,7 @@ class CompanyResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
-    protected static string|UnitEnum|null $navigationGroup = 'grupo_nome';
+    protected static string|UnitEnum|null $navigationGroup = 'Mídia';
 
     public static function getEloquentQuery(): Builder
     {

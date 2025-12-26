@@ -67,7 +67,7 @@ class ViewProposal
 
                         TextEntry::make('proposed_agency_cut')
                             ->label('Porcentagem Proposta')
-                            ->suffix('%')
+                            ->suffix('%')->placeholder('-')
                             ->weight(FontWeight::Bold),
 
                         TextEntry::make('proposed_budget')

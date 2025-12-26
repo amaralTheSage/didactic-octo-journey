@@ -25,8 +25,9 @@ class InfluencerResource extends Resource
 
     protected static ?string $modelLabel = 'Influenciadores';
 
-    protected static string|UnitEnum|null $navigationGroup = 'grupo_nome';
+    protected static string|UnitEnum|null $navigationGroup = 'Mídia';
 
+    protected static ?int $navigationSort = 4;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;
 
     public static function getEloquentQuery(): Builder

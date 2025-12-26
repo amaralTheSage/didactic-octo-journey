@@ -15,6 +15,7 @@ class CampaignAnnouncement extends Model
         'budget',
         'agency_cut',
         'category_id',
+        'announcement_status'
     ];
 
     protected $with = ['proposals'];
