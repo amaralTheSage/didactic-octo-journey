@@ -41,7 +41,6 @@ jobs:
 
     - name: "Restarts reverb"
       run: |
-        php artisan optimize:clear &&
         php artisan reverb:restart
 
     - name: "Build front-end"
