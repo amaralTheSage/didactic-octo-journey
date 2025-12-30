@@ -19,6 +19,11 @@ jobs:
       with:
         node-version: '22.19.0'
         cache: 'npm'
+        
+    - name: Check SSH reachability
+      run: |
+        echo ${{ secrets.SSH_HOST }}
+
 
     - name: Setup php
       uses: shivammathur/setup-php@v2
