@@ -19,7 +19,7 @@ jobs:
       with:
         node-version: '22.19.0'
         cache: 'npm'
-
+        
     - name: Setup php
       uses: shivammathur/setup-php@v2
       with:
@@ -38,6 +38,10 @@ jobs:
       run: |
         composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
         npm ci
+    
+   # - name: "Restarts reverb"
+ #     run: |
+    #    php artisan reverb:restart
 
     - name: "Build front-end"
       uses: nick-fields/retry@v3

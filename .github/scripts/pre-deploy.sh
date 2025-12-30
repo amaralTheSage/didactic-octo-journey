@@ -10,8 +10,8 @@ php artisan down || true
 echo "::notice::cleaning cache..."
 php artisan optimize:clear
 
-echo "::notice::Stops Reverb"
-php artisan reverb:stop
+echo "::notice::Restart Reverb"
+php artisan reverb:restart
 
 echo "::endgroup::"
 
