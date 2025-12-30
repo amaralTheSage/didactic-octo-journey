@@ -17,7 +17,6 @@ php artisan storage:unlink
 php artisan storage:link
 
 echo "::notice::Starts Reverb"
-php artisan reverb:restart
 php artisan reverb:start
 
 echo "::endgroup::"
