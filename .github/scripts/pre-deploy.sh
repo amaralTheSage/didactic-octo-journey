@@ -10,9 +10,6 @@ php artisan down || true
 echo "::notice::cleaning cache..."
 php artisan optimize:clear
 
-echo "::notice::Restart Reverb"
-php artisan reverb:restart
-
 echo "::endgroup::"
 
 echo "::notice::pre-deploy script was a success!"
