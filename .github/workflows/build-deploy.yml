@@ -51,7 +51,7 @@ jobs:
         command: |
           VITE_APP_NAME=HubInflu \
           VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
-          VITE_REVERB_HOST=${{ secrets.REVERB_HOST }} \
+          VITE_REVERB_HOST=${{ secrets.REVERB_HOST }}/app \
           VITE_REVERB_PORT=${{ secrets.REVERB_PORT }} \
           VITE_REVERB_SCHEME=${{ secrets.REVERB_SCHEME }} \
           npm run build
