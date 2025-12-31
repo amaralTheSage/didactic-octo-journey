@@ -14,7 +14,6 @@ class ViewCampaignAnnouncement extends ViewRecord
     {
         return [
             EditAction::make(),
-
         ];
     }
 }

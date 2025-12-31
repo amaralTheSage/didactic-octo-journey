@@ -222,6 +222,18 @@ body {
     @apply border-border bg-card;
 }
 
+.fi-ac-icon-btn-group {
+    @apply !bg-background;
+}
+
+.fi-ac-grouped-action {
+    @apply !bg-card;
+}
+
+.fi-icon {
+    @apply !bg-none !text-secondary;
+}
+
 .fi-simple-main {
     @apply bg-background;
 }

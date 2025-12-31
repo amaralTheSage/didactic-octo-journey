@@ -3,13 +3,23 @@
 namespace App\Actions\Filament;
 
 use App\Models\User;
+use App\UserRoles;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\CheckboxColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -26,8 +36,7 @@ class ProposeAction extends Action
         parent::setUp();
 
         $this->label('Me Interesso');
-        $this->color('success');
-        $this->icon('heroicon-o-hand-raised');
+        $this->color('secondary');
 
         $this->button();
 
@@ -41,7 +50,9 @@ class ProposeAction extends Action
         $this->modalHeading('Enviar Proposta');
         $this->modalDescription(fn($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
-        $this->modalWidth('lg');
+        $this->modalWidth('2xl');
+
+
 
         $this->schema([
             Textarea::make('message')
@@ -50,74 +61,104 @@ class ProposeAction extends Action
                 ->rows(4)
                 ->maxLength(1000),
 
-            Select::make('influencer_ids')
-                ->label('Influenciadores')
+            Select::make('filter_influencers')
+                ->label('Selecionar Influenciadores')
                 ->multiple()
                 ->options(
-                    fn() => Auth::user()
-                        ->influencers()->where('association_status', 'approved')
-                        ->pluck('name', 'users.id')
+                    function () {
+                        return Auth::user()
+                            ->influencers()
+                            ->where('association_status', 'approved')
+                            ->pluck('name', 'users.id');
+                    }
                 )
-                ->searchable()->reactive()
+                ->searchable()
+                ->live()
                 ->visible(fn() => Gate::allows('is_agency')),
 
+            Repeater::make('influencer_ids')
+                ->label('Influenciadores')
+                ->addable(false)
+                ->deletable(false)
+                ->reorderable(false)
+                ->table([
+                    TableColumn::make('Nome'),
+                    TableColumn::make('Reels'),
+                    TableColumn::make('Stories'),
+                    TableColumn::make('Carrossel'),
+                ])
+                ->compact()->live()
+                ->default(function (Get $get) {
+                    $filterIds = $get('filter_influencers') ?? [];
 
+                    Log::info('Filter IDs:', ['ids' => $filterIds]);
 
-            TextEntry::make('influencer_pricing')
-                ->hiddenLabel()
-                ->state(function ($get) {
-                    $influencerIds = $get('influencer_ids');
-
-                    if (empty($influencerIds)) {
-                        return null;
+                    if (empty($filterIds)) {
+                        return [];
                     }
 
-                    $influencers = User::with('influencer_info')
-                        ->whereIn('id', $influencerIds)
-                        ->get();
-
-                    $content = '';
-                    $content .= "<div class='fi-card flex gap-2'>";
-                    foreach ($influencers as $influencer) {
-                        $info = $influencer->influencer_info;
-                        $content .= '<div>';
-                        $content .= "<strong>{$influencer->name}</strong><br>";
-                        $content .= 'Reels: R$ ' . number_format($info->reels_price ?? 0, 2, ',', '.') . '<br>';
-                        $content .= 'Stories: R$ ' . number_format($info->stories_price ?? 0, 2, ',', '.') . '<br>';
-                        $content .= 'Carrousel: R$ ' . number_format($info->carrousel_price ?? 0, 2, ',', '.') . '<br>';
-                        $content .= 'Comissão: ' . number_format($info->commission_cut, 2, ',', '.') . '%';
-                        $content .= '</div>';
-                    }
-                    $content .= '</div>';
-
-                    return new \Illuminate\Support\HtmlString($content);
+                    return Auth::user()
+                        ->influencers()
+                        ->with('influencer_info')
+                        ->select('users.id', 'users.name')
+                        ->whereIn('users.id', $filterIds) // Only show selected ones
+                        ->get()
+                        ->map(fn($influencer) => [
+                            'user_id'         => $influencer->id,
+                            'name'            => $influencer->name,
+                            'stories_price'   => $influencer->influencer_info->stories_price,
+                            'reels_price'     => $influencer->influencer_info->reels_price,
+                            'carrousel_price' => $influencer->influencer_info->carrousel_price,
+                        ])
+                        ->toArray();
                 })
-                ->visible(fn() => Gate::allows('is_agency')),
+                ->schema([
+                    Hidden::make('user_id'),
 
-            TextInput::make('proposed_agency_cut')
-                ->label('Proposta de Parcela da Agência')
-                ->suffix('%')
-                ->numeric()
-                ->inputMode('decimal')
-                ->minValue(0)->placeholder(fn($record) => "{$record->agency_cut}")
-                ->maxValue(100)
-                ->default(fn($record) => $record->agency_cut)
-                ->helperText(fn($record) => "Parcela original: {$record->agency_cut}%"),
+                    TextEntry::make('name')
+                        ->label('Nome'),
 
-            TextInput::make('proposed_budget')
-                ->label('Orçamento Proposto')
-                ->numeric()->placeholder(fn($record) => "{$record->budget}")
-                ->inputMode('decimal')
-                ->minValue(0)
-                ->prefix('R$')
-                ->default(fn($record) => $record->budget)
-                ->helperText(fn($record) => "Orçamento original: R$ {$record->budget}"),
+                    TextEntry::make('reels_price')
+                        ->label('Reels')
+                        ->money('BRL'),
+
+                    TextEntry::make('stories_price')
+                        ->label('Stories')
+                        ->money('BRL'),
+
+                    TextEntry::make('carrousel_price')
+                        ->label('Carrossel')
+                        ->money('BRL'),
+                ])
+                ->reactive(),
+
+
+
+            Group::make([
+                TextInput::make('proposed_agency_cut')
+                    ->label('Proposta de Parcela da Agência')
+                    ->suffix('%')
+                    ->numeric()
+                    ->inputMode('decimal')
+                    ->minValue(0)->placeholder(fn($record) => "{$record->agency_cut}")
+                    ->maxValue(100)
+                    ->default(fn($record) => $record->agency_cut)
+                    ->helperText(fn($record) => "Parcela original: {$record->agency_cut}%"),
+
+                TextInput::make('proposed_budget')
+                    ->label('Orçamento Proposto')->disabled()
+                    ->numeric()->placeholder(fn($record) => "{$record->budget}")
+                    ->inputMode('decimal')
+                    ->minValue(0)
+                    ->prefix('R$')
+                    ->default(fn($record) => $record->budget)
+                    ->helperText(fn($record) => "Orçamento original: R$ {$record->budget}"),
+            ])->columns(2)
         ]);
 
         $this->action(function ($record, array $data) {
             try {
-                $influencerIds = $data['influencer_ids'] ?? [];
-                unset($data['influencer_ids']);
+
 
                 $proposal = $record->proposals()->create([
                     'campaign_announcement_id' => $record->id,
@@ -128,6 +169,15 @@ class ProposeAction extends Action
                     'proposed_budget' => $data['proposed_budget'],
 
                 ]);
+
+                $influencerIds = collect($data['influencer_ids'] ?? [])
+                    ->pluck('user_id')
+                    ->values()
+                    ->toArray();
+
+                dd($influencerIds);
+
+                unset($data['influencer_ids']);
 
                 $proposal->influencers()->sync($influencerIds);
 

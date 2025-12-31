@@ -85,38 +85,15 @@ class CampaignAnnouncementInfolist
 
                             Actions::make([
 
-                                Action::make('newChat')
-                                    ->label('Conversar')
-                                    ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
-                                    ->color('secondary')
-                                    ->action(function ($record) {
-
-                                        $chat = ChatService::createChat(
-                                            [
-                                                $record->company->id,
-                                            ]
-
-                                        );
-
-                                        if (is_array($chat) && isset($chat['error'])) {
-                                            Notification::make()
-                                                ->title('Erro')
-                                                ->body($chat['error'])
-                                                ->danger()
-                                                ->send();
-
-                                            return;
-                                        }
-
-                                        return redirect()->route('chats.show', ['chat' => $chat]);
-                                    }),
-
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')
-                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
+                                        'tableAction' => 'viewCompanyDetails',
+                                        'tableActionRecord' => $record->company->getKey(),
                                     ])),
+
                             ])->columnSpan(2),
 
                             Section::make('Informações Financeiras')
@@ -148,13 +125,13 @@ class CampaignAnnouncementInfolist
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
-                                fn ($record) => Gate::allows('is_agency')
+                                fn($record) => Gate::allows('is_agency')
                                     && $record->proposals()
-                                        ->where('agency_id', Auth::id())
-                                        ->exists()
+                                    ->where('agency_id', Auth::id())
+                                    ->exists()
                             )
                             ->action(
-                                fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                             ),
                     ]),
                 ]),

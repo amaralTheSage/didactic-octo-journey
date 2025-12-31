@@ -28,7 +28,7 @@ class ViewProposal
             ->slideOver()
 
             ->modalWidth('xl')
-            ->schema(fn ($record) => [
+            ->schema(fn($record) => [
                 Section::make('Campanha')
                     ->schema([
                         TextEntry::make('announcement.name')
@@ -57,13 +57,13 @@ class ViewProposal
 
                             TextEntry::make('agency.name')->weight(FontWeight::Bold)
                                 ->hiddenLabel()->columnSpan(2)->alignStart(),
-                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRoles $state): string => __("roles.$state->value"))
+                            TextEntry::make('agency.role')->formatStateUsing(fn(UserRoles $state): string => __("roles.$state->value"))
                                 ->hiddenLabel()->badge()->alignStart(),
 
                         ])->columns(5)->columnSpan(2),
 
                         TextEntry::make('message')
-                            ->label('Mensagem')->visible(fn ($record) => isset($record->message))
+                            ->label('Mensagem')->visible(fn($record) => isset($record->message))
                             ->columnSpanFull(),
 
                         TextEntry::make('proposed_agency_cut')
@@ -147,14 +147,14 @@ class ViewProposal
                             ->label('Conversar')
                             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                             ->color('secondary')
-                            ->visible(fn ($record) => $record->agency_id !== Auth::id())
+                            ->visible(fn($record) => $record->agency_id !== Auth::id())
                             ->action(function ($record) {
 
                                 $proposalId = $record->id;
 
                                 $chat = \App\Models\Chat::query()
                                     ->where('proposal_id', $proposalId)
-                                    ->whereHas('users', fn ($q) => $q->where('users.id', Auth::id()))
+                                    ->whereHas('users', fn($q) => $q->where('users.id', Auth::id()))
                                     ->first();
 
                                 if (! $chat) {
@@ -201,7 +201,7 @@ class ViewProposal
 
                                         TextEntry::make('role')
                                             ->formatStateUsing(
-                                                fn (UserRoles $state): string => __("roles.$state->value")
+                                                fn(UserRoles $state): string => __("roles.$state->value")
                                             )
                                             ->hiddenLabel()
                                             ->badge(),
@@ -315,20 +315,7 @@ class ViewProposal
                     ]),
 
                 Actions::make([
-                    // Action::make('viewAgency')
-                    //     ->label('Ver Agência')
-                    //     ->icon('heroicon-o-building-storefront')
-                    //     ->url(fn($record) => route('filament.admin.resources.agencies.index', [
-                    //         'search' => $record->agency->name,
-                    //     ])),
 
-                    // Action::make('viewInfluencer')
-                    //     ->label('Ver Influenciador')
-                    //     ->icon('heroicon-o-user-circle')
-                    //     ->visible(fn($record) => isset($record->influencer))
-                    //     ->url(fn($record) => route('filament.admin.resources.influencers.index', [
-                    //         'search' => $record->influencer?->name,
-                    //     ])),
 
                     EditProposalAction::make(),
 
@@ -339,12 +326,12 @@ class ViewProposal
                     Action::make('remove_proposal')
                         ->label('Remover Interesse')
                         ->color('danger')->visible(
-                            fn ($record, $livewire) => Gate::allows('is_agency')
+                            fn($record, $livewire) => Gate::allows('is_agency')
                                 && $record
-                                    ->exists()
+                                ->exists()
                         )->button()
                         ->action(
-                            fn ($record) => $record->delete()
+                            fn($record) => $record->delete()
                         ),
                 ]),
 

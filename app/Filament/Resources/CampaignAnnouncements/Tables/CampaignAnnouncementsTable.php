@@ -79,8 +79,15 @@ class CampaignAnnouncementsTable
 
                 TextColumn::make('description')->label('Descrição')->limit(40)->tooltip(fn($record) => $record->description)->toggleable()->toggledHiddenByDefault()
                     ->visible(fn($livewire) => $livewire->activeTab === 'announcements'),
+
                 TextColumn::make('budget')->label('Orçamento')->money('BRL')->toggleable()
                     ->sortable()->visible(fn($livewire) => $livewire->activeTab === 'announcements' && Gate::denies('is_influencer'))->description(fn($record) => '+' . rtrim(rtrim(number_format($record->agency_cut, 2, '.', ''), '0'), '.') . '% de Comissão'),
+
+                ColumnGroup::make('Mídias', [
+                    TextColumn::make('n_reels')->label('Reels')->alignCenter(),
+                    TextColumn::make('n_stories')->label('Stories')->alignCenter(),
+                    TextColumn::make('n_carrousels')->label('Carrosseis')->alignCenter(),
+                ]),
 
                 TextColumn::make('announcement_status')
                     ->label('Status')
