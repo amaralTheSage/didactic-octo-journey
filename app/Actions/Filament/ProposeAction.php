@@ -3,13 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
-use App\Models\User;
-use App\UserRoles;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -18,12 +12,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Tables\Columns\CheckboxColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -57,8 +46,6 @@ class ProposeAction extends Action
         $this->modalSubmitActionLabel('Enviar Proposta');
         $this->modalWidth('2xl');
 
-
-
         $this->schema([
             Textarea::make('message')
                 ->label('Mensagem')
@@ -66,7 +53,7 @@ class ProposeAction extends Action
                 ->rows(4)
                 ->maxLength(1000),
 
-            Select::make('filter_influencers')
+            Select::make('influencer_ids')
                 ->label('Selecionar Influenciadores')
                 ->multiple()
                 ->options(
@@ -81,9 +68,7 @@ class ProposeAction extends Action
                 ->reactive()
                 ->visible(fn() => Gate::allows('is_agency')),
 
-
-
-            RepeatableEntry::make('influencer_ids')->hiddenLabel()
+            RepeatableEntry::make('selected_influencers')->hiddenLabel()
                 ->table([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
@@ -91,7 +76,6 @@ class ProposeAction extends Action
                     TableColumn::make('Carrossel'),
                 ])
                 ->schema([
-
                     TextEntry::make('name')
                         ->label('Nome'),
 
@@ -108,7 +92,7 @@ class ProposeAction extends Action
                         ->money('BRL'),
 
                 ])->default(function (Get $get) {
-                    $filterIds = $get('filter_influencers') ?? [];
+                    $filterIds = $get('influencer_ids') ?? [];
 
                     if (empty($filterIds)) {
                         return [];
@@ -121,31 +105,29 @@ class ProposeAction extends Action
                         ->whereIn('users.id', $filterIds)
                         ->get()
                         ->map(fn($influencer) => [
-                            'user_id'         => $influencer->id,
-                            'name'            => $influencer->name,
-                            'stories_price'   => $influencer->influencer_info->stories_price,
-                            'reels_price'     => $influencer->influencer_info->reels_price,
+                            'user_id' => $influencer->id,
+                            'name' => $influencer->name,
+                            'stories_price' => $influencer->influencer_info->stories_price,
+                            'reels_price' => $influencer->influencer_info->reels_price,
                             'carrousel_price' => $influencer->influencer_info->carrousel_price,
                         ])
                         ->toArray();
                 })
                 ->reactive(),
 
-
             TextEntry::make('summary')
-                ->hiddenLabel()->visible(function (Get $get) {
-                    $filterIds = $get('filter_influencers') ?? [];
-
-                    return !empty($filterIds);
-                })
+                ->hiddenLabel()
                 ->state(fn($record) => new HtmlString("
-          <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
-            <span><strong>Reels:</strong> {$record->n_reels}</span>
-            <span><strong>Stories:</strong> {$record->n_stories}</span>
-            <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
-        </div>
-        ")),
+                    <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
+                        <span><strong>Reels:</strong> {$record->n_reels}</span>
+                        <span><strong>Stories:</strong> {$record->n_stories}</span>
+                        <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
+                    </div>"))
+                ->visible(function (Get $get) {
+                    $filterIds = $get('influencer_ids') ?? [];
 
+                    return ! empty($filterIds);
+                }),
 
             Group::make([
                 TextInput::make('proposed_agency_cut')
@@ -162,7 +144,7 @@ class ProposeAction extends Action
                     ->label('Orçamento Proposto')
                     ->disabled()->reactive()
                     ->placeholder(function (Get $get, $record) {
-                        $influencers = $get('influencer_ids') ?? [];
+                        $influencers = $get('selected_influencers') ?? [];
 
                         if (empty($influencers)) {
                             return 'Selecione influenciadores';
@@ -178,12 +160,11 @@ class ProposeAction extends Action
                         return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
-            ])->columns(2)
+            ])->columns(2),
         ]);
 
         $this->action(function ($record, array $data) {
             try {
-
 
                 $proposal = $record->proposals()->create([
                     'campaign_announcement_id' => $record->id,
@@ -194,11 +175,7 @@ class ProposeAction extends Action
 
                 ]);
 
-                $influencerIds = collect($data['influencer_ids'] ?? [])
-                    ->pluck('user_id')
-                    ->values()
-                    ->toArray();
-
+                $influencerIds = $data['influencer_ids'] ?? [];
 
                 unset($data['influencer_ids']);
                 unset($data['proposed_budget']);

@@ -23,5 +23,6 @@ class CreateCampaignAnnouncement extends CreateRecord
 
         return $data;
     }
+
     protected static string $resource = CampaignAnnouncementResource::class;
 }

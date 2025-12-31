@@ -3,11 +3,9 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
 use App\Actions\Filament\ProposeAction;
-use App\Services\ChatService;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -88,7 +86,7 @@ class CampaignAnnouncementInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')
-                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -125,13 +123,13 @@ class CampaignAnnouncementInfolist
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
-                                fn($record) => Gate::allows('is_agency')
+                                fn ($record) => Gate::allows('is_agency')
                                     && $record->proposals()
-                                    ->where('agency_id', Auth::id())
-                                    ->exists()
+                                        ->where('agency_id', Auth::id())
+                                        ->exists()
                             )
                             ->action(
-                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                             ),
                     ]),
                 ]),

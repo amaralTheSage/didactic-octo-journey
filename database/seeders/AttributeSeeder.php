@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Attribute;
 use App\Models\AttributeValue;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AttributeSeeder extends Seeder
@@ -101,7 +100,6 @@ class AttributeSeeder extends Seeder
             'title' => 'Localidade',
             'multiple_values' => true,
         ]);
-
 
         /*
         |--------------------------------------------------

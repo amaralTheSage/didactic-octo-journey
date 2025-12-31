@@ -19,7 +19,7 @@ class CampaignAnnouncement extends Model
         'n_reels',
         'n_carrousels',
         'n_stories',
-        'location'
+        'location',
     ];
 
     protected $with = ['proposals', 'attribute_values'];

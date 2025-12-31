@@ -23,8 +23,8 @@ class EditCampaignAnnouncement extends EditRecord
             $data['location_data'] = [
                 [
                     'country' => $country,
-                    'state'   => $state,
-                    'city'    => $city,
+                    'state' => $state,
+                    'city' => $city,
                 ],
             ];
         }

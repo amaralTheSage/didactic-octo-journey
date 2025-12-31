@@ -2,6 +2,7 @@
 
 namespace App\Actions\Filament;
 
+use App\Helpers\ProposedBudgetCalculator;
 use App\Services\ChatService;
 use App\UserRoles;
 use Filament\Actions\Action;
@@ -17,6 +18,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 
 class ViewProposal
@@ -99,44 +101,39 @@ class ViewProposal
                                 );
                             }),
 
-                        TextEntry::make('proposed_budget')
+                        TextEntry::make('proposed_budget_t')
                             ->label('Orçamento Proposto')
-                            ->money('BRL')
                             ->placeholder('-')
-                            ->weight(FontWeight::Bold)
-                            ->formatStateUsing(function ($state, $record) {
-                                $announcementBudget = $record->announcement?->budget;
+                            ->state(function ($record) {
 
-                                if (! $state || ! $announcementBudget) {
-                                    return $state;
+
+                                $influencers = $record->influencers()
+                                    ->with('influencer_info')
+                                    ->get()
+                                    ->map(fn($inf) => [
+                                        'reels_price' => $inf->influencer_info->reels_price ?? 0,
+                                        'stories_price' => $inf->influencer_info->stories_price ?? 0,
+                                        'carrousel_price' => $inf->influencer_info->carrousel_price ?? 0,
+                                    ])
+                                    ->toArray();
+
+                                if (empty($influencers)) {
+                                    return '-';
                                 }
 
-                                $difference = $state - $announcementBudget;
-
-                                if ($difference === 0) {
-                                    return new HtmlString(
-                                        "{$state} <span class='text-xs text-gray-500'>(sem variação)</span>"
-                                    );
-                                }
-
-                                $formatter = new \NumberFormatter('pt_BR', \NumberFormatter::CURRENCY);
-                                $formattedDifference = $formatter->formatCurrency(abs($difference), 'BRL');
-                                $formattedProposedBudget = $formatter->formatCurrency(abs($state), 'BRL');
-
-                                $arrow = $difference > 0
-                                    ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
-                                    : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
-
-                                $color = $difference > 0 ? 'text-danger-600' : 'text-success-600';
-
-                                return new HtmlString(
-                                    " <span class='mr-2' >
-                                    {$formattedProposedBudget}
-                                    </span>
-                                     <span class=\"{$color} text-xs inline-flex items-center  pl-4\">
-                                     {$formattedDifference} {$arrow}
-                                    </span>"
+                                $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
+                                    $record->announcement->n_reels,
+                                    $record->announcement->n_stories,
+                                    $record->announcement->n_carrousels,
+                                    $influencers
                                 );
+
+                                return new HtmlString('
+                                    <div class="flex flex-col gap-0.5 text-sm">
+                                        <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
+                                        <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
+                                    </div>
+                              ');
                             }),
 
                         TextEntry::make('created_at')
@@ -315,7 +312,6 @@ class ViewProposal
                     ]),
 
                 Actions::make([
-
 
                     EditProposalAction::make(),
 

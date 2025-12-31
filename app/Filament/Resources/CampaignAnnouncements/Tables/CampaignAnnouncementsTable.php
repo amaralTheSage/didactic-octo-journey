@@ -19,11 +19,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log as FacadesLog;
 use Illuminate\Support\HtmlString;
-use Laravel\Reverb\Loggers\Log;
 
 class CampaignAnnouncementsTable
 {
@@ -31,9 +29,10 @@ class CampaignAnnouncementsTable
     {
         return $livewire->activeTab === 'announcements';
     }
+
     public static function prTab($livewire): bool
     {
-        return  $livewire->activeTab === 'proposals';
+        return $livewire->activeTab === 'proposals';
     }
 
     public static function configure(Table $table): Table
@@ -192,7 +191,7 @@ class CampaignAnnouncementsTable
                     })
                     ->visible(fn($livewire) => self::prTab($livewire)),
 
-                TextColumn::make('proposed_budget_1')
+                TextColumn::make('proposed_budget')
                     ->label('Orçamento Proposto')
                     ->placeholder('-')
                     ->state(function ($record) {
@@ -206,10 +205,6 @@ class CampaignAnnouncementsTable
                             ])
                             ->toArray();
 
-                        FacadesLog::debug('Influencers: ', $influencers);
-
-                        dump($influencers);
-
                         if (empty($influencers)) {
                             return '-';
                         }
@@ -221,10 +216,14 @@ class CampaignAnnouncementsTable
                             $influencers
                         );
 
-                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
+                        return new HtmlString('
+                            <div class="flex flex-col gap-0.5 text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
+                                <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
+                            </div>
+                        ');
                     })
                     ->visible(fn($livewire) => self::prTab($livewire)),
-
 
                 ColumnGroup::make('Status')->columns([
 
@@ -288,8 +287,6 @@ class CampaignAnnouncementsTable
 
                 EditAction::make()->hiddenLabel()
                     ->visible(fn($record, $livewire) => Gate::allows('is_company') && self::anTab($livewire)),
-
-
 
                 ViewProposal::make()
                     ->visible(fn($livewire) => self::prTab($livewire)),

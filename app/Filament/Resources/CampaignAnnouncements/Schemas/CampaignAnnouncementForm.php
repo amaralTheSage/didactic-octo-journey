@@ -10,24 +10,15 @@ use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Khsing\World\Models\City;
-use Khsing\World\Models\Country;
-use Khsing\World\Models\Division;
 
 class CampaignAnnouncementForm
 {
-
-
-
-
-
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -42,7 +33,7 @@ class CampaignAnnouncementForm
                         ->relationship(
                             'product',
                             'name',
-                            fn($query) => $query->where('company_id', Auth::id())
+                            fn ($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
                         ->required()->createOptionForm([
@@ -51,8 +42,8 @@ class CampaignAnnouncementForm
                             TextInput::make('price')
                                 ->numeric()
                                 ->inputMode('decimal')->prefix('R$')
-                                ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
-                                ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
+                                ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.'))
+                                ->dehydrateStateUsing(fn ($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
                                 ->placeholder('0,00')
                                 ->step('0.01')
                                 ->required(),
@@ -61,7 +52,7 @@ class CampaignAnnouncementForm
                             Hidden::make('company_id')->default(Auth::id()),
                         ])
                         ->createOptionAction(
-                            fn($action) => $action->modalHeading('Criar Produto')
+                            fn ($action) => $action->modalHeading('Criar Produto')
                         ),
 
                     Select::make('category_id')
@@ -99,9 +90,9 @@ class CampaignAnnouncementForm
                 ]),
 
                 Group::make()->columns(3)->schema([
-                    TextInput::make('n_stories')->default(0)->numeric()->label("Stories"),
-                    TextInput::make('n_reels')->default(0)->numeric()->label("Reels"),
-                    TextInput::make('n_carrousels')->default(0)->numeric()->label("Carrosséis"),
+                    TextInput::make('n_stories')->default(0)->numeric()->label('Stories'),
+                    TextInput::make('n_reels')->default(0)->numeric()->label('Reels'),
+                    TextInput::make('n_carrousels')->default(0)->numeric()->label('Carrosséis'),
                 ])->columnSpan(2),
 
                 Repeater::make('attribute_values')
@@ -116,7 +107,7 @@ class CampaignAnnouncementForm
                     })
                     ->table([
                         TableColumn::make('Atributo'),
-                        TableColumn::make('Valor')
+                        TableColumn::make('Valor'),
                     ])
                     ->compact()
                     ->schema([
@@ -125,28 +116,24 @@ class CampaignAnnouncementForm
                         TextEntry::make('attribute.title')
                             ->label('Atributo'),
 
-
                         Select::make('attribute_value_id')->columnSpan(1)
                             ->label('Valor')
                             ->options(
-                                fn(Get $get) =>
-                                \App\Models\Attribute::find($get('attribute_id'))
+                                fn (Get $get) => \App\Models\Attribute::find($get('attribute_id'))
                                     ?->values()
                                     ->pluck('title', 'id') ?? []
                             )
                             ->preload(),
 
-
                     ])
                     ->columnSpan(2),
-
 
                 Repeater::make('location_data')
                     ->label('Localização')->addable(false)
                     ->table([
                         TableColumn::make('País'),
                         TableColumn::make('Estado'),
-                        TableColumn::make('Cidade')
+                        TableColumn::make('Cidade'),
                     ])
                     ->deletable(false)
                     ->schema([
@@ -185,15 +172,15 @@ class CampaignAnnouncementForm
                             ->afterStateUpdated(function (callable $set) {
                                 $set('city', null);
                             })
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR'),
 
                         Select::make('city')->columnSpan(1)
                             ->label('Cidade')
                             ->placeholder('Selecione uma cidade')
                             ->options(function (Get $get) {
                                 $state = $get('state');
-                                if (!$state) {
+                                if (! $state) {
                                     return [];
                                 }
 
@@ -203,15 +190,11 @@ class CampaignAnnouncementForm
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
-                            ->disabled(fn(Get $get) => !$get('state')),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state'))
+                            ->disabled(fn (Get $get) => ! $get('state')),
                     ])->compact()
                     ->columnSpan(2),
-
-
-
-
 
                 MarkdownEditor::make('description')->label('Descrição')->columnSpan(2),
             ]);
