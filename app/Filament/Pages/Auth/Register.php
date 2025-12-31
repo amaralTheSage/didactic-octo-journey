@@ -15,6 +15,8 @@ use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -127,7 +129,7 @@ class Register extends SimplePage
 
         if ($data['role'] === 'influencer' && isset($agency)) {
             $agency->notify(
-                Notification::make()->title('Convite de associação de '.$user->name)->body('Revise o pedido na página de influenciadores.')->toDatabase()
+                Notification::make()->title('Convite de associação de ' . $user->name)->body('Revise o pedido na página de influenciadores.')->toDatabase()
             );
         }
 
@@ -203,7 +205,7 @@ class Register extends SimplePage
     {
         return $schema->components([
             FileUpload::make('avatar')
-                ->label(' ')
+                ->label('Imagem')
                 ->disk('public')
                 ->directory('avatars')
                 ->alignCenter()
@@ -238,7 +240,7 @@ class Register extends SimplePage
                                     ->mapWithKeys(function ($category) {
                                         return [
                                             $category->title => $category->subcategories
-                                                ->filter(fn ($subcategory) => $subcategory->title !== null)
+                                                ->filter(fn($subcategory) => $subcategory->title !== null)
                                                 ->pluck('title', 'id')
                                                 ->toArray(),
                                         ];
@@ -254,68 +256,82 @@ class Register extends SimplePage
                                 ->preload()
 
                                 ->getSearchResultsUsing(
-                                    fn (string $search): array => User::query()
+                                    fn(string $search): array => User::query()
                                         ->where('role', UserRoles::Agency)
                                         ->where('name', 'ilike', "%{$search}%")
                                         ->limit(50)
                                         ->pluck('name', 'id')
                                         ->toArray()
                                 )
-                                ->getOptionLabelUsing(fn ($value): ?string => User::find($value)?->name),
+                                ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
 
-                            Select::make('state')
-                                ->label('Estado')
-                                ->options([
-                                    'AC' => 'AC',
-                                    'AL' => 'AL',
-                                    'AP' => 'AP',
-                                    'AM' => 'AM',
-                                    'BA' => 'BA',
-                                    'CE' => 'CE',
-                                    'DF' => 'DF',
-                                    'ES' => 'ES',
-                                    'GO' => 'GO',
-                                    'MA' => 'MA',
-                                    'MT' => 'MT',
-                                    'MS' => 'MS',
-                                    'MG' => 'MG',
-                                    'PA' => 'PA',
-                                    'PB' => 'PB',
-                                    'PR' => 'PR',
-                                    'PE' => 'PE',
-                                    'PI' => 'PI',
-                                    'RJ' => 'RJ',
-                                    'RN' => 'RN',
-                                    'RS' => 'RS',
-                                    'RO' => 'RO',
-                                    'RR' => 'RR',
-                                    'SC' => 'SC',
-                                    'SP' => 'SP',
-                                    'SE' => 'SE',
-                                    'TO' => 'TO',
+                            Repeater::make('location_data')
+                                ->label('Localização')->addable(false)
+                                ->table([
+                                    TableColumn::make('País'),
+                                    TableColumn::make('Estado'),
+                                    TableColumn::make('Cidade')
                                 ])
-                                ->live()->placeholder('-')
-                                ->afterStateUpdated(fn (callable $set) => $set('city', null))
-                                ->searchable()
-                                ->required(),
+                                ->deletable(false)
+                                ->schema([
 
-                            Select::make('city')
-                                ->label('Cidade')->placeholder('-')
-                                ->options(function (Get $get) {
-                                    $state = $get('state');
-                                    if (! $state) {
-                                        return [];
-                                    }
+                                    Select::make('country')->columnSpan(1)
+                                        ->label('País')
+                                        ->placeholder('Selecione um país')
+                                        ->options([
+                                            'BR' => 'Brasil',
+                                            'US' => 'Estados Unidos',
+                                            'AR' => 'Argentina',
+                                            'UY' => 'Uruguai',
+                                            'PY' => 'Paraguai',
+                                            // Add more countries
+                                        ])
+                                        ->searchable()
+                                        ->reactive()
+                                        ->afterStateUpdated(function (callable $set) {
+                                            $set('state', null);
+                                            $set('city', null);
+                                        })
+                                        ->required(),
 
-                                    // Busca cidades na API do IBGE no estado selecionado
-                                    return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
-                                        ->collect()
-                                        ->pluck('nome', 'nome')
-                                        ->toArray();
-                                })
-                                ->searchable()
-                                ->required()
-                                ->disabled(fn (Get $get) => ! $get('state')),
+                                    Select::make('state')->columnSpan(1)
+                                        ->label('Estado')
+                                        ->placeholder('Selecione um estado')
+                                        ->options(function () {
+                                            return Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                                ->collect()
+                                                ->sortBy('nome')
+                                                ->pluck('nome', 'sigla')
+                                                ->toArray();
+                                        })
+                                        ->searchable()
+                                        ->reactive()
+                                        ->afterStateUpdated(function (callable $set) {
+                                            $set('city', null);
+                                        })
+                                        ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                        ->required(fn(Get $get) => $get('country') === 'BR'),
+
+                                    Select::make('city')->columnSpan(1)
+                                        ->label('Cidade')
+                                        ->placeholder('Selecione uma cidade')
+                                        ->options(function (Get $get) {
+                                            $state = $get('state');
+                                            if (!$state) {
+                                                return [];
+                                            }
+
+                                            return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
+                                                ->collect()
+                                                ->pluck('nome', 'nome')
+                                                ->toArray();
+                                        })
+                                        ->searchable()
+                                        ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                        ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
+                                        ->disabled(fn(Get $get) => !$get('state')),
+                                ])->compact()
+                                ->columnSpan(2),
 
                             Group::make()->columns(2)->schema([
                                 TextEntry::make('handle_label')->label('@ do Perfil'),
@@ -367,7 +383,7 @@ class Register extends SimplePage
                                 ->columnSpan(2),
                         ]),
                     ])
-                    ->visible(fn (Get $get): bool => $get('role') === 'influencer'),
+                    ->visible(fn(Get $get): bool => $get('role') === 'influencer'),
             ]),
 
             TextInput::make('pix_address')->label('Endereço Pix'),
@@ -412,7 +428,7 @@ class Register extends SimplePage
             ->required()
             ->rule(Password::default())
             ->showAllValidationMessages()
-            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationAttribute(__('filament-panels::auth/pages/register.form.password.validation_attribute'));
     }
@@ -489,8 +505,21 @@ class Register extends SimplePage
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
+
+
     protected function mutateFormDataBeforeRegister(array $data): array
     {
+        if (! empty($data['location_data'])) {
+            $loc = $data['location_data'][0] ?? [];
+
+            $data['location'] = implode('|', [
+                $loc['country'] ?? '',
+                $loc['state'] ?? '',
+                $loc['city'] ?? '',
+            ]);
+
+            unset($data['location_data']);
+        }
 
         return $data;
     }
@@ -501,7 +530,7 @@ class Register extends SimplePage
             return null;
         }
 
-        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before').' '.$this->loginAction->toHtml());
+        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before') . ' ' . $this->loginAction->toHtml());
     }
 
     public function content(Schema $schema): Schema

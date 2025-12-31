@@ -222,13 +222,19 @@ body {
     @apply border-border bg-card;
 }
 
+.fi-simple-main {
+    @apply bg-background;
+}
+
 .fi-input-wrp-content-ctn {
     @apply rounded-2xl bg-card;
 }
 .fi-select-input {
-    @apply overflow-hidden rounded-2xl bg-card;
+    @apply rounded-2xl bg-card;
 }
-
+.fi-select-input-search-ctn {
+    @apply bg-card;
+}
 td .fi-select-input {
     @apply overflow-visible rounded-2xl bg-background;
 }

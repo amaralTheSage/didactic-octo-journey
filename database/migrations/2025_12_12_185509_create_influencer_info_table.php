@@ -20,37 +20,7 @@ return new class extends Migration
             $table->string('youtube')->nullable();
             $table->string('tiktok')->nullable();
 
-            $table->enum('state', [
-                'AC',
-                'AL',
-                'AP',
-                'AM',
-                'BA',
-                'CE',
-                'DF',
-                'ES',
-                'GO',
-                'MA',
-                'MT',
-                'MS',
-                'MG',
-                'PA',
-                'PB',
-                'PR',
-                'PE',
-                'PI',
-                'RJ',
-                'RN',
-                'RS',
-                'RO',
-                'RR',
-                'SC',
-                'SP',
-                'SE',
-                'TO',
-            ]);
-
-            $table->string('city');
+            $table->string('location')->nullable();
 
             $table->integer('instagram_followers')->nullable();
             $table->integer('twitter_followers')->nullable();

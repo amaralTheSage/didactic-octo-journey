@@ -15,6 +15,8 @@ use Filament\Auth\Notifications\VerifyEmailChange;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -25,6 +27,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -136,7 +139,7 @@ class EditProfile extends BaseEditProfile
         if (filled(static::getCluster())) {
             Route::name(static::prependClusterRouteBaseName($panel, ''))
                 ->prefix(static::prependClusterSlug($panel, ''))
-                ->group(fn () => static::routes($panel));
+                ->group(fn() => static::routes($panel));
 
             return;
         }
@@ -148,7 +151,7 @@ class EditProfile extends BaseEditProfile
     {
         $panel ??= Filament::getCurrentOrDefaultPanel();
 
-        return $panel->generateRouteName('auth.'.static::getRelativeRouteName($panel));
+        return $panel->generateRouteName('auth.' . static::getRelativeRouteName($panel));
     }
 
     /**
@@ -160,11 +163,27 @@ class EditProfile extends BaseEditProfile
 
         $user = $this->getUser();
 
+
         if ($user->role === UserRoles::Influencer && $user->influencer_info) {
             $data['influencer_data'] = $user->influencer_info->toArray();
         }
         if ($user->role === UserRoles::Influencer && $user->influencer_info) {
             $data['subcategories'] = $user->subcategories->pluck('id')->toArray();
+        }
+
+        if (! empty($user->influencer_info->location)) {
+            [$country, $state, $city] = array_pad(
+                explode('|', $user->influencer_info->location),
+                3,
+                null
+            );
+
+
+
+            dump($country);
+
+
+            $data['influencer_data']['location_data'] = compact('country', 'state', 'city');
         }
 
         return $data;
@@ -178,6 +197,27 @@ class EditProfile extends BaseEditProfile
     {
 
         $this->influencerData = $data['influencer_data'] ?? [];
+
+        $locData = $data['influencer_data']['location_data'] ?? $data['location_data'] ?? null;
+
+        if ($locData && is_array($locData)) {
+
+            if (array_key_exists(0, $locData) && is_array($locData[0])) {
+                $loc = $locData[0];
+            } else {
+                $loc = $locData;
+            }
+
+            $country = $loc['country'] ?? '';
+            $state   = $loc['state'] ?? '';
+            $city    = $loc['city'] ?? '';
+
+            $this->influencerData['location'] = implode('|', [$country, $state, $city]);
+        }
+
+
+        unset($this->influencerData['location_data']);
+        unset($data['location_data']);
 
         unset($data['influencer_data']);
 
@@ -218,7 +258,7 @@ class EditProfile extends BaseEditProfile
 
         if (request()->hasSession() && array_key_exists('password', $data)) {
             request()->session()->put([
-                'password_hash_'.Filament::getAuthGuard() => $data['password'],
+                'password_hash_' . Filament::getAuthGuard() => $data['password'],
             ]);
         }
 
@@ -341,8 +381,8 @@ class EditProfile extends BaseEditProfile
             ->rule(Password::default())
             ->showAllValidationMessages()
             ->autocomplete('new-password')
-            ->dehydrated(fn ($state): bool => filled($state))
-            ->dehydrateStateUsing(fn ($state): string => Hash::make($state))
+            ->dehydrated(fn($state): bool => filled($state))
+            ->dehydrateStateUsing(fn($state): string => Hash::make($state))
             ->live(debounce: 500)
             ->same('passwordConfirmation');
     }
@@ -356,7 +396,7 @@ class EditProfile extends BaseEditProfile
             ->autocomplete('new-password')
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')))
+            ->visible(fn(Get $get): bool => filled($get('password')))
             ->dehydrated(false);
     }
 
@@ -371,7 +411,7 @@ class EditProfile extends BaseEditProfile
             ->currentPassword(guard: Filament::getAuthGuard())
             ->revealable(filament()->arePasswordsRevealable())
             ->required()
-            ->visible(fn (Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')))
+            ->visible(fn(Get $get): bool => filled($get('password')) || ($get('email') !== $this->getUser()->getAttributeValue('email')))
             ->dehydrated(false);
     }
 
@@ -406,7 +446,7 @@ class EditProfile extends BaseEditProfile
                     ->label('Categoria')
                     ->options(
                         Category::with('subcategories')->get()
-                            ->mapWithKeys(fn ($category) => [
+                            ->mapWithKeys(fn($category) => [
                                 $category->title => $category->subcategories
                                     ->pluck('title', 'id')
                                     ->toArray(),
@@ -414,7 +454,7 @@ class EditProfile extends BaseEditProfile
                             ->toArray()
                     )
                     ->rules([
-                        fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
                             $categories = Subcategory::whereIn('id', $value)
                                 ->distinct('category_id')
                                 ->count('category_id');
@@ -424,7 +464,7 @@ class EditProfile extends BaseEditProfile
                             }
                         },
                     ])
-                    ->visible(fn (Get $get) => $get('role') === 'influencer'),
+                    ->visible(fn(Get $get) => $get('role') === 'influencer'),
             ]);
     }
 
@@ -442,71 +482,75 @@ class EditProfile extends BaseEditProfile
                             ->searchable()
                             ->preload()
                             ->getSearchResultsUsing(
-                                fn (string $search): array => User::where('role', UserRoles::Agency)
+                                fn(string $search): array => User::where('role', UserRoles::Agency)
                                     ->where('name', 'ilike', "%{$search}%")
                                     ->limit(50)
                                     ->pluck('name', 'id')
                                     ->toArray()
                             )
                             ->getOptionLabelUsing(
-                                fn ($value) => User::find($value)?->name
+                                fn($value) => User::find($value)?->name
                             ),
 
-                        Group::make()->columns(2)->schema([
 
-                            Select::make('state')
-                                ->label('Estado')
-                                ->options([
-                                    'AC' => 'AC',
-                                    'AL' => 'AL',
-                                    'AP' => 'AP',
-                                    'AM' => 'AM',
-                                    'BA' => 'BA',
-                                    'CE' => 'CE',
-                                    'DF' => 'DF',
-                                    'ES' => 'ES',
-                                    'GO' => 'GO',
-                                    'MA' => 'MA',
-                                    'MT' => 'MT',
-                                    'MS' => 'MS',
-                                    'MG' => 'MG',
-                                    'PA' => 'PA',
-                                    'PB' => 'PB',
-                                    'PR' => 'PR',
-                                    'PE' => 'PE',
-                                    'PI' => 'PI',
-                                    'RJ' => 'RJ',
-                                    'RN' => 'RN',
-                                    'RS' => 'RS',
-                                    'RO' => 'RO',
-                                    'RR' => 'RR',
-                                    'SC' => 'SC',
-                                    'SP' => 'SP',
-                                    'SE' => 'SE',
-                                    'TO' => 'TO',
-                                ])
-                                ->live()->placeholder('-')
-                                ->afterStateUpdated(fn (callable $set) => $set('city', null))
-                                ->searchable()
-                                ->required(),
 
-                            Select::make('city')
-                                ->label('Cidade')->placeholder('-')
-                                ->options(function (Get $get) {
-                                    $state = $get('state');
-                                    if (! $state) {
-                                        return [];
-                                    }
+                        Group::make()
+                            ->statePath('location_data')->columns(2)
+                            ->schema([
+                                Select::make('country')
+                                    ->label('País')
+                                    ->placeholder('Selecione um país')
+                                    ->options([
+                                        'BR' => 'Brasil',
+                                        'US' => 'Estados Unidos',
+                                        'AR' => 'Argentina',
+                                        'UY' => 'Uruguai',
+                                        'PY' => 'Paraguai',
+                                    ])->columnSpan(2)
+                                    ->searchable()
+                                    ->reactive()
+                                    ->afterStateUpdated(function (callable $set) {
+                                        $set('state', null);
+                                        $set('city', null);
+                                    })
+                                    ->required(),
 
-                                    return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
-                                        ->collect()
-                                        ->pluck('nome', 'nome')
-                                        ->toArray();
-                                })
-                                ->searchable()
-                                ->required()
-                                ->disabled(fn (Get $get) => ! $get('state')),
-                        ]),
+                                Select::make('state')
+                                    ->label('Estado')
+                                    ->placeholder('Selecione um estado')
+                                    ->options(
+                                        fn() =>
+                                        Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                            ->collect()
+                                            ->sortBy('nome')
+                                            ->pluck('nome', 'sigla')
+                                            ->toArray()
+                                    )
+                                    ->searchable()
+                                    ->reactive()
+                                    ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                    ->required(fn(Get $get) => $get('country') === 'BR'),
+
+                                Select::make('city')
+                                    ->label('Cidade')
+                                    ->placeholder('Selecione uma cidade')
+                                    ->options(function (Get $get) {
+                                        if (! $get('state')) {
+                                            return [];
+                                        }
+
+                                        return Http::get(
+                                            "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
+                                        )
+                                            ->collect()
+                                            ->pluck('nome', 'nome')
+                                            ->toArray();
+                                    })
+                                    ->searchable()
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                    ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
+                            ]),
 
                         Section::make('Redes Sociais')->collapsed()->collapsible()
                             ->schema([
@@ -558,7 +602,7 @@ class EditProfile extends BaseEditProfile
                             ]),
                     ]),
             ])
-            ->visible(fn (Get $get) => $get('role') === 'influencer');
+            ->visible(fn(Get $get) => $get('role') === 'influencer');
     }
 
     public function getMaxContentWidth(): Width
@@ -595,7 +639,7 @@ class EditProfile extends BaseEditProfile
 
                 $this->getInfluencerColumn(),
             ]),
-        ])->columns(fn () => ($this->data['role'] ?? null) === 'influencer'
+        ])->columns(fn() => ($this->data['role'] ?? null) === 'influencer'
             ? 2
             : 1);
     }
@@ -665,8 +709,8 @@ class EditProfile extends BaseEditProfile
             ->label(__('filament-panels::auth/pages/edit-profile.actions.cancel.label'))
             ->alpineClickHandler(
                 FilamentView::hasSpaMode($url)
-                    ? 'document.referrer ? window.history.back() : Livewire.navigate('.Js::from($url).')'
-                    : 'document.referrer ? window.history.back() : (window.location.href = '.Js::from($url).')',
+                    ? 'document.referrer ? window.history.back() : Livewire.navigate(' . Js::from($url) . ')'
+                    : 'document.referrer ? window.history.back() : (window.location.href = ' . Js::from($url) . ')',
             )
             ->color('gray');
     }
@@ -717,8 +761,8 @@ class EditProfile extends BaseEditProfile
             ->divided()
             ->secondary()
             ->schema(collect(Filament::getMultiFactorAuthenticationProviders())
-                ->sort(fn (MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): int => $multiFactorAuthenticationProvider->isEnabled($user) ? 0 : 1)
-                ->map(fn (MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): Component => Group::make($multiFactorAuthenticationProvider->getManagementSchemaComponents())
+                ->sort(fn(MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): int => $multiFactorAuthenticationProvider->isEnabled($user) ? 0 : 1)
+                ->map(fn(MultiFactorAuthenticationProvider $multiFactorAuthenticationProvider): Component => Group::make($multiFactorAuthenticationProvider->getManagementSchemaComponents())
                     ->statePath($multiFactorAuthenticationProvider->getId()))
                 ->all());
     }

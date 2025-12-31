@@ -14,8 +14,7 @@ class InfluencerInfo extends Model
         'agency_id',
         'association_status',
 
-        'state',
-        'city',
+        'location',
 
         'instagram',
         'twitter',

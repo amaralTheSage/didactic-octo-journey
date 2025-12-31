@@ -21,9 +21,9 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(10).'.jpg';
+            $filename = Str::random(10) . '.jpg';
 
-            $url = 'https://picsum.photos/300/300?random='.Str::random(10);
+            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
 
             $imageData = file_get_contents($url);
 
@@ -167,8 +167,7 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $user->id,
                 'agency_id' => $agencies->random()->id,
 
-                'city' => 'Pelotas',
-                'state' => 'RS',
+                'location' => 'BR|RS|Pelotas',
 
                 'instagram' => fake()->userName(),
                 'instagram_followers' => rand(1000, 100000),
@@ -187,7 +186,7 @@ class DatabaseSeeder extends Seeder
         $companies->each(function ($company) {
             foreach (range(1, 3) as $i) {
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
                     'category_id' => '1',
@@ -234,14 +233,13 @@ class DatabaseSeeder extends Seeder
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
 
-            'city' => 'Pelotas',
-            'state' => 'RS',
+            'location' => 'BR|RS|Pelotas',
 
-            'instagram' => fake()->word().'_ig',
-            'twitter' => fake()->word().'_tw',
-            'facebook' => fake()->word().'_fb',
-            'youtube' => fake()->word().'_yt',
-            'tiktok' => fake()->word().'_tt',
+            'instagram' => fake()->word() . '_ig',
+            'twitter' => fake()->word() . '_tw',
+            'facebook' => fake()->word() . '_fb',
+            'youtube' => fake()->word() . '_yt',
+            'tiktok' => fake()->word() . '_tt',
 
             'instagram_followers' => rand(5000, 50000),
             'twitter_followers' => rand(5000, 50000),
@@ -268,8 +266,7 @@ class DatabaseSeeder extends Seeder
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
 
-            'city' => 'Pelotas',
-            'state' => 'RS',
+            'location' => 'MX||',
 
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
@@ -290,8 +287,7 @@ class DatabaseSeeder extends Seeder
             'agency_id' => $agenciaA->id,
             'association_status' => 'pending',
 
-            'city' => 'Pelotas',
-            'state' => 'RS',
+            'location' => 'AR||',
 
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
@@ -306,7 +302,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 5) as $i) {
             $testProducts->push(
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,

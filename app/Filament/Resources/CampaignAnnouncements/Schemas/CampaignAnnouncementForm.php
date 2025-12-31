@@ -25,22 +25,7 @@ class CampaignAnnouncementForm
 {
 
 
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        if (! empty($data['location_data'])) {
-            $loc = $data['location_data'][0] ?? [];
 
-            $data['location_string'] = implode('|', [
-                $loc['country'] ?? '',
-                $loc['state'] ?? '',
-                $loc['city'] ?? '',
-            ]);
-
-            unset($data['location_data']); // IMPORTANT
-        }
-
-        return $data;
-    }
 
 
     public static function configure(Schema $schema): Schema
