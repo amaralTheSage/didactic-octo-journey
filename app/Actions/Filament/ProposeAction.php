@@ -2,19 +2,23 @@
 
 namespace App\Actions\Filament;
 
+use App\Helpers\ProposedBudgetCalculator;
 use App\Models\User;
 use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\CheckboxColumn;
 use Filament\Tables\Columns\IconColumn;
@@ -23,6 +27,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 
 class ProposeAction extends Action
 {
@@ -73,47 +78,19 @@ class ProposeAction extends Action
                     }
                 )
                 ->searchable()
-                ->live()
+                ->reactive()
                 ->visible(fn() => Gate::allows('is_agency')),
 
-            Repeater::make('influencer_ids')
-                ->label('Influenciadores')
-                ->addable(false)
-                ->deletable(false)
-                ->reorderable(false)
+
+
+            RepeatableEntry::make('influencer_ids')->hiddenLabel()
                 ->table([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
                     TableColumn::make('Stories'),
                     TableColumn::make('Carrossel'),
                 ])
-                ->compact()->live()
-                ->default(function (Get $get) {
-                    $filterIds = $get('filter_influencers') ?? [];
-
-                    Log::info('Filter IDs:', ['ids' => $filterIds]);
-
-                    if (empty($filterIds)) {
-                        return [];
-                    }
-
-                    return Auth::user()
-                        ->influencers()
-                        ->with('influencer_info')
-                        ->select('users.id', 'users.name')
-                        ->whereIn('users.id', $filterIds) // Only show selected ones
-                        ->get()
-                        ->map(fn($influencer) => [
-                            'user_id'         => $influencer->id,
-                            'name'            => $influencer->name,
-                            'stories_price'   => $influencer->influencer_info->stories_price,
-                            'reels_price'     => $influencer->influencer_info->reels_price,
-                            'carrousel_price' => $influencer->influencer_info->carrousel_price,
-                        ])
-                        ->toArray();
-                })
                 ->schema([
-                    Hidden::make('user_id'),
 
                     TextEntry::make('name')
                         ->label('Nome'),
@@ -129,9 +106,45 @@ class ProposeAction extends Action
                     TextEntry::make('carrousel_price')
                         ->label('Carrossel')
                         ->money('BRL'),
-                ])
+
+                ])->default(function (Get $get) {
+                    $filterIds = $get('filter_influencers') ?? [];
+
+                    if (empty($filterIds)) {
+                        return [];
+                    }
+
+                    return Auth::user()
+                        ->influencers()
+                        ->with('influencer_info')
+                        ->select('users.id', 'users.name')
+                        ->whereIn('users.id', $filterIds)
+                        ->get()
+                        ->map(fn($influencer) => [
+                            'user_id'         => $influencer->id,
+                            'name'            => $influencer->name,
+                            'stories_price'   => $influencer->influencer_info->stories_price,
+                            'reels_price'     => $influencer->influencer_info->reels_price,
+                            'carrousel_price' => $influencer->influencer_info->carrousel_price,
+                        ])
+                        ->toArray();
+                })
                 ->reactive(),
 
+
+            TextEntry::make('summary')
+                ->hiddenLabel()->visible(function (Get $get) {
+                    $filterIds = $get('filter_influencers') ?? [];
+
+                    return !empty($filterIds);
+                })
+                ->state(fn($record) => new HtmlString("
+          <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
+            <span><strong>Reels:</strong> {$record->n_reels}</span>
+            <span><strong>Stories:</strong> {$record->n_stories}</span>
+            <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
+        </div>
+        ")),
 
 
             Group::make([
@@ -146,13 +159,25 @@ class ProposeAction extends Action
                     ->helperText(fn($record) => "Parcela original: {$record->agency_cut}%"),
 
                 TextInput::make('proposed_budget')
-                    ->label('Orçamento Proposto')->disabled()
-                    ->numeric()->placeholder(fn($record) => "{$record->budget}")
-                    ->inputMode('decimal')
-                    ->minValue(0)
-                    ->prefix('R$')
-                    ->default(fn($record) => $record->budget)
-                    ->helperText(fn($record) => "Orçamento original: R$ {$record->budget}"),
+                    ->label('Orçamento Proposto')
+                    ->disabled()->reactive()
+                    ->placeholder(function (Get $get, $record) {
+                        $influencers = $get('influencer_ids') ?? [];
+
+                        if (empty($influencers)) {
+                            return 'Selecione influenciadores';
+                        }
+
+                        $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
+                            $record->n_reels,
+                            $record->n_stories,
+                            $record->n_carrousels,
+                            $influencers
+                        );
+
+                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
+                    })
+                    ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2)
         ]);
 
@@ -166,7 +191,6 @@ class ProposeAction extends Action
 
                     'message' => $data['message'],
                     'proposed_agency_cut' => $data['proposed_agency_cut'],
-                    'proposed_budget' => $data['proposed_budget'],
 
                 ]);
 
@@ -175,9 +199,9 @@ class ProposeAction extends Action
                     ->values()
                     ->toArray();
 
-                dd($influencerIds);
 
                 unset($data['influencer_ids']);
+                unset($data['proposed_budget']);
 
                 $proposal->influencers()->sync($influencerIds);
 

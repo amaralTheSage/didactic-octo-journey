@@ -286,6 +286,10 @@ table {
     @apply bg-card;
 }
 
+.fi-ta-empty-state {
+    @apply rounded-b-3xl bg-background;
+}
+
 .fi-ta-empty-header-cell {
     @apply bg-card;
 }
