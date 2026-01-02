@@ -32,7 +32,7 @@ export function ChatInput({ chatId, setMessages }: ChatInputProps) {
         e.preventDefault();
         if (!data.content.trim() && data.files.length === 0) return;
 
-        const tempId = `temp-${crypto.randomUUID()}`;
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 
         setMessages((prev) => [
             ...prev,

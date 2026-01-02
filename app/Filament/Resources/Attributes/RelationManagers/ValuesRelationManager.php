@@ -56,7 +56,7 @@ class ValuesRelationManager extends RelationManager
                 DeleteAction::make()->hiddenLabel()->tooltip('Excluir'),
             ])
             ->toolbarActions([
-                CreateAction::make()->color('secondary'),
+                CreateAction::make(),
                 //         AssociateAction::make(),
                 BulkActionGroup::make([
                     DissociateBulkAction::make(),
