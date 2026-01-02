@@ -12,9 +12,9 @@ class AttributeForm
     {
         return $schema
             ->components([
-                TextInput::make('title')
+                TextInput::make('title')->label('Título')
                     ->required(),
-                Toggle::make('multiple_values')
+                Toggle::make('multiple_values')->label('Múltiplos Valores')
                     ->required(),
             ]);
     }
