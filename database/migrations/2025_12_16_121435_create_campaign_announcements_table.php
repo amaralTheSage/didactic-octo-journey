@@ -16,10 +16,19 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('agency_cut', 5, 2)->after('name');
+
             $table->decimal('budget', 14, 2);
+
             $table->foreignId('product_id')->constrained();
             $table->foreignId('company_id')->constrained('users');
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+
+            $table->string('location')->nullable();
+
+            $table->integer('n_reels')->default(0);
+            $table->integer('n_stories')->default(0);
+            $table->integer('n_carrousels')->default(0);
+
             $table->timestamps();
         });
     }

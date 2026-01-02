@@ -326,7 +326,7 @@ th {
 }
 
 .fi-modal-window {
-    @apply rounded-3xl border-sidebar-border bg-sidebar;
+    @apply border-sidebar-border bg-sidebar;
 }
 
 .fi-modal-header {

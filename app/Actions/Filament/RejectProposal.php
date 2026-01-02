@@ -3,6 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Models\Proposal;
+use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -21,25 +22,46 @@ class RejectProposal extends Action
     {
         parent::setUp();
 
+        $this->visible(function ($record) {
+            $user = Auth::user();
+
+            if ($user->role === UserRoles::Agency) {
+                return $record->agency_approval !== 'rejected';
+            } elseif ($user->role === UserRoles::Company) {
+                return $record->company_approval !== 'rejected';
+            } elseif ($user->role === UserRoles::Influencer) {
+                $approved = DB::table('proposal_user')
+                    ->where('proposal_id', $record->id)
+                    ->where('user_id', $user->id)
+                    ->value('influencer_approval');
+
+                return $approved !== 'rejected';
+            }
+
+            return false;
+        });
+
         $this->label('Rejeitar Proposta');
         $this->color('danger');
         $this->icon('heroicon-o-x-circle');
 
         $this->button();
-        $this->visible(
-            fn($record, $livewire) => Gate::allows('is_company')
-                && $record
-                ->exists()
-        );
+
 
         $this->action(function (Proposal $record) {
             try {
-                $record->update(['company_approval' => 'rejected']);
+                if (Auth::user()->role === UserRoles::Company) {
+                    $record->update(['company_approval' => 'rejected']);
+                } else if (Auth::user()->role === UserRoles::Agency) {
+                    $record->update(['agency_approval' => 'rejected']);
+                } else if (Auth::user()->role === UserRoles::Influencer) {
+                    $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
+                }
 
                 Notification::make()
-                    ->title('Proposta rejeitar')
+                    ->title('Proposta rejeitada')
                     ->body('A proposta foi rejeitada. ')
-                    ->success()
+                    ->danger()
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
@@ -50,21 +72,31 @@ class RejectProposal extends Action
                     ->danger()
                     ->send();
             } finally {
-                $record->agency->notify(
-                    Notification::make()
-                        ->title('Empresa rejeitou proposta')->danger()
-                        ->body(Auth::user()->name . ' rejeitou a proposta para ' . $record->announcement->name)
-                        ->toDatabase()
-                );
+                $role = Auth::user()->role;
+                $userName = Auth::user()->name;
+                $campaignName = $record->announcement->name;
 
-                $record->influencers->each(function ($influencer) use ($record) {
-                    $influencer->notify(
-                        Notification::make()
-                            ->title('Empresa rejeitou proposta')->danger()
-                            ->body(Auth::user()->name . ' rejeitou a proposta para ' . $record->announcement->name)
-                            ->toDatabase()
-                    );
-                });
+                $roleLabel = match ($role) {
+                    UserRoles::Company => 'Empresa',
+                    UserRoles::Agency => 'Agência',
+                    UserRoles::Influencer => 'Influenciador',
+                };
+
+                $notification = Notification::make()
+                    ->title("{$roleLabel} rejeitou proposta")
+                    ->body("{$userName} rejeitou a proposta para {$campaignName}")
+                    ->danger()
+                    ->toDatabase();
+
+                $notifyRecipients = function ($recipients) use ($notification) {
+                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                };
+
+                match ($role) {
+                    UserRoles::Company => $notifyRecipients([$record->agency, ...$record->influencers]),
+                    UserRoles::Agency => $notifyRecipients([$record->announcement->company, ...$record->influencers]),
+                    UserRoles::Influencer => $notifyRecipients([$record->announcement->company, $record->agency]),
+                };
             }
         });
     }

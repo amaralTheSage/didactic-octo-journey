@@ -6,6 +6,7 @@ use App\Actions\Filament\ProposeAction;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -63,6 +64,36 @@ class CampaignAnnouncementInfolist
                             ->icon('heroicon-o-arrow-path')
                             ->color('gray'),
 
+
+                        Action::make('influencerWantsToParticipate')->label('Quero Participar')->action(function ($record) {
+                            $userName = Auth::user()->name;
+
+                            $record->company->notify(Notification::make()
+                                ->title("Influenciador se interessou na sua campanha")
+                                ->body("{$userName} demonstrou interesse na campanha {$record->name}")
+                                ->actions([
+                                    Action::make('view')
+                                        ->label('Ver influenciador')
+                                        ->url(route('filament.admin.resources.influencers.index', [
+                                            'search' => $userName,
+                                            'tableAction' => 'viewInfluencerDetails',
+                                            'tableActionRecord' => Auth::user()->getKey(),
+                                        ])),
+                                ])
+                                ->toDatabase());
+
+                            Auth::user()->influencer_info?->agency?->notify(Notification::make()
+                                ->title("{$userName} se interessou em uma campanha")
+                                ->body("O influenciador demonstrou interesse na campanha {$record->name}")
+                                ->toDatabase());
+
+                            Notification::make()
+                                ->title('Interesse registrado!')
+                                ->body('A empresa recebeu sua notificação.')
+                                ->success()
+                                ->send();
+                        }),
+
                     ]),
 
                 Group::make()->schema([
@@ -86,7 +117,7 @@ class CampaignAnnouncementInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')
-                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -119,20 +150,22 @@ class CampaignAnnouncementInfolist
                     Actions::make([
                         ProposeAction::make(),
 
-                        Action::make('remove_proposal')
+                        Action
+                            ::make('remove_proposal')
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
-                                fn ($record) => Gate::allows('is_agency')
+                                fn($record) => Gate::allows('is_agency')
                                     && $record->proposals()
-                                        ->where('agency_id', Auth::id())
-                                        ->exists()
+                                    ->where('agency_id', Auth::id())
+                                    ->exists()
                             )
                             ->action(
-                                fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                             ),
                     ]),
                 ]),
+
             ]);
     }
 }

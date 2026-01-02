@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\CampaignAnnouncement;
 use App\Models\User;
+use App\Observers\CampaignAnnouncementObserver;
 use App\UserRoles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -26,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        CampaignAnnouncement::observe(CampaignAnnouncementObserver::class);
 
         Gate::define('is_admin', function (User $user) {
             return $user->role === UserRoles::Admin;

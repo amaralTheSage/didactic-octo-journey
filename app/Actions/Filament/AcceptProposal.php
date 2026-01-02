@@ -3,8 +3,11 @@
 namespace App\Actions\Filament;
 
 use App\ApprovalStatus;
+use App\Models\Chat;
 use App\Models\OngoingCampaign;
 use App\Models\Proposal;
+use App\Services\ChatService;
+use App\UserRoles;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
@@ -28,17 +31,40 @@ class AcceptProposal extends Action
         $this->icon('heroicon-o-check-circle');
         $this->button();
 
-        // $this->modalHeading('Confirmar aprovação da Proposta');
-        // $this->modalDescription('Tem certeza de que deseja aprovar esta proposta? Isto iniciará a Campanha.');
-        // $this->modalSubmitActionLabel('Aprovar')->color('primary');
+        $this->visible(function ($record) {
+            $user = Auth::user();
+
+            if ($user->role === UserRoles::Agency) {
+                return $record->agency_approval !== 'approved';
+            } elseif ($user->role === UserRoles::Company) {
+                return $record->company_approval !== 'approved';
+            } elseif ($user->role === UserRoles::Influencer) {
+                $approved = DB::table('proposal_user')
+                    ->where('proposal_id', $record->id)
+                    ->where('user_id', $user->id)
+                    ->value('influencer_approval');
+
+                return $approved !== 'approved';
+            }
+
+            return false;
+        });
+
+
 
         $this->action(function (Proposal $record) {
 
             try {
-                $record->update(['company_approval' => 'approved']);
+                if (Auth::user()->role === UserRoles::Company) {
+                    $record->update(['company_approval' => 'approved']);
+                } else if (Auth::user()->role === UserRoles::Agency) {
+                    $record->update(['agency_approval' => 'approved']);
+                } else if (Auth::user()->role === UserRoles::Influencer) {
+                    $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
+                }
 
                 Notification::make()
-                    ->title('Proposta Aprova')
+                    ->title('Proposta Aprovada')
                     ->body('A proposta foi aprovada. ')
                     ->success()
                     ->send();
@@ -51,21 +77,50 @@ class AcceptProposal extends Action
                     ->danger()
                     ->send();
             } finally {
-                $record->agency->notify(
-                    Notification::make()
-                        ->title('Empresa aprovou proposta')->success()
-                        ->body(Auth::user()->name . ' aprovou a proposta para ' . $record->announcement->name)
-                        ->toDatabase()
-                );
+                $role = Auth::user()->role;
+                $userName = Auth::user()->name;
+                $campaignName = $record->announcement->name;
 
-                $record->influencers->each(function ($influencer) use ($record) {
-                    $influencer->notify(
-                        Notification::make()
-                            ->title('Empresa aprovou proposta')->success()
-                            ->body(Auth::user()->name . ' aprovou a proposta para ' . $record->announcement->name)
-                            ->toDatabase()
-                    );
-                });
+                $roleLabel = match ($role) {
+                    UserRoles::Company => 'Empresa',
+                    UserRoles::Agency => 'Agência',
+                    UserRoles::Influencer => 'Influenciador',
+                };
+
+                $notification = Notification::make()
+                    ->title("{$roleLabel} aprovou proposta")
+                    ->body("{$userName} aprovou a proposta para {$campaignName}")
+                    ->success()
+                    ->toDatabase();
+
+                $notifyRecipients = function ($recipients) use ($notification) {
+                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                };
+
+                match ($role) {
+                    UserRoles::Company => $notifyRecipients([$record->agency, ...$record->influencers]),
+                    UserRoles::Agency => $notifyRecipients([$record->announcement->company, ...$record->influencers]),
+                    UserRoles::Influencer => $notifyRecipients([$record->announcement->company, $record->agency]),
+                };
+
+
+                if ($role === UserRoles::Company) {
+                    $chat = Chat::query()
+                        ->where('proposal_id', $record->id)
+                        ->whereHas('users', fn($q) => $q->where('users.id', Auth::user()->id))
+                        ->first();
+
+                    if (!$chat) {
+                        $chat = ChatService::createChat(
+                            [$record->agency_id],
+                            $record->id
+                        );
+                    }
+
+                    if ($chat instanceof Chat) {
+                        return redirect()->route('chats.show', ['chat' => $chat]);
+                    }
+                }
             }
         });
     }

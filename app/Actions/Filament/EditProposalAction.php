@@ -80,36 +80,6 @@ class EditProposalAction extends Action
                 ->prefix('R$')
                 ->visible(fn() => Gate::allows('is_agency')),
 
-            // _________________________________________________________________________________
-            // ________________________________________________________________________________
-            // _______________________________________________________________________________
-
-            Select::make('company_approval')
-                ->label('Aprovação da Empresa')
-                ->options([
-                    'pending' => 'Pendente',
-                    'approved' => 'Aprovado',
-                    'rejected' => 'Rejeitado',
-                ])
-                ->visible(fn() => Gate::allows('is_company')),
-
-            Select::make('agency_approval')
-                ->label('Aprovação da Agência')
-                ->options([
-                    'pending' => 'Pendente',
-                    'approved' => 'Aprovado',
-                    'rejected' => 'Rejeitado',
-                ])
-                ->visible(fn() => Gate::allows('is_agency')),
-
-            Select::make('influencer_approval')
-                ->label('Aprovação do Influenciador')
-                ->options([
-                    'pending' => 'Pendente',
-                    'approved' => 'Aprovado',
-                    'rejected' => 'Rejeitado',
-                ])
-                ->visible(fn() => Gate::allows('is_influencer')),
         ]);
 
         $this->fillForm(function (HasActions&HasSchemas $livewire, Model $record, ?Table $table): array {

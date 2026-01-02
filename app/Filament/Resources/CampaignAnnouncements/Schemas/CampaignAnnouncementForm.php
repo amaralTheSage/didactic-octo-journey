@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
 use App\Models\Attribute;
+use App\Models\User;
+use App\UserRoles;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -33,7 +35,7 @@ class CampaignAnnouncementForm
                         ->relationship(
                             'product',
                             'name',
-                            fn ($query) => $query->where('company_id', Auth::id())
+                            fn($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
                         ->required()->createOptionForm([
@@ -42,8 +44,8 @@ class CampaignAnnouncementForm
                             TextInput::make('price')
                                 ->numeric()
                                 ->inputMode('decimal')->prefix('R$')
-                                ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.'))
-                                ->dehydrateStateUsing(fn ($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
+                                ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
+                                ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
                                 ->placeholder('0,00')
                                 ->step('0.01')
                                 ->required(),
@@ -52,7 +54,7 @@ class CampaignAnnouncementForm
                             Hidden::make('company_id')->default(Auth::id()),
                         ])
                         ->createOptionAction(
-                            fn ($action) => $action->modalHeading('Criar Produto')
+                            fn($action) => $action->modalHeading('Criar Produto')
                         ),
 
                     Select::make('category_id')
@@ -63,12 +65,42 @@ class CampaignAnnouncementForm
                         ->label('Categoria')
                         ->required(),
 
+
                 ]),
+
+
 
                 Hidden::make('company_id')
                     ->default(Auth::id()),
 
                 Section::make()->schema([
+                    Select::make('influencer_ids')
+                        ->label('Influenciadores')
+                        ->multiple()
+                        ->options(
+                            User::where('role', UserRoles::Influencer)
+                                ->whereHas('influencer_info', function ($query) {
+                                    $query->whereNotNull('agency_id');
+                                })
+                                ->pluck('name', 'id')
+                        )
+                        ->searchable()
+                        ->default(fn() => session('selected_influencers', []))
+                        ->afterStateHydrated(function () {
+                            // Clear session after loading
+                            session()->forget('selected_influencers');
+                        })
+                        ->helperText('Selecione os influenciadores para criar propostas automaticamente'),
+                ]),
+
+                Group::make([
+                    TextInput::make('budget')
+                        ->label('Orçamento')
+                        ->numeric()->required()
+                        ->inputMode('decimal')
+                        ->prefix('R$')
+                        ->placeholder('0,00'),
+
                     TextInput::make('agency_cut')
                         ->label('Porcentagem da Agência')
                         ->numeric()
@@ -79,15 +111,7 @@ class CampaignAnnouncementForm
                         ->minValue(0)
                         ->step('0.01')
                         ->placeholder('30,00'),
-
-                    TextInput::make('budget')
-                        ->label('Orçamento')
-                        ->numeric()->required()
-                        ->inputMode('decimal')
-                        ->prefix('R$')
-                        ->placeholder('0,00'),
-
-                ]),
+                ])->columns(2)->columnSpanFull(),
 
                 Group::make()->columns(3)->schema([
                     TextInput::make('n_stories')->default(0)->numeric()->label('Stories'),
@@ -96,7 +120,11 @@ class CampaignAnnouncementForm
                 ])->columnSpan(2),
 
                 Repeater::make('attribute_values')
-                    ->label('Atributos Gerais')->addable(false)->deletable(false)->reorderable(false)
+                    ->compact()
+                    ->collapsible()->collapsed()
+                    ->label('Atributos Gerais')
+                    ->addable(false)->deletable(false)
+                    ->reorderable(false)
                     ->default(function () {
                         return Attribute::with('values')->get()->map(function ($attribute) {
                             return [
@@ -109,7 +137,6 @@ class CampaignAnnouncementForm
                         TableColumn::make('Atributo'),
                         TableColumn::make('Valor'),
                     ])
-                    ->compact()
                     ->schema([
                         Hidden::make('attribute_id'),
 
@@ -119,7 +146,7 @@ class CampaignAnnouncementForm
                         Select::make('attribute_value_id')->columnSpan(1)
                             ->label('Valor')
                             ->options(
-                                fn (Get $get) => \App\Models\Attribute::find($get('attribute_id'))
+                                fn(Get $get) => Attribute::find($get('attribute_id'))
                                     ?->values()
                                     ->pluck('title', 'id') ?? []
                             )
@@ -172,8 +199,8 @@ class CampaignAnnouncementForm
                             ->afterStateUpdated(function (callable $set) {
                                 $set('city', null);
                             })
-                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
-                            ->required(fn (Get $get) => $get('country') === 'BR'),
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR'),
 
                         Select::make('city')->columnSpan(1)
                             ->label('Cidade')
@@ -190,9 +217,9 @@ class CampaignAnnouncementForm
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
-                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state'))
-                            ->disabled(fn (Get $get) => ! $get('state')),
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
+                            ->disabled(fn(Get $get) => ! $get('state')),
                     ])->compact()
                     ->columnSpan(2),
 

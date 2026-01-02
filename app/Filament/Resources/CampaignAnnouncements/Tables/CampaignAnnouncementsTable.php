@@ -154,7 +154,6 @@ class CampaignAnnouncementsTable
                     ->visible(fn($livewire) => self::prTab($livewire)),
                 // ]),
 
-                // ColumnGroup::make('Influenciador', [
                 ImageColumn::make('influencers.avatar_url')
                     ->label('Influenciadores')
                     ->circular()
@@ -166,7 +165,6 @@ class CampaignAnnouncementsTable
                             ->join(', ')
 
                     )->visible(fn($livewire) => self::prTab($livewire)),
-                // ]),
 
                 TextColumn::make('proposed_agency_cut')
                     ->label('% da Agência Proposta')
@@ -259,15 +257,7 @@ class CampaignAnnouncementsTable
                         ->formatStateUsing(fn($state): string => __("campaign_status.$state.label"))
                         ->visible(fn($livewire) => self::prTab($livewire)),
 
-                    // APROVAÇÃO DO INFLUENCIADOR
 
-                    // TextColumn::make('influencer_approval')
-                    //     ->label('Influenciador')->badge()
-                    //     ->color($colorByStatus)
-                    //     ->icon(fn() => Gate::allows('is_influencer') ? Heroicon::OutlinedCursorArrowRays : null)
-                    //     ->action(EditProposalAction::make()->disabled(Gate::denies('is_influencer')))
-                    //     ->formatStateUsing(fn($state): string => __("approval_status.$state"))
-                    //     ->visible(fn($livewire) => self::prTab($livewire)),
                 ]),
 
             ])
@@ -295,9 +285,8 @@ class CampaignAnnouncementsTable
                     ->visible(fn($livewire) => self::prTab($livewire)),
 
                 Action::make('influencerApprove')->icon(Heroicon::Check)->hiddenLabel()->tooltip('Aprovar')
-                    ->visible(fn($livewire) => self::prTab($livewire) && Gate::allows('is_influencer'))
                     ->action(function ($record) {
-                        $record->influencers()->updateExistingPivot(Auth::id(), ['approved' => true]);
+                        $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
 
                         $record->announcement->company->notify(
                             Notification::make()
@@ -321,17 +310,15 @@ class CampaignAnnouncementsTable
                             ->send();
                     })->visible(
                         fn($livewire, $record) =>
-
                         self::prTab($livewire)
                             && Gate::allows('is_influencer')
-                            &&        !DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('approved')
+                            && DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('influencer_approval') !== 'approved'
                     ),
 
                 Action::make('influencerReject')->icon(Heroicon::XMark)->hiddenLabel()->tooltip('Rejeitar')
-                    ->visible(fn($livewire) => self::prTab($livewire) && Gate::allows('is_influencer'))
                     ->color('danger')
                     ->action(function ($record) {
-                        $record->influencers()->updateExistingPivot(Auth::id(), ['approved' => false]);
+                        $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
 
                         $record->announcement->company->notify(
                             Notification::make()
@@ -357,7 +344,7 @@ class CampaignAnnouncementsTable
                         fn($livewire, $record) =>
                         self::prTab($livewire)
                             && Gate::allows('is_influencer')
-                            && DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('approved')
+                            && DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('influencer_approval') !== 'rejected'
                     ),
             ])
             ->toolbarActions([

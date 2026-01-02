@@ -4,18 +4,29 @@ namespace App\Filament\Resources\Influencers\Tables;
 
 use App\Actions\Filament\ChatAction;
 use App\Actions\Filament\ViewInfluencerDetails;
+use App\Models\CampaignAnnouncement;
 use App\Models\Category;
+use App\Models\Proposal;
 use App\Models\User;
 use App\UserRoles;
+use Eloquent;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Collection;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,7 +67,7 @@ class InfluencersTable
                         return $record->subcategories->pluck('title')->toArray();
                     })
                     ->tooltip(
-                        fn (Model $record) => $record->subcategories->pluck('title')->join(', ')
+                        fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
                     )
                     ->sortable(false)
                     ->wrap(),
@@ -79,10 +90,10 @@ class InfluencersTable
                     })
                     ->numeric(),
 
-                TextColumn::make('influencer_info.city')
-                    ->label('Cidade / UF')
-                    ->placeholder('-')
-                    ->searchable()->description(fn ($record) => $record->influencer_info->state),
+                // TextColumn::make('influencer_info.city')
+                //     ->label('Cidade / UF')
+                //     ->placeholder('-')
+                //     ->searchable()->description(fn($record) => $record->influencer_info->state),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -103,7 +114,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -119,7 +130,76 @@ class InfluencersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    // DeleteBulkAction::make(),
+                    BulkAction::make('assignToExistingCampaign')
+                        ->label('Atribuir à Campanha Existente')
+                        ->icon('heroicon-o-plus-circle')
+                        ->schema([
+                            Select::make('campaign_announcement_id')
+                                ->label('Campanha')
+                                ->options(
+                                    CampaignAnnouncement::query()
+                                        ->where('company_id', Auth::id())
+                                        ->pluck('name', 'id')
+                                )
+                                ->required()
+                                ->searchable(),
+
+                            // Textarea::make('message')
+                            //     ->label('Mensagem (opcional)')
+                            //     ->placeholder('Mensagem para as agências...')
+                            //     ->rows(3),
+                        ])
+                        ->action(function (EloquentCollection $records, array $data) {
+                            // Group influencers by agency
+                            $influencersByAgency = $records->groupBy(
+                                fn($influencer) => $influencer->influencer_info->agency_id
+                            );
+
+                            $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
+
+                            // Create one proposal per agency
+                            foreach ($influencersByAgency as $agencyId => $influencers) {
+                                $proposal = Proposal::create([
+                                    'campaign_announcement_id' => $campaign->id,
+                                    'agency_id' => $agencyId,
+                                    'message' => $data['message'] ?? null,
+                                    'proposed_agency_cut' => $campaign->agency_cut,
+                                    'company_approval' => 'approved',
+                                    'agency_approval' => 'pending',
+                                ]);
+
+                                $proposal->influencers()->attach($influencers->pluck('id'));
+
+                                // Notify agency
+                                User::find($agencyId)->notify(
+                                    Notification::make()
+                                        ->title('Nova proposta de campanha')
+                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
+                                        ->toDatabase()
+                                );
+                            }
+
+                            Notification::make()
+                                ->title('Influenciadores atribuídos')
+                                ->body('Propostas criadas com sucesso!')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('createCampaignWithInfluencers')
+                        ->label('Criar Campanha com Selecionados')
+                        ->icon('heroicon-o-sparkles')
+                        ->action(function (EloquentCollection $records) {
+                            $influencerIds = $records->pluck('id')->toArray();
+
+                            // Store in session to pre-populate form
+                            session(['selected_influencers' => $influencerIds]);
+
+                            // Redirect to create page
+                            return redirect()->route('filament.admin.resources.campaign-announcements.create');
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

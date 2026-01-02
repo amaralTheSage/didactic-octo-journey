@@ -36,7 +36,6 @@ class CompaniesTable
             ])
             ->recordActions([
                 ViewCompanyDetails::make()->hiddenLabel(),
-                ChatAction::make()->hiddenLabel(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

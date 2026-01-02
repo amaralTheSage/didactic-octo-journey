@@ -20,8 +20,6 @@ return new class extends Migration
             $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
             $table->foreignId('agency_id')->constrained('users')->cascadeOnDelete();
 
-            $table->enum('influencer_approval', ['pending', 'approved', 'rejected'])->default('pending');
-
             $table->enum('agency_approval', ['pending', 'approved', 'rejected'])->default('pending');
 
             $table->enum('company_approval', ['pending', 'approved', 'rejected'])->default('pending');
