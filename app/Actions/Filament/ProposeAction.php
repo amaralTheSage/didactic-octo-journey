@@ -3,6 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -205,32 +206,28 @@ class ProposeAction extends Action
 
         $this->action(function ($record, array $data) {
             try {
-
                 $proposal = $record->proposals()->create([
                     'campaign_announcement_id' => $record->id,
                     'agency_id' => Auth::id(),
                     'message' => $data['message'],
                     'proposed_agency_cut' => $data['proposed_agency_cut'],
-
                 ]);
 
                 $pivotData = [];
+                $influencerIds = [];
+
                 foreach ($data['selected_influencers'] ?? [] as $influencer) {
-                    $pivotData[$influencer['user_id']] = [
-                        'reels_price' => $influencer['reels_price'],
-                        'stories_price' => $influencer['stories_price'],
-                        'carrousel_price' => $influencer['carrousel_price'],
+                    $userId = $influencer['user_id'];
+                    $influencerIds[] = $userId;
+
+                    $pivotData[$userId] = [
+                        'reels_price' => (float)$influencer['reels_price'],
+                        'stories_price' => (float)$influencer['stories_price'],
+                        'carrousel_price' => (float)$influencer['carrousel_price'],
                     ];
                 }
 
                 $proposal->influencers()->sync($pivotData);
-
-                $influencerIds = $data['influencer_ids'] ?? [];
-
-                unset($data['influencer_ids']);
-                unset($data['proposed_budget']);
-
-                $proposal->influencers()->sync($influencerIds);
 
                 $record->company->notify(
                     Notification::make()
@@ -247,6 +244,16 @@ class ProposeAction extends Action
                         ])
                         ->toDatabase()
                 );
+
+                foreach ($influencerIds as $influencerId) {
+                    User::find($influencerId)?->notify(
+                        Notification::make()
+                            ->title('Você foi incluído em uma proposta')
+                            ->body('Sua agência incluiu você na proposta para a campanha: ' . $record->name)
+                            ->info()
+                            ->toDatabase()
+                    );
+                }
 
                 Notification::make()
                     ->title('Proposta Enviada')

@@ -65,7 +65,7 @@ class CampaignAnnouncementInfolist
                             ->color('gray'),
 
 
-                        Action::make('influencerWantsToParticipate')->label('Quero Participar')->action(function ($record) {
+                        Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
                             $userName = Auth::user()->name;
 
                             $record->company->notify(Notification::make()

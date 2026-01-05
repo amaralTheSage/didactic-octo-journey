@@ -74,13 +74,13 @@ class EditProposalAction extends Action
                             ->where('association_status', 'approved')
                             ->pluck('name', 'users.id');
                     }
-                )->afterStateUpdated(function ($state, callable $set) {
+                )->afterStateUpdated(function ($state, callable $set, $record) {
                     if (empty($state)) {
                         $set('selected_influencers', []);
                         return;
                     }
 
-                    $influencers = Auth::user()
+                    $influencers = $record->agency
                         ->influencers()
                         ->with('influencer_info')
                         ->select('users.id', 'users.name')
@@ -120,7 +120,7 @@ class EditProposalAction extends Action
                     TextInput::make('stories_price')->label('Stories')->numeric()->prefix('R$')->required(),
                     TextInput::make('carrousel_price')->label('Carrossel')->numeric()->prefix('R$')->required(),
                 ])
-                ->reactive()
+                ->live()
                 ->visible(fn() => Gate::allows('is_agency') || Gate::allows('is_company')),
 
             TextEntry::make('summary')
@@ -147,7 +147,7 @@ class EditProposalAction extends Action
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
-                    ->disabled()->reactive()
+                    ->disabled()->live()
                     ->placeholder(function (Get $get, $record) {
                         $influencers = $get('selected_influencers') ?? [];
 
@@ -225,16 +225,65 @@ class EditProposalAction extends Action
                     'proposed_agency_cut' => $data['proposed_agency_cut'] ?? null,
                 ]);
 
+                // Get old prices for comparison
+                $oldPrices = $record->influencers()
+                    ->get()
+                    ->keyBy('id')
+                    ->map(fn($inf) => [
+                        'reels' => $inf->pivot->reels_price,
+                        'stories' => $inf->pivot->stories_price,
+                        'carrousel' => $inf->pivot->carrousel_price,
+                    ]);
+
                 $pivotData = [];
+                $priceChanges = [];
+
                 foreach ($data['selected_influencers'] ?? [] as $influencer) {
-                    $pivotData[$influencer['user_id']] = [
+                    $userId = $influencer['user_id'];
+                    $newPrices = [
                         'reels_price' => (float)$influencer['reels_price'],
                         'stories_price' => (float)$influencer['stories_price'],
                         'carrousel_price' => (float)$influencer['carrousel_price'],
                     ];
+
+                    $pivotData[$userId] = $newPrices;
+
+                    // Check if prices changed
+                    if (isset($oldPrices[$userId])) {
+                        $old = $oldPrices[$userId];
+                        if (
+                            $old['reels'] != $newPrices['reels_price'] ||
+                            $old['stories'] != $newPrices['stories_price'] ||
+                            $old['carrousel'] != $newPrices['carrousel_price']
+                        ) {
+                            $priceChanges[$userId] = true;
+                        }
+                    }
                 }
 
                 $record->influencers()->sync($pivotData);
+
+                // Notify influencers whose prices changed
+                foreach ($priceChanges as $userId => $changed) {
+                    User::find($userId)?->notify(
+                        Notification::make()
+                            ->title('Preços atualizados na proposta')
+                            ->body('Os valores da sua participação na campanha ' . $record->announcement->name . ' foram atualizados por ' . Auth::user()->name)
+                            ->info()
+                            ->toDatabase()
+                    );
+                }
+
+                // If company made changes, notify the agency
+                if (Auth::user()->role === UserRoles::Company && !empty($priceChanges)) {
+                    $record->agency->notify(
+                        Notification::make()
+                            ->title('Proposta atualizada pela empresa')
+                            ->body(Auth::user()->name . ' atualizou os valores dos influenciadores na proposta para ' . $record->announcement->name)
+                            ->info()
+                            ->toDatabase()
+                    );
+                }
 
                 Notification::make()
                     ->title('Proposta atualizada')
