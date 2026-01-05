@@ -197,12 +197,11 @@ class CampaignAnnouncementsTable
                     ->placeholder('-')
                     ->state(function ($record) {
                         $influencers = $record->influencers()
-                            ->with('influencer_info')
                             ->get()
                             ->map(fn($inf) => [
-                                'reels_price' => $inf->influencer_info->reels_price ?? 0,
-                                'stories_price' => $inf->influencer_info->stories_price ?? 0,
-                                'carrousel_price' => $inf->influencer_info->carrousel_price ?? 0,
+                                'reels_price' => $inf->pivot->reels_price ?? 0,
+                                'stories_price' => $inf->pivot->stories_price ?? 0,
+                                'carrousel_price' => $inf->pivot->carrousel_price ?? 0,
                             ])
                             ->toArray();
 
@@ -218,11 +217,11 @@ class CampaignAnnouncementsTable
                         );
 
                         return new HtmlString('
-                            <div class="flex flex-col gap-0.5 text-sm">
-                                <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
-                                <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
-                            </div>
-                        ');
+                                <div class="flex flex-col gap-0.5 text-sm">
+                                    <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
+                                    <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
+                                </div>
+                            ');
                     })
                     ->visible(fn($livewire) => self::prTab($livewire)),
 
@@ -278,7 +277,7 @@ class CampaignAnnouncementsTable
                 ViewAction::make()->hiddenLabel()
                     ->visible(fn($livewire) => self::anTab($livewire)),
 
-                EditAction::make()->hiddenLabel()
+                EditAction::make()->hiddenLabel()->defaultColor('gray')
                     ->visible(fn($record, $livewire) => Gate::allows('is_company') && self::anTab($livewire)),
 
                 ViewProposal::make()->hiddenLabel()

@@ -21,14 +21,10 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(10).'.jpg';
-
-            $url = 'https://picsum.photos/300/300?random='.Str::random(10);
-
+            $filename = Str::random(10) . '.jpg';
+            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
             $imageData = file_get_contents($url);
-
             Storage::disk('public')->put("avatars/{$filename}", $imageData);
-
             return "avatars/{$filename}";
         };
 
@@ -53,11 +49,11 @@ class DatabaseSeeder extends Seeder
             $companies->push(
                 User::create([
                     'name' => fake()->company(),
-                    'email' => "company$i@gmail.com",
+                    'email' => "company{$i}@gmail.com",
                     'bio' => fake()->paragraph(),
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
-                    'role' => 'company',
+                    'role' => UserRoles::Company,
                     'email_verified_at' => now(),
                 ])
             );
@@ -71,17 +67,18 @@ class DatabaseSeeder extends Seeder
             $agencies->push(
                 User::create([
                     'name' => fake()->company(),
-                    'email' => "agency$i@gmail.com",
+                    'email' => "agency{$i}@gmail.com",
                     'bio' => fake()->paragraph(),
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
-                    'role' => 'agency',
+                    'role' => UserRoles::Agency,
                     'email_verified_at' => now(),
                 ])
             );
         }
+
         // -------------------------------------------------------
-        // Categories
+        // Categories + Subcategories
         // -------------------------------------------------------
         $categoriesData = [
             'Beleza e Moda' => [
@@ -151,18 +148,20 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 20) as $i) {
             $user = User::create([
                 'name' => fake()->name(),
-                'email' => "influencer$i@gmail.com",
+                'email' => "influencer{$i}@gmail.com",
                 'bio' => fake()->paragraph(),
                 'avatar' => $createAvatar(),
                 'password' => Hash::make('senha123'),
-                'role' => 'influencer',
+                'role' => UserRoles::Influencer,
                 'email_verified_at' => now(),
             ]);
 
+            // attach random subcategories
             $user->subcategories()->attach(
                 $allSubcategories->random(rand(1, 3))->pluck('id')
             );
 
+            // influencer info
             InfluencerInfo::create([
                 'user_id' => $user->id,
                 'agency_id' => $agencies->random()->id,
@@ -177,20 +176,20 @@ class DatabaseSeeder extends Seeder
                 'stories_price' => rand(200, 2000),
                 'carrousel_price' => rand(300, 3000),
             ]);
+
             $influencers->push($user);
         }
 
         // -------------------------------------------------------
-        // Products
+        // Products (per company)
         // -------------------------------------------------------
-        $companies->each(function ($company) {
+        $companies->each(function ($company) use ($categories) {
             foreach (range(1, 3) as $i) {
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
-                    'category_id' => '1',
-
+                    'category_id' => $categories->random()->id,
                     'company_id' => $company->id,
                 ]);
             }
@@ -205,7 +204,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => 'company',
+            'role' => UserRoles::Company,
             'email_verified_at' => now(),
         ]);
 
@@ -215,7 +214,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => 'agency',
+            'role' => UserRoles::Agency,
             'email_verified_at' => now(),
         ]);
 
@@ -225,28 +224,25 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => 'influencer',
+            'role' => UserRoles::Influencer,
             'email_verified_at' => now(),
         ]);
+
         InfluencerInfo::create([
             'user_id' => $gabriel->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
-
             'location' => 'BR|RS|Pelotas',
-
-            'instagram' => fake()->word().'_ig',
-            'twitter' => fake()->word().'_tw',
-            'facebook' => fake()->word().'_fb',
-            'youtube' => fake()->word().'_yt',
-            'tiktok' => fake()->word().'_tt',
-
+            'instagram' => fake()->word() . '_ig',
+            'twitter' => fake()->word() . '_tw',
+            'facebook' => fake()->word() . '_fb',
+            'youtube' => fake()->word() . '_yt',
+            'tiktok' => fake()->word() . '_tt',
             'instagram_followers' => rand(5000, 50000),
             'twitter_followers' => rand(5000, 50000),
             'facebook_followers' => rand(5000, 50000),
             'youtube_followers' => rand(5000, 50000),
             'tiktok_followers' => rand(5000, 50000),
-
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
@@ -258,16 +254,14 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => 'influencer',
+            'role' => UserRoles::Influencer,
             'email_verified_at' => now(),
         ]);
         InfluencerInfo::create([
             'user_id' => $influencerA1->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
-
             'location' => 'MX||',
-
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
@@ -279,16 +273,14 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => 'influencer',
+            'role' => UserRoles::Influencer,
             'email_verified_at' => now(),
         ]);
         InfluencerInfo::create([
             'user_id' => $influencerA2->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'pending',
-
             'location' => 'AR||',
-
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
@@ -297,12 +289,11 @@ class DatabaseSeeder extends Seeder
         // -------------------------------------------------------
         // Products for Test Company
         // -------------------------------------------------------
-
         $testProducts = collect();
         foreach (range(1, 5) as $i) {
             $testProducts->push(
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,
@@ -343,12 +334,10 @@ class DatabaseSeeder extends Seeder
         $campaignAnnouncements = CampaignAnnouncement::all();
 
         $campaignAnnouncements->each(function ($announcement) use ($agencies, $influencers) {
-            // Each announcement gets 2-5 proposals from different agencies
             $numberOfProposals = rand(2, 2);
             $selectedAgencies = $agencies->random(min($numberOfProposals, $agencies->count()));
 
             $selectedAgencies->each(function ($agency) use ($announcement, $influencers) {
-                // Get influencers from this agency
                 $agencyInfluencers = $influencers->filter(function ($influencer) use ($agency) {
                     return $influencer->influencer_info->agency_id === $agency->id
                         && $influencer->influencer_info->association_status === 'approved';
@@ -365,11 +354,21 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 if ($agencyInfluencers->isNotEmpty()) {
-                    $proposal->influencers()->attach(
-                        $agencyInfluencers
-                            ->random(rand(1, min(3, $agencyInfluencers->count())))
-                            ->pluck('id')
-                    );
+                    $attachPayload = $agencyInfluencers
+                        ->random(rand(1, min(3, $agencyInfluencers->count())))
+                        ->mapWithKeys(function ($inf) {
+                            $info = $inf->influencer_info;
+                            return [
+                                $inf->id => [
+                                    'reels_price' => $info->reels_price ?? null,
+                                    'stories_price' => $info->stories_price ?? null,
+                                    'carrousel_price' => $info->carrousel_price ?? null,
+                                    'influencer_approval' => 'pending',
+                                ],
+                            ];
+                        })->all();
+
+                    $proposal->influencers()->attach($attachPayload);
                 }
             });
         });

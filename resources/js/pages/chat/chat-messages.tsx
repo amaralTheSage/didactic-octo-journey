@@ -79,7 +79,7 @@ export function ChatMessages({
                 <button
                     key={attachment.id}
                     onClick={() => setLightboxImage(attachment.url)}
-                    className="group relative max-w-xs overflow-hidden rounded-xl transition-all hover:ring-2 hover:ring-primary/50"
+                    className="group relative mb-0.5 ml-0.5 w-2xl max-w-xs overflow-hidden rounded-xl transition-all hover:ring-2 hover:ring-primary/50"
                 >
                     <img
                         src={attachment.url || '/placeholder.svg'}
@@ -230,7 +230,7 @@ export function ChatMessages({
                                     message.attachments.length > 0 && (
                                         <div
                                             className={cn(
-                                                'mt-2 flex flex-wrap gap-2',
+                                                'mt-2 flex w-3xl flex-wrap',
                                                 isCurrentUser
                                                     ? 'justify-end'
                                                     : 'justify-start',

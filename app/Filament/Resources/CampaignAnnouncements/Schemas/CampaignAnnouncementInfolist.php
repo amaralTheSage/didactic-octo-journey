@@ -97,7 +97,6 @@ class CampaignAnnouncementInfolist
                     ]),
 
                 Group::make()->schema([
-
                     Section::make('Empresa')
                         ->icon('heroicon-o-building-office-2')
                         ->columns(2)
@@ -116,7 +115,7 @@ class CampaignAnnouncementInfolist
 
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
-                                    ->icon('heroicon-o-building-office')
+                                    ->icon('heroicon-o-building-office')->color('primary')
                                     ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',

@@ -35,6 +35,6 @@ class Proposal extends Model
 
     public function influencers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)->withPivot('reels_price', 'stories_price', 'carrousel_price', 'influencer_approval');
     }
 }

@@ -51,7 +51,12 @@ class CampaignAnnouncement extends Model
 
     public function attribute_values()
     {
-        return $this->belongsToMany(AttributeValue::class);
+        return $this->belongsToMany(
+            AttributeValue::class,
+            'attribute_value_campaign_announcement',
+            'campaign_announcement_id',
+            'attribute_value_id'
+        );
     }
 
     public function category(): BelongsTo
