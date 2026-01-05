@@ -42,7 +42,7 @@ class CampaignAnnouncementInfolist
                             ->label('Produto')
                             ->weight(FontWeight::SemiBold),
 
-                        TextEntry::make('category.title')
+                        TextEntry::make('categories.title')->limitList(2)->listWithLineBreaks()->expandableLimitedList()
                             ->label('Categoria')
                             ->badge()
                             ->color('info'),

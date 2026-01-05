@@ -57,15 +57,13 @@ class CampaignAnnouncementForm
                             fn($action) => $action->modalHeading('Criar Produto')
                         ),
 
-                    Select::make('category_id')
-                        ->relationship(
-                            'category',
-                            'title',
-                        )
-                        ->label('Categoria')
+                    Select::make('category_ids')
+                        ->relationship('categories', 'title')
+                        ->label('Categorias')
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
                         ->required(),
-
-
                 ]),
 
 

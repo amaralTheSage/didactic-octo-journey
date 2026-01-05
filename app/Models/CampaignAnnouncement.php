@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class CampaignAnnouncement extends Model
 {
@@ -16,7 +17,6 @@ class CampaignAnnouncement extends Model
         'company_id',
         'budget',
         'agency_cut',
-        'category_id',
         'announcement_status',
         'n_reels',
         'n_carrousels',
@@ -59,9 +59,9 @@ class CampaignAnnouncement extends Model
         );
     }
 
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class, 'campaign_announcement_category');
     }
 
     public function product(): BelongsTo
