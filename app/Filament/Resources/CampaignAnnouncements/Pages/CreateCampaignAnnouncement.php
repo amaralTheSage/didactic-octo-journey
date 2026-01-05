@@ -7,6 +7,20 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateCampaignAnnouncement extends CreateRecord
 {
+    protected function afterCreate(): void
+    {
+        $rows = $this->form->getState()['attribute_values'] ?? [];
+
+        $valueIds = collect($rows)
+            ->map(fn($r) => $r['attribute_value_id'] ?? null)
+            ->filter()
+            ->values()
+            ->all();
+
+        $this->record->attribute_values()->sync($valueIds);
+    }
+
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (! empty($data['location_data'])) {

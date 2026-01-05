@@ -103,19 +103,16 @@ class ViewProposal
                                 );
                             }),
 
-                        TextEntry::make('proposed_budget_t')
+                        TextEntry::make('proposed_budget')
                             ->label('Orçamento Proposto')
                             ->placeholder('-')
                             ->state(function ($record) {
-
-
                                 $influencers = $record->influencers()
-                                    ->with('influencer_info')
                                     ->get()
                                     ->map(fn($inf) => [
-                                        'reels_price' => $inf->influencer_info->reels_price ?? 0,
-                                        'stories_price' => $inf->influencer_info->stories_price ?? 0,
-                                        'carrousel_price' => $inf->influencer_info->carrousel_price ?? 0,
+                                        'reels_price' => $inf->pivot->reels_price ?? 0,
+                                        'stories_price' => $inf->pivot->stories_price ?? 0,
+                                        'carrousel_price' => $inf->pivot->carrousel_price ?? 0,
                                     ])
                                     ->toArray();
 
@@ -135,7 +132,7 @@ class ViewProposal
                                         <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
                                         <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
                                     </div>
-                              ');
+                                ');
                             }),
 
                         TextEntry::make('created_at')
@@ -236,20 +233,41 @@ class ViewProposal
                                     // ── Prices
                                     Group::make()->visible(Gate::denies('is_influencer'))
                                         ->schema([
-                                            TextEntry::make('influencer_info.reels_price')
+                                            TextEntry::make('pivot_reels_price')
                                                 ->label('Reels')
-                                                ->money('BRL')->weight(FontWeight::SemiBold)
-                                                ->placeholder('-'),
+                                                ->money('BRL')
+                                                ->weight(FontWeight::SemiBold)
+                                                ->placeholder('-')
+                                                ->state(function ($record) use ($proposalId) {
+                                                    return DB::table('proposal_user')
+                                                        ->where('proposal_id', $proposalId)
+                                                        ->where('user_id', $record->id)
+                                                        ->value('reels_price');
+                                                }),
 
-                                            TextEntry::make('influencer_info.stories_price')
+                                            TextEntry::make('pivot_stories_price')
                                                 ->label('Stories')
-                                                ->money('BRL')->weight(FontWeight::SemiBold)
-                                                ->placeholder('-'),
+                                                ->money('BRL')
+                                                ->weight(FontWeight::SemiBold)
+                                                ->placeholder('-')
+                                                ->state(function ($record) use ($proposalId) {
+                                                    return DB::table('proposal_user')
+                                                        ->where('proposal_id', $proposalId)
+                                                        ->where('user_id', $record->id)
+                                                        ->value('stories_price');
+                                                }),
 
-                                            TextEntry::make('influencer_info.carrousel_price')
+                                            TextEntry::make('pivot_carrousel_price')
                                                 ->label('Carrossel')
-                                                ->money('BRL')->weight(FontWeight::SemiBold)
-                                                ->placeholder('-'),
+                                                ->money('BRL')
+                                                ->weight(FontWeight::SemiBold)
+                                                ->placeholder('-')
+                                                ->state(function ($record) use ($proposalId) {
+                                                    return DB::table('proposal_user')
+                                                        ->where('proposal_id', $proposalId)
+                                                        ->where('user_id', $record->id)
+                                                        ->value('carrousel_price');
+                                                }),
                                         ])
                                         ->columns(3)
                                         ->columnSpanFull(),

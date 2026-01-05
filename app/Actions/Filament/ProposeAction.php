@@ -4,6 +4,8 @@ namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -63,12 +65,39 @@ class ProposeAction extends Action
                             ->where('association_status', 'approved')
                             ->pluck('name', 'users.id');
                     }
-                )
+                )->afterStateUpdated(function ($state, callable $set) {
+                    if (empty($state)) {
+                        $set('selected_influencers', []);
+                        return;
+                    }
+
+                    $influencers = Auth::user()
+                        ->influencers()
+                        ->with('influencer_info')
+                        ->select('users.id', 'users.name')
+                        ->whereIn('users.id', $state)
+                        ->get()
+                        ->map(fn($influencer) => [
+                            'user_id' => $influencer->id,
+                            'name' => $influencer->name,
+                            'stories_price' => $influencer->influencer_info->stories_price,
+                            'reels_price' => $influencer->influencer_info->reels_price,
+                            'carrousel_price' => $influencer->influencer_info->carrousel_price,
+                        ])
+                        ->toArray();
+
+                    $set('selected_influencers', $influencers);
+                })
                 ->searchable()
                 ->reactive()
                 ->visible(fn() => Gate::allows('is_agency')),
 
-            RepeatableEntry::make('selected_influencers')->hiddenLabel()
+
+            Repeater::make('selected_influencers')
+                ->hiddenLabel()
+                ->addable(false)
+                ->deletable(false)
+                ->reorderable(false)
                 ->table([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
@@ -76,22 +105,33 @@ class ProposeAction extends Action
                     TableColumn::make('Carrossel'),
                 ])
                 ->schema([
+                    Hidden::make('user_id'),
+
                     TextEntry::make('name')
                         ->label('Nome'),
 
-                    TextEntry::make('reels_price')
+                    TextInput::make('reels_price')
                         ->label('Reels')
-                        ->money('BRL'),
+                        ->numeric()
+                        ->prefix('R$')
+                        ->inputMode('decimal')
+                        ->required(),
 
-                    TextEntry::make('stories_price')
+                    TextInput::make('stories_price')
                         ->label('Stories')
-                        ->money('BRL'),
+                        ->numeric()
+                        ->prefix('R$')
+                        ->inputMode('decimal')
+                        ->required(),
 
-                    TextEntry::make('carrousel_price')
+                    TextInput::make('carrousel_price')
                         ->label('Carrossel')
-                        ->money('BRL'),
-
-                ])->default(function (Get $get) {
+                        ->numeric()
+                        ->prefix('R$')
+                        ->inputMode('decimal')
+                        ->required(),
+                ])
+                ->default(function (Get $get) {
                     $filterIds = $get('influencer_ids') ?? [];
 
                     if (empty($filterIds)) {
@@ -169,11 +209,21 @@ class ProposeAction extends Action
                 $proposal = $record->proposals()->create([
                     'campaign_announcement_id' => $record->id,
                     'agency_id' => Auth::id(),
-
                     'message' => $data['message'],
                     'proposed_agency_cut' => $data['proposed_agency_cut'],
 
                 ]);
+
+                $pivotData = [];
+                foreach ($data['selected_influencers'] ?? [] as $influencer) {
+                    $pivotData[$influencer['user_id']] = [
+                        'reels_price' => $influencer['reels_price'],
+                        'stories_price' => $influencer['stories_price'],
+                        'carrousel_price' => $influencer['carrousel_price'],
+                    ];
+                }
+
+                $proposal->influencers()->sync($pivotData);
 
                 $influencerIds = $data['influencer_ids'] ?? [];
 

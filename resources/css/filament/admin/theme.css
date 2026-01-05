@@ -223,18 +223,23 @@ body {
 }
 
 .fi-ac-icon-btn-group {
-    @apply !bg-background;
+    @apply !bg-background !text-secondary;
+}
+
+.fi-ac-icon-btn-group .fi-icon {
+    @apply !bg-background !text-secondary;
+}
+
+.fi-ac-link-action .fi-icon {
+    @apply !bg-none;
 }
 
 .fi-ac-grouped-action {
     @apply !bg-card;
 }
 
-.fi-icon {
-    @apply !bg-none;
-}
-.fi-color-danger {
-    @apply text-danger-500;
+.fi-color-primary .fi-icon {
+    @apply bg-primary text-primary-foreground;
 }
 
 .fi- .fi-simple-main {

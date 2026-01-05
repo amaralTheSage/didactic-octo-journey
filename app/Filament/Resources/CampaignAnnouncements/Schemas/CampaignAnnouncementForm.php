@@ -140,8 +140,12 @@ class CampaignAnnouncementForm
                     ->schema([
                         Hidden::make('attribute_id'),
 
-                        TextEntry::make('attribute.title')
-                            ->label('Atributo'),
+                        TextEntry::make('attribute_title')
+                            ->label('Atributo')
+                            ->state(
+                                fn(Get $get) =>
+                                Attribute::find($get('attribute_id'))?->title
+                            ),
 
                         Select::make('attribute_value_id')->columnSpan(1)
                             ->label('Valor')

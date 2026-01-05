@@ -26,11 +26,11 @@ class AttributeSeeder extends Seeder
 
         foreach (
             [
-                '13-17',
                 '18-24',
                 '25-34',
                 '35-44',
                 '45+',
+                'Outro'
             ] as $item
         ) {
             AttributeValue::create([
@@ -93,16 +93,6 @@ class AttributeSeeder extends Seeder
 
         /*
         |--------------------------------------------------
-        | Localidade
-        |--------------------------------------------------
-        */
-        $localidade = Attribute::create([
-            'title' => 'Localidade',
-            'multiple_values' => true,
-        ]);
-
-        /*
-        |--------------------------------------------------
         | Quantidade de influenciadores
         |--------------------------------------------------
         */
@@ -113,10 +103,11 @@ class AttributeSeeder extends Seeder
 
         foreach (
             [
-                '1',
-                '2-5',
-                '6-10',
-                '10+',
+                '30',
+                '50',
+                '100',
+                '200',
+                'Outro'
             ] as $item
         ) {
             AttributeValue::create([
@@ -146,6 +137,34 @@ class AttributeSeeder extends Seeder
         ) {
             AttributeValue::create([
                 'attribute_id' => $duracao->id,
+                'title' => $item,
+                'editable' => $item === 'Outro',
+            ]);
+        }
+
+
+
+
+        /*
+        |--------------------------------------------------
+        | Acessibilidade
+        |--------------------------------------------------
+        */
+        $acessibilidade = Attribute::create([
+            'title' => 'Acessibilidade',
+            'multiple_values' => true,
+        ]);
+
+        foreach (
+            [
+                'Fisíca',
+                'Intelectual',
+                'Auditiva',
+                'Outro',
+            ] as $item
+        ) {
+            AttributeValue::create([
+                'attribute_id' => $acessibilidade->id,
                 'title' => $item,
                 'editable' => $item === 'Outro',
             ]);
