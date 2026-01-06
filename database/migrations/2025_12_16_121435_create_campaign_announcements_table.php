@@ -29,6 +29,8 @@ return new class extends Migration
             $table->integer('n_stories')->default(0);
             $table->integer('n_carrousels')->default(0);
 
+            $table->enum('announcement_status', ['open', 'paused', 'finished'])->default('open');
+
             $table->timestamps();
         });
     }

@@ -175,6 +175,7 @@ class DatabaseSeeder extends Seeder
                 'reels_price' => rand(500, 5000),
                 'stories_price' => rand(200, 2000),
                 'carrousel_price' => rand(300, 3000),
+                'commission_cut' => rand(10, 50),
             ]);
 
             $influencers->push($user);
@@ -246,6 +247,8 @@ class DatabaseSeeder extends Seeder
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
+            'commission_cut' => rand(10, 50),
+
         ]);
 
         $influencerA1 = User::create([
@@ -265,6 +268,8 @@ class DatabaseSeeder extends Seeder
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
+            'commission_cut' => rand(10, 50),
+
         ]);
 
         $influencerA2 = User::create([
@@ -284,6 +289,8 @@ class DatabaseSeeder extends Seeder
             'reels_price' => rand(500, 5000),
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
+            'commission_cut' => rand(10, 50),
+
         ]);
 
         // -------------------------------------------------------

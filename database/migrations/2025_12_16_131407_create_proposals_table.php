@@ -24,6 +24,8 @@ return new class extends Migration
 
             $table->enum('company_approval', ['pending', 'approved', 'rejected'])->default('pending');
 
+            $table->enum('status', ['draft', 'approved', 'cancelled', 'finished'])->default('draft');
+
             $table->timestamps();
         });
     }

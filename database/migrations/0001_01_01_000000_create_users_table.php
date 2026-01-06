@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->longText('avatar')->nullable();
             $table->text('bio');
+            $table->string('pix_address')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'influencer', 'company', 'agency']);

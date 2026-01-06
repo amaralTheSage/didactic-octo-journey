@@ -34,6 +34,7 @@ return new class extends Migration
             $table->decimal('reels_price', 11, 2)->nullable();
             $table->decimal('stories_price', 11, 2)->nullable();
             $table->decimal('carrousel_price', 11, 2)->nullable();
+            $table->decimal('commission_cut', 5, 2)->nullable();
 
             $table->enum('association_status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
