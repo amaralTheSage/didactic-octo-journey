@@ -143,7 +143,7 @@ class ViewProposal
                             ->label('Conversar')
                             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                             ->color('secondary')
-                            ->visible(fn($record) => $record->agency_id !== Auth::id())
+                            ->visible(fn($record) => Gate::allows('is_company'))
                             ->action(function ($record) {
 
                                 $proposalId = $record->id;

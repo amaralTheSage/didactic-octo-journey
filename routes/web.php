@@ -13,7 +13,10 @@ Route::middleware('auth')
     ->prefix('/chats')
     ->group(function () {
         Route::get('/', [ChatController::class, 'index'])->name('chats.index');
-        Route::post('/', [ChatController::class, 'store'])->name('chats.store');
+        // Route::post('/', [ChatController::class, 'store'])->name('chats.store');
+
+        Route::get('/create', [ChatController::class, 'create'])->name('chats.create');
+
         Route::get('/{chat}', [ChatController::class, 'show'])->name('chats.show');
         Route::post('/{chat}', [ChatController::class, 'update'])->name('chats.update');
         Route::delete('/{chat}/image', [ChatController::class, 'deleteImage'])->name('chats.delete-image');
@@ -29,4 +32,4 @@ Route::middleware('auth')
 //     })->name('dashboard');
 // });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

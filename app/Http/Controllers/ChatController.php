@@ -28,21 +28,54 @@ class ChatController extends Controller
         return Inertia::render('chat/Chats', ['allChats' => $allChats]);
     }
 
-    public function store(Request $request)
+    public function create(Request $request, ChatService $chatService)
     {
         $request->validate([
             'users' => 'required|array|min:1',
             'users.*' => 'exists:users,id',
         ]);
 
-        $chat = $this->chatService->createChat([Auth::user(), $request->users]);
+        $userIds = array_merge($request->users, [Auth::id()]);
+        sort($userIds);
+        $userCount = count($userIds);
+
+        $existingChat = Chat::select('chats.*')
+            ->selectRaw('COUNT(chat_user.user_id) as users_count')
+            ->join('chat_user', 'chats.id', '=', 'chat_user.chat_id')
+            ->whereIn('chat_user.user_id', $userIds)
+            ->groupBy('chats.id')
+            ->havingRaw('COUNT(chat_user.user_id) = ?', [$userCount])
+            ->first();
+
+        if ($existingChat) {
+            return redirect()->route('chats.show', ['chat' => $existingChat]);
+        }
+
+        $chat = $chatService->createChat($request->users);
 
         if (is_array($chat) && isset($chat['error'])) {
-            return response()->json(['error' => $chat['error']], 422);
+            return redirect()->route('chats.index')
+                ->with('error', $chat['error']);
         }
 
         return redirect()->route('chats.show', ['chat' => $chat]);
     }
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'users' => 'required|array|min:1',
+    //         'users.*' => 'exists:users,id',
+    //     ]);
+
+    //     $chat = $this->chatService->createChat([Auth::user(), $request->users]);
+
+    //     if (is_array($chat) && isset($chat['error'])) {
+    //         return response()->json(['error' => $chat['error']], 422);
+    //     }
+
+    //     return redirect()->route('chats.show', ['chat' => $chat]);
+    // }
 
     public function show(Chat $chat)
     {

@@ -125,7 +125,6 @@ class InfluencersTable
                             ->body('Vínculo com influenciador criado com sucesso.')
                     ),
 
-                ChatAction::make()->hiddenLabel(),
                 ViewInfluencerDetails::make()->hiddenLabel(),
             ])
             ->toolbarActions([

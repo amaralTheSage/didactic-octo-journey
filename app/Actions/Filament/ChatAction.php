@@ -29,42 +29,8 @@ class ChatAction extends Action
         $this->defaultColor('secondary');
         $this->tableIcon(icon: Heroicon::OutlinedChatBubbleLeftEllipsis);
 
-        $this->modalHeading(fn (User $record) => "Chat com {$record->name}");
-        $this->modalDescription('Deseja iniciar uma nova conversa ou continuar uma conversa existente?');
-        $this->modalSubmitAction(false);
-        $this->modalCancelAction(false);
-        $this->modalWidth(Width::Large);
-
-        $this->modalFooterActions(function (User $record) {
-
-            return [
-                Action::make('newChat')
-                    ->label('Iniciar Nova Conversa')
-                    ->icon('heroicon-o-plus-circle')
-
-                    ->action(function ($record) {
-                        $chat = ChatService::createChat([$record->id]);
-
-                        if (is_array($chat) && isset($chat['error'])) {
-                            Notification::make()
-                                ->title('Erro')
-                                ->body($chat['error'])
-                                ->danger()
-                                ->send();
-
-                            return;
-                        }
-
-                        return redirect()->route('chats.show', ['chat' => $chat]);
-                    }),
-
-                Action::make('viewChats')
-                    ->label('Ver todas conversas')
-                    ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('gray')->openUrlInNewTab()
-                    ->action(fn () => route('chats.index')),
-            ];
-        });
+        $this->url(fn(User $record) => route('chats.create', ['users' => [$record->id]]));
+        $this->openUrlInNewTab();
 
         $this->visible(function (User $record) {
             return ChatService::validateChatPermission(Auth::user(), $record)['allowed'];
