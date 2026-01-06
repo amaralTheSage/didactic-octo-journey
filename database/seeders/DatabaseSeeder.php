@@ -325,6 +325,9 @@ class DatabaseSeeder extends Seeder
                 'product_id' => $testProducts->random()->id,
                 'company_id' => $testCompany->id,
                 'category_id' => $categories->random()->id,
+                'n_reels' => rand(1, 5),
+                'n_stories' => rand(1, 5),
+                'n_carrousels' => rand(1, 5),
             ]);
         }
 

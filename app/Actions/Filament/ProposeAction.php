@@ -47,7 +47,7 @@ class ProposeAction extends Action
         $this->modalHeading('Enviar Proposta');
         $this->modalDescription(fn($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
-        $this->modalWidth('2xl');
+        $this->modalWidth('3xl');
 
         $this->schema([
             Textarea::make('message')
@@ -84,6 +84,7 @@ class ProposeAction extends Action
                             'stories_price' => $influencer->influencer_info->stories_price,
                             'reels_price' => $influencer->influencer_info->reels_price,
                             'carrousel_price' => $influencer->influencer_info->carrousel_price,
+                            'commission_cut' => $influencer->influencer_info->commission_cut,
                         ])
                         ->toArray();
 
@@ -104,6 +105,7 @@ class ProposeAction extends Action
                     TableColumn::make('Reels'),
                     TableColumn::make('Stories'),
                     TableColumn::make('Carrossel'),
+                    TableColumn::make('Comissão'),
                 ])
                 ->schema([
                     Hidden::make('user_id'),
@@ -131,6 +133,16 @@ class ProposeAction extends Action
                         ->prefix('R$')
                         ->inputMode('decimal')
                         ->required(),
+
+                    TextInput::make('commission_cut')
+                        ->label('Carrossel')
+                        ->numeric()
+                        ->minValue(0)
+                        ->maxValue(100)
+                        ->placeholder('-')
+                        ->suffix('%')
+                        ->inputMode('decimal')
+                        ->required(),
                 ])
                 ->default(function (Get $get) {
                     $filterIds = $get('influencer_ids') ?? [];
@@ -151,6 +163,7 @@ class ProposeAction extends Action
                             'stories_price' => $influencer->influencer_info->stories_price,
                             'reels_price' => $influencer->influencer_info->reels_price,
                             'carrousel_price' => $influencer->influencer_info->carrousel_price,
+                            'commission_cut' => $influencer->influencer_info->commission_cut,
                         ])
                         ->toArray();
                 })
@@ -179,7 +192,7 @@ class ProposeAction extends Action
                     ->minValue(0)->placeholder(fn($record) => "{$record->agency_cut}")
                     ->maxValue(100)
                     ->default(fn($record) => $record->agency_cut)
-                    ->helperText(fn($record) => "Parcela original: {$record->agency_cut}%"),
+                    ->helperText(fn($record) => "Porcentagem original: {$record->agency_cut}%"),
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
@@ -224,6 +237,7 @@ class ProposeAction extends Action
                         'reels_price' => (float)$influencer['reels_price'],
                         'stories_price' => (float)$influencer['stories_price'],
                         'carrousel_price' => (float)$influencer['carrousel_price'],
+                        'commission_cut' => (float)$influencer['commission_cut'],
                     ];
                 }
 

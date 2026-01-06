@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 use App\Models\Attribute;
 use App\Models\User;
 use App\UserRoles;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -38,7 +39,10 @@ class CampaignAnnouncementForm
                             fn($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
-                        ->required()->createOptionForm([
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->createOptionForm([
                             TextInput::make('name')
                                 ->required(),
                             TextInput::make('price')

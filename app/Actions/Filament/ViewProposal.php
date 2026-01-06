@@ -268,8 +268,20 @@ class ViewProposal
                                                         ->where('user_id', $record->id)
                                                         ->value('carrousel_price');
                                                 }),
+
+                                            TextEntry::make('pivot_commission_cut')
+                                                ->label('Comissão')
+                                                ->weight(FontWeight::SemiBold)
+                                                ->suffix('%')
+                                                ->placeholder('-')
+                                                ->state(function ($record) use ($proposalId) {
+                                                    return DB::table('proposal_user')
+                                                        ->where('proposal_id', $proposalId)
+                                                        ->where('user_id', $record->id)
+                                                        ->value('commission_cut');
+                                                }),
                                         ])
-                                        ->columns(3)
+                                        ->columns(4)
                                         ->columnSpanFull(),
 
                                     Section::make('Redes Sociais')

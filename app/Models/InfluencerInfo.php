@@ -32,7 +32,6 @@ class InfluencerInfo extends Model
         'stories_price',
         'carrousel_price',
         'commission_cut',
-
     ];
 
     public function agency()

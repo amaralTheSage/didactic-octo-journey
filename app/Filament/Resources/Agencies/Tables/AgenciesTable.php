@@ -38,6 +38,7 @@ class AgenciesTable
                     ->circular(),
 
                 TextColumn::make('name')->label(' ')
+                    ->description(fn($record) => $record->influencers()->count() . ' Influenciadores')
                     ->searchable(),
 
                 TextColumn::make('influencer_categories')
