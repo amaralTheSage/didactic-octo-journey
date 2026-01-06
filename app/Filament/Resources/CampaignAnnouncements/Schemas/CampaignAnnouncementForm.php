@@ -140,20 +140,69 @@ class CampaignAnnouncementForm
 
                         TextEntry::make('attribute_title')
                             ->label('Atributo')
-                            ->state(
-                                fn(Get $get) =>
-                                Attribute::find($get('attribute_id'))?->title
-                            ),
+                            ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
 
-                        Select::make('attribute_value_id')->columnSpan(1)
-                            ->label('Valor')
-                            ->options(
-                                fn(Get $get) => Attribute::find($get('attribute_id'))
-                                    ?->values()
-                                    ->pluck('title', 'id') ?? []
-                            )
-                            ->preload(),
+                        Group::make()->schema([
+                            Select::make('attribute_value_id')
+                                ->label('Valor')
+                                ->options(
+                                    fn(Get $get) => Attribute::find($get('attribute_id'))
+                                        ?->values()
+                                        ->pluck('title', 'id') ?? []
+                                )
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    // Clear custom title when switching away from "Outro"
+                                    if ($state) {
+                                        $value = \App\Models\AttributeValue::find($state);
+                                        if ($value && !in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
+                                            $set('title', null);
+                                        }
+                                    }
+                                })
+                                ->visible(
+                                    fn(Get $get) => Attribute::find($get('attribute_id'))
+                                        ?->values()
+                                        ->exists() ?? false
+                                )
+                                ->columnSpan(function (Get $get) {
+                                    $selectedId = $get('attribute_value_id');
+                                    if ($selectedId) {
+                                        $value = \App\Models\AttributeValue::find($selectedId);
+                                        if ($value && in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
+                                            return 1; // Take half space when "Outro" is selected
+                                        }
+                                    }
+                                    return 2; // Take full space otherwise
+                                }),
 
+                            TextInput::make('title')
+                                ->label('Especifique')
+                                ->placeholder('Especifique...')
+                                ->visible(function (Get $get) {
+                                    $attributeId = $get('attribute_id');
+                                    $attribute = Attribute::find($attributeId);
+
+                                    // If no predefined values, always show
+                                    if (!$attribute || !$attribute->values()->exists()) {
+                                        return true;
+                                    }
+
+                                    // If "Outro" is selected, show
+                                    $selectedId = $get('attribute_value_id');
+                                    if ($selectedId) {
+                                        $value = \App\Models\AttributeValue::find($selectedId);
+                                        if ($value && in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
+                                            return true;
+                                        }
+                                    }
+
+                                    return false;
+                                })
+                                ->columnSpan(1),
+                        ])->columns(2)->columnSpanFull(),
                     ])
                     ->columnSpan(2),
 

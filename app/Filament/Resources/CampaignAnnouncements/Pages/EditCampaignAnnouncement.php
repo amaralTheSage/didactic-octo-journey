@@ -16,13 +16,17 @@ class EditCampaignAnnouncement extends EditRecord
     {
         $rows = $this->form->getState()['attribute_values'] ?? [];
 
-        $valueIds = collect($rows)
-            ->map(fn($r) => $r['attribute_value_id'] ?? null)
-            ->filter()
-            ->values()
-            ->all();
+        $pivotData = [];
+        foreach ($rows as $row) {
+            $valueId = $row['attribute_value_id'] ?? null;
+            if ($valueId) {
+                $pivotData[$valueId] = [
+                    'title' => $row['title'] ?? null,
+                ];
+            }
+        }
 
-        $this->record->attribute_values()->sync($valueIds);
+        $this->record->attribute_values()->sync($pivotData);
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -32,15 +36,20 @@ class EditCampaignAnnouncement extends EditRecord
 
         $selectedValues = $record->attribute_values
             ->mapWithKeys(fn($value) => [
-                $value->attribute_id => $value->id,
+                $value->attribute_id => [
+                    'id' => $value->id,
+                    'title' => $value->pivot->title ?? null,
+                ]
             ]);
 
         $data['attribute_values'] = Attribute::with('values')->get()
             ->map(function ($attribute) use ($selectedValues) {
+                $selected = $selectedValues[$attribute->id] ?? null;
                 return [
                     'attribute_id' => $attribute->id,
                     'attribute' => $attribute,
-                    'attribute_value_id' => $selectedValues[$attribute->id] ?? null,
+                    'attribute_value_id' => $selected['id'] ?? null,
+                    'title' => $selected['title'] ?? null,
                 ];
             })
             ->toArray();

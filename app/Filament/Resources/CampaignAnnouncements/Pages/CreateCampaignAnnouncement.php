@@ -11,13 +11,17 @@ class CreateCampaignAnnouncement extends CreateRecord
     {
         $rows = $this->form->getState()['attribute_values'] ?? [];
 
-        $valueIds = collect($rows)
-            ->map(fn($r) => $r['attribute_value_id'] ?? null)
-            ->filter()
-            ->values()
-            ->all();
+        $pivotData = [];
+        foreach ($rows as $row) {
+            $valueId = $row['attribute_value_id'] ?? null;
+            if ($valueId) {
+                $pivotData[$valueId] = [
+                    'title' => $row['title'] ?? null,
+                ];
+            }
+        }
 
-        $this->record->attribute_values()->sync($valueIds);
+        $this->record->attribute_values()->sync($pivotData);
     }
 
 

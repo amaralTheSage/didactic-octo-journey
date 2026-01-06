@@ -56,7 +56,7 @@ class CampaignAnnouncement extends Model
             'attribute_value_campaign_announcement',
             'campaign_announcement_id',
             'attribute_value_id'
-        );
+        )->withPivot('title');
     }
 
     public function categories(): BelongsToMany
