@@ -2,25 +2,19 @@
 
 namespace App\Filament\Resources\Influencers\Tables;
 
-use App\Actions\Filament\ChatAction;
 use App\Actions\Filament\ViewInfluencerDetails;
 use App\Models\CampaignAnnouncement;
 use App\Models\Category;
 use App\Models\Proposal;
 use App\Models\User;
 use App\UserRoles;
-use Eloquent;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Collection;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -67,7 +61,7 @@ class InfluencersTable
                         return $record->subcategories->pluck('title')->toArray();
                     })
                     ->tooltip(
-                        fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
+                        fn (Model $record) => $record->subcategories->pluck('title')->join(', ')
                     )
                     ->sortable(false)
                     ->wrap(),
@@ -114,7 +108,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -151,7 +145,7 @@ class InfluencersTable
                         ->action(function (EloquentCollection $records, array $data) {
                             // Group influencers by agency
                             $influencersByAgency = $records->groupBy(
-                                fn($influencer) => $influencer->influencer_info->agency_id
+                                fn ($influencer) => $influencer->influencer_info->agency_id
                             );
 
                             $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
@@ -173,7 +167,7 @@ class InfluencersTable
                                 User::find($agencyId)->notify(
                                     Notification::make()
                                         ->title('Nova proposta de campanha')
-                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
+                                        ->body(Auth::user()->name.' enviou uma proposta para '.$campaign->name)
                                         ->toDatabase()
                                 );
                             }

@@ -13,7 +13,6 @@ class CampaignAnnouncementObserver
     {
         $influencerIds = $campaign->temp_influencer_ids;
 
-
         if (empty($influencerIds)) {
             return;
         }
@@ -24,7 +23,7 @@ class CampaignAnnouncementObserver
 
         // Groups by agency
         $influencersByAgency = $influencers->groupBy(
-            fn($influencer) => $influencer->influencer_info?->agency_id
+            fn ($influencer) => $influencer->influencer_info?->agency_id
         );
 
         foreach ($influencersByAgency as $agencyId => $agencyInfluencers) {
@@ -34,8 +33,8 @@ class CampaignAnnouncementObserver
 
             $proposal = Proposal::create([
                 'campaign_announcement_id' => $campaign->id,
-                'agency_id'                => $agencyId,
-                'proposed_agency_cut'      => $campaign->agency_cut,
+                'agency_id' => $agencyId,
+                'proposed_agency_cut' => $campaign->agency_cut,
             ]);
 
             $proposal->influencers()->attach($agencyInfluencers->pluck('id'));
@@ -43,7 +42,7 @@ class CampaignAnnouncementObserver
             $agency = User::find($agencyId);
             if ($agency) {
                 Notification::make()
-                    ->title("Nova proposta de campanha")
+                    ->title('Nova proposta de campanha')
                     ->body("{$campaign->company->name} criou uma campanha e enviou uma proposta.")
                     ->sendToDatabase($agency);
             }

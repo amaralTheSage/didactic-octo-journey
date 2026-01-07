@@ -60,7 +60,6 @@
 <script>
 function paymentListener(payment) {
     const paymentId = payment.id
-    console.log(payment)
 
     return {
         paid: false,

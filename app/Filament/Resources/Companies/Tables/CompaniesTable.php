@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Companies\Tables;
 
-use App\Actions\Filament\ChatAction;
 use App\Actions\Filament\ViewCompanyDetails;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;

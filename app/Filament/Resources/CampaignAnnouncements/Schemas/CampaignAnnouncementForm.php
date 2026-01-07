@@ -5,7 +5,6 @@ namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 use App\Models\Attribute;
 use App\Models\User;
 use App\UserRoles;
-use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -22,7 +21,6 @@ use Illuminate\Support\Facades\Http;
 
 class CampaignAnnouncementForm
 {
-
     public static function configure(Schema $schema): Schema
     {
 
@@ -38,7 +36,7 @@ class CampaignAnnouncementForm
                         ->relationship(
                             'product',
                             'name',
-                            fn($query) => $query->where('company_id', Auth::id())
+                            fn ($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
                         ->searchable()
@@ -50,8 +48,8 @@ class CampaignAnnouncementForm
                             TextInput::make('price')
                                 ->numeric()
                                 ->inputMode('decimal')->prefix('R$')
-                                ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
-                                ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
+                                ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.'))
+                                ->dehydrateStateUsing(fn ($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
                                 ->placeholder('0,00')
                                 ->step('0.01')
                                 ->required(),
@@ -60,7 +58,7 @@ class CampaignAnnouncementForm
                             Hidden::make('company_id')->default(Auth::id()),
                         ])
                         ->createOptionAction(
-                            fn($action) => $action->modalHeading('Criar Produto')
+                            fn ($action) => $action->modalHeading('Criar Produto')
                         ),
 
                     Select::make('category_ids')
@@ -71,8 +69,6 @@ class CampaignAnnouncementForm
                         ->preload()
                         ->required(),
                 ]),
-
-
 
                 Hidden::make('company_id')
                     ->default(Auth::id()),
@@ -89,7 +85,7 @@ class CampaignAnnouncementForm
                                 ->pluck('name', 'id')
                         )
                         ->searchable()
-                        ->default(fn() => session('selected_influencers', []))
+                        ->default(fn () => session('selected_influencers', []))
                         ->afterStateHydrated(function () {
                             // Clear session after loading
                             session()->forget('selected_influencers');
@@ -146,13 +142,13 @@ class CampaignAnnouncementForm
 
                         TextEntry::make('attribute_title')
                             ->label('Atributo')
-                            ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
+                            ->state(fn (Get $get) => Attribute::find($get('attribute_id'))?->title),
 
                         Group::make()->schema([
                             Select::make('attribute_value_id')
                                 ->label('Valor')
                                 ->options(
-                                    fn(Get $get) => Attribute::find($get('attribute_id'))
+                                    fn (Get $get) => Attribute::find($get('attribute_id'))
                                         ?->values()
                                         ->pluck('title', 'id') ?? []
                                 )
@@ -163,13 +159,13 @@ class CampaignAnnouncementForm
                                     // Clear custom title when switching away from "Outro"
                                     if ($state) {
                                         $value = \App\Models\AttributeValue::find($state);
-                                        if ($value && !in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
+                                        if ($value && ! in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
                                             $set('title', null);
                                         }
                                     }
                                 })
                                 ->visible(
-                                    fn(Get $get) => Attribute::find($get('attribute_id'))
+                                    fn (Get $get) => Attribute::find($get('attribute_id'))
                                         ?->values()
                                         ->exists() ?? false
                                 )
@@ -181,6 +177,7 @@ class CampaignAnnouncementForm
                                             return 1; // Take half space when "Outro" is selected
                                         }
                                     }
+
                                     return 2; // Take full space otherwise
                                 }),
 
@@ -192,7 +189,7 @@ class CampaignAnnouncementForm
                                     $attribute = Attribute::find($attributeId);
 
                                     // If no predefined values, always show
-                                    if (!$attribute || !$attribute->values()->exists()) {
+                                    if (! $attribute || ! $attribute->values()->exists()) {
                                         return true;
                                     }
 
@@ -256,8 +253,8 @@ class CampaignAnnouncementForm
                             ->afterStateUpdated(function (callable $set) {
                                 $set('city', null);
                             })
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR'),
 
                         Select::make('city')->columnSpan(1)
                             ->label('Cidade')
@@ -274,9 +271,9 @@ class CampaignAnnouncementForm
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
-                            ->disabled(fn(Get $get) => ! $get('state')),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state'))
+                            ->disabled(fn (Get $get) => ! $get('state')),
                     ])->compact()
                     ->columnSpan(2),
 

@@ -17,13 +17,13 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\HtmlString;
 
 class ValuesRelationManager extends RelationManager
 {
     protected static string $relationship = 'values';
 
     protected static ?string $label = 'Valor';
+
     protected static ?string $title = null;
 
     public function form(Schema $schema): Schema

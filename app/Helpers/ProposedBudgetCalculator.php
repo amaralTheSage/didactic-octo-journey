@@ -19,9 +19,9 @@ class ProposedBudgetCalculator
 
         foreach ($influencers as $inf) {
             $prices = [
-                (float)($inf['reels_price'] ?? 0) * $nReels,
-                (float)($inf['stories_price'] ?? 0) * $nStories,
-                (float)($inf['carrousel_price'] ?? 0) * $nCarrousels,
+                (float) ($inf['reels_price'] ?? 0) * $nReels,
+                (float) ($inf['stories_price'] ?? 0) * $nStories,
+                (float) ($inf['carrousel_price'] ?? 0) * $nCarrousels,
             ];
             $allPrices = array_merge($allPrices, $prices);
             $totalSum += array_sum($prices);

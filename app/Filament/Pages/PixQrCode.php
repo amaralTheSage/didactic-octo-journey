@@ -12,17 +12,18 @@ class PixQrCode extends Page
     protected string $view = 'filament.pages.pix-qr-code';
 
     public string $qrBase64;
+
     public Payment $payment;
 
     public static function shouldRegisterNavigation(): bool
     {
         return false;
     }
+
     public static function canAccess(): bool
     {
         return Gate::allows('is_company');
     }
-
 
     public function mount(Request $request): void
     {

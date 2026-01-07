@@ -41,11 +41,11 @@ class AttributeResource extends Resource
         return AttributesTable::configure($table);
     }
 
-
     public static function canAccess(): bool
     {
         return Gate::allows('is_admin');
     }
+
     public static function getRelations(): array
     {
         return [

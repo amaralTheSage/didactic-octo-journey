@@ -35,16 +35,17 @@ class EditCampaignAnnouncement extends EditRecord
         $record = $this->record;
 
         $selectedValues = $record->attribute_values
-            ->mapWithKeys(fn($value) => [
+            ->mapWithKeys(fn ($value) => [
                 $value->attribute_id => [
                     'id' => $value->id,
                     'title' => $value->pivot->title ?? null,
-                ]
+                ],
             ]);
 
         $data['attribute_values'] = Attribute::with('values')->get()
             ->map(function ($attribute) use ($selectedValues) {
                 $selected = $selectedValues[$attribute->id] ?? null;
+
                 return [
                     'attribute_id' => $attribute->id,
                     'attribute' => $attribute,
@@ -70,7 +71,6 @@ class EditCampaignAnnouncement extends EditRecord
 
         return $data;
     }
-
 
     protected function mutateFormDataBeforeSave(array $data): array
     {

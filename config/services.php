@@ -16,6 +16,7 @@ return [
 
     'abacatepay' => [
         'token' => env('ABACATEPAY_TOKEN'),
+        'public_key' => env('ABACATEPAY_PUBLIC_KEY'),
         'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET'),
     ],
 

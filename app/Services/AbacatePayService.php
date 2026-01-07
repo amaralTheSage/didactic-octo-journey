@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AbacatePayService
 {
-
     private PendingRequest $abacateClient;
 
     public function __construct()
@@ -29,9 +28,8 @@ class AbacatePayService
             'description' => 'Teste de pagamento via AbacatePay',
             'metadata' => [
                 'campaign_id' => $campaignId,
-            ]
+            ],
         ]);
-
 
         $data = $response->json();
 

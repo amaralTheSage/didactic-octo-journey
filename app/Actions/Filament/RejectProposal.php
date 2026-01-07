@@ -8,7 +8,6 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
 class RejectProposal extends Action
@@ -47,14 +46,13 @@ class RejectProposal extends Action
 
         $this->button();
 
-
         $this->action(function (Proposal $record) {
             try {
                 if (Auth::user()->role === UserRoles::Company) {
                     $record->update(['company_approval' => 'rejected']);
-                } else if (Auth::user()->role === UserRoles::Agency) {
+                } elseif (Auth::user()->role === UserRoles::Agency) {
                     $record->update(['agency_approval' => 'rejected']);
-                } else if (Auth::user()->role === UserRoles::Influencer) {
+                } elseif (Auth::user()->role === UserRoles::Influencer) {
                     $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
                 }
 
@@ -65,7 +63,7 @@ class RejectProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao rejeitar proposta: ' . $e->getMessage());
+                Log::error('Erro ao rejeitar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao rejeitarr Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -89,7 +87,7 @@ class RejectProposal extends Action
                     ->toDatabase();
 
                 $notifyRecipients = function ($recipients) use ($notification) {
-                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                    collect($recipients)->each(fn ($recipient) => $recipient->notify($notification));
                 };
 
                 match ($role) {

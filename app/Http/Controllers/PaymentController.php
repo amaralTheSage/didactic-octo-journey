@@ -8,7 +8,6 @@ use App\Services\AbacatePayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
@@ -22,7 +21,7 @@ class PaymentController extends Controller
             'campaign_id' => 'required|exists:App\Models\CampaignAnnouncement,id',
         ]);
 
-        $response = (new AbacatePayService())->createPayment(
+        $response = (new AbacatePayService)->createPayment(
             amount: $amount,
             campaignId: $validated['campaign_id']
         );
@@ -44,14 +43,15 @@ class PaymentController extends Controller
 
         return to_route('filament.admin.pages.pix-qr-code', [
             'payment_id' => $payment->id,
-            'qrcode_base64' => $response['brCodeBase64']
+            'qrcode_base64' => $response['brCodeBase64'],
         ]);
     }
 
-
-    public function webhook(Request $request)
+    public function pix_webhook(Request $request)
     {
         Log::info('Webhook pix: Pagamento recebido, iniciando processamento...');
+
+        Log::info($request);
 
         $abacateId = $request->input('data.pixQrCode.id');
         $status = $request->input('data.pixQrCode.status');
@@ -127,6 +127,7 @@ class PaymentController extends Controller
         // }
 
         Log::info('Webhook pix: Pagamento processado com sucesso!');
+
         return response()->json(['success' => true], 200);
     }
 }

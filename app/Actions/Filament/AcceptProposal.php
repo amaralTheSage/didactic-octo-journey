@@ -2,9 +2,7 @@
 
 namespace App\Actions\Filament;
 
-use App\ApprovalStatus;
 use App\Models\Chat;
-use App\Models\OngoingCampaign;
 use App\Models\Proposal;
 use App\Services\ChatService;
 use App\UserRoles;
@@ -50,16 +48,14 @@ class AcceptProposal extends Action
             return false;
         });
 
-
-
         $this->action(function (Proposal $record) {
 
             try {
                 if (Auth::user()->role === UserRoles::Company) {
                     $record->update(['company_approval' => 'approved']);
-                } else if (Auth::user()->role === UserRoles::Agency) {
+                } elseif (Auth::user()->role === UserRoles::Agency) {
                     $record->update(['agency_approval' => 'approved']);
-                } else if (Auth::user()->role === UserRoles::Influencer) {
+                } elseif (Auth::user()->role === UserRoles::Influencer) {
                     $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
                 }
 
@@ -70,7 +66,7 @@ class AcceptProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao aprovar proposta: ' . $e->getMessage());
+                Log::error('Erro ao aprovar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao Aprovar Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -94,7 +90,7 @@ class AcceptProposal extends Action
                     ->toDatabase();
 
                 $notifyRecipients = function ($recipients) use ($notification) {
-                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                    collect($recipients)->each(fn ($recipient) => $recipient->notify($notification));
                 };
 
                 match ($role) {
@@ -103,14 +99,13 @@ class AcceptProposal extends Action
                     UserRoles::Influencer => $notifyRecipients([$record->announcement->company, $record->agency]),
                 };
 
-
                 if ($role === UserRoles::Company) {
                     $chat = Chat::query()
                         ->where('proposal_id', $record->id)
-                        ->whereHas('users', fn($q) => $q->where('users.id', Auth::user()->id))
+                        ->whereHas('users', fn ($q) => $q->where('users.id', Auth::user()->id))
                         ->first();
 
-                    if (!$chat) {
+                    if (! $chat) {
                         $chat = ChatService::createChat(
                             [$record->agency_id],
                             $record->id

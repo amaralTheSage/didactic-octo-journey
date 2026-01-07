@@ -6,8 +6,6 @@ use App\Models\User;
 use App\Services\ChatService;
 use Closure;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
-use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,7 +27,7 @@ class ChatAction extends Action
         $this->defaultColor('secondary');
         $this->tableIcon(icon: Heroicon::OutlinedChatBubbleLeftEllipsis);
 
-        $this->url(fn(User $record) => route('chats.create', ['users' => [$record->id]]));
+        $this->url(fn (User $record) => route('chats.create', ['users' => [$record->id]]));
         $this->openUrlInNewTab();
 
         $this->visible(function (User $record) {

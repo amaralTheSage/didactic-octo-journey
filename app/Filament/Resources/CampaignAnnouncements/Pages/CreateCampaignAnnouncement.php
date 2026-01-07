@@ -32,12 +32,11 @@ class CreateCampaignAnnouncement extends CreateRecord
                 Action::make('validateNow')
                     ->label('Validar')
                     ->color('success')
-                    ->action(fn() => dump('foi')),
+                    ->action(fn () => dump('foi')),
             ])
             ->send()
             ->ToDatabase();
     }
-
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {

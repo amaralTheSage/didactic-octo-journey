@@ -8,7 +8,6 @@ use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -29,7 +28,7 @@ class ViewAgencyDetails
                         Group::make()->columns(2)->schema([
                             ImageEntry::make('avatar_url')->hiddenLabel()
                                 ->circular()
-                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name))
+                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name))
                                 ->columnSpanFull(),
                             TextEntry::make('name')
                                 ->label('Nome')->columnSpan(2),
@@ -48,7 +47,7 @@ class ViewAgencyDetails
                                 ->label('Conversar')
                                 ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                                 ->color('secondary')
-                                ->url(fn(User $record) => route('chats.create', ['users' => [$record->id]]))
+                                ->url(fn (User $record) => route('chats.create', ['users' => [$record->id]]))
                                 ->openUrlInNewTab()
                                 ->visible(function (User $record) {
                                     return ChatService::validateChatPermission(Auth::user(), $record)['allowed'];

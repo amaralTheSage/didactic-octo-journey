@@ -23,21 +23,20 @@ class CampaignAnnouncement extends Model
         'n_stories',
         'location',
 
-        'influencer_ids' // not actually in the db
+        'influencer_ids', // not actually in the db
     ];
-
 
     protected $with = ['proposals', 'attribute_values'];
 
     protected function influencerIds(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn() => $this->temp_influencer_ids,
+            get: fn () => $this->temp_influencer_ids,
             set: function ($value) {
                 // Save to the public property for the Observer to use
                 $this->temp_influencer_ids = $value;
 
-                // Return an empty array so Eloquent DOES NOT try to save 
+                // Return an empty array so Eloquent DOES NOT try to save
                 // 'influencer_ids' or 'temp_influencer_ids' to the DB column.
                 return [];
             }

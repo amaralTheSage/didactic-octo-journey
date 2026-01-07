@@ -30,7 +30,7 @@ class AttributeSeeder extends Seeder
                 '25-34',
                 '35-44',
                 '45+',
-                'Outro'
+                'Outro',
             ] as $item
         ) {
             AttributeValue::create([
@@ -107,7 +107,7 @@ class AttributeSeeder extends Seeder
                 '50',
                 '100',
                 '200',
-                'Outro'
+                'Outro',
             ] as $item
         ) {
             AttributeValue::create([
@@ -141,9 +141,6 @@ class AttributeSeeder extends Seeder
                 'editable' => $item === 'Outro',
             ]);
         }
-
-
-
 
         /*
         |--------------------------------------------------
