@@ -22,8 +22,10 @@ use Illuminate\Support\Facades\Http;
 
 class CampaignAnnouncementForm
 {
+
     public static function configure(Schema $schema): Schema
     {
+
         return $schema
             ->components([
 

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCampaignAnnouncement extends CreateRecord
@@ -22,6 +24,18 @@ class CreateCampaignAnnouncement extends CreateRecord
         }
 
         $this->record->attribute_values()->sync($pivotData);
+
+        Notification::make()
+            ->title('Campanha criada com sucesso')
+            ->body('Gostaria de validar esta campanha agora?')
+            ->actions([
+                Action::make('validateNow')
+                    ->label('Validar')
+                    ->color('success')
+                    ->action(fn() => dump('foi')),
+            ])
+            ->send()
+            ->ToDatabase();
     }
 
 

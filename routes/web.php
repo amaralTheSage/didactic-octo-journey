@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect('/dashboard');
 })->name('home');
+
+Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
 Route::middleware('auth')
     ->prefix('/chats')

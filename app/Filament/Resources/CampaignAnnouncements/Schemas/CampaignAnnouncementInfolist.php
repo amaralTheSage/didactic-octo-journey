@@ -16,6 +16,8 @@ use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CampaignAnnouncementInfolist
 {
@@ -63,6 +65,17 @@ class CampaignAnnouncementInfolist
                             ->since()
                             ->icon('heroicon-o-arrow-path')
                             ->color('gray'),
+
+
+
+                        Action::make('validateNow')
+                            ->label('Validar')
+                            ->color('success')
+                            ->action(function ($record) {
+                                return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
+                            }),
+
+
 
 
                         Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
