@@ -11,6 +11,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
+Route::post('/payments/webhook', [PaymentController::class, 'webhook'])->name('payments.webhook')->middleware('auth');
 
 Route::middleware('auth')
     ->prefix('/chats')
