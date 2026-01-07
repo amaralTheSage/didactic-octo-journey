@@ -32,7 +32,6 @@ class AbacatePayService
             ]
         ]);
 
-        $response->throw();
 
         $data = $response->json();
 

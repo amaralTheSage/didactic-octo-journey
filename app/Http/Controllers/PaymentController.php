@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PaymentReceived;
+use App\Models\Payment;
 use App\Services\AbacatePayService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -12,20 +15,49 @@ class PaymentController extends Controller
 {
     public function store(Request $request)
     {
-
+        $amount = 1;
         Gate::authorize('is_company');
 
+        $validated = $request->validate([
+            'campaign_id' => 'required|exists:App\Models\CampaignAnnouncement,id',
+        ]);
+
         $response = (new AbacatePayService())->createPayment(
-            amount: 1,
-            campaignId: $request['campaign_id']
+            amount: $amount,
+            campaignId: $validated['campaign_id']
         );
 
-        return to_route('filament.admin.pages.pix-qr-code', ['qrcode_base64' => $response->json()]);
+        // Salvar o pagamento no banco
+        $payment = Payment::create([
+            'abacate_id' => $response['id'],
+            'campaign_id' => $validated['campaign_id'],
+            'user_id' => Auth::id(),
+            'amount' => $amount * 100,
+            'status' => 'PENDING',
+            'qrcode_base64' => $response['brCodeBase64'],
+            'qrcode_url' => $response['qrCodeUrl'] ?? null,
+            'expires_at' => now()->addMinutes(15),
+            'metadata' => [
+                'abacate_response' => $response,
+            ],
+        ]);
+
+        return to_route('filament.admin.pages.pix-qr-code', [
+            'payment_id' => $payment->id,
+            'qrcode_base64' => $response['brCodeBase64']
+        ]);
     }
+
 
     public function webhook(Request $request)
     {
         Log::info('Webhook pix: Pagamento recebido, iniciando processamento...');
+
+        $abacateId = $request->input('data.pixQrCode.id');
+        $status = $request->input('data.pixQrCode.status');
+        $campaignId = $request->input('data.pixQrCode.metadata.campaign_id');
+
+        PaymentReceived::dispatch($abacateId, $status, $campaignId);
 
         $webhookSecret = $request->query('webhookSecret');
 
@@ -77,22 +109,22 @@ class PaymentController extends Controller
         //     throw $e;
         // }
 
-        try {
-            $paymentIds = $validated['data']['pixQrCode']['metadata']['paymentIds'];
-            $paymentStatus = $validated['data']['pixQrCode']['status'];
-            Payment::whereIn('id', $paymentIds)
-                ->update(['status' => $paymentStatus]);
+        // try {
+        //     $paymentIds = $validated['data']['pixQrCode']['metadata']['paymentIds'];
+        //     $paymentStatus = $validated['data']['pixQrCode']['status'];
+        //     Payment::whereIn('id', $paymentIds)
+        //         ->update(['status' => $paymentStatus]);
 
-            Log::info('Webhook pix: Status dos pagamentos atualizados com sucesso', [
-                'ids' => $paymentIds,
-                'status' => $paymentStatus
-            ]);
-        } catch (Throwable $e) {
-            Log::error('Webhook pix: Webhook falhou na atualização de status dos pagamentos', [
-                'error' => $e->getMessage(),
-                'validated data' => $validated,
-            ]);
-        }
+        //     Log::info('Webhook pix: Status dos pagamentos atualizados com sucesso', [
+        //         'ids' => $paymentIds,
+        //         'status' => $paymentStatus
+        //     ]);
+        // } catch (Throwable $e) {
+        //     Log::error('Webhook pix: Webhook falhou na atualização de status dos pagamentos', [
+        //         'error' => $e->getMessage(),
+        //         'validated data' => $validated,
+        //     ]);
+        // }
 
         Log::info('Webhook pix: Pagamento processado com sucesso!');
         return response()->json(['success' => true], 200);

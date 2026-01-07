@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('campaign_announcements', function (Blueprint $table) {
-            $table->timestamp('verified_at')->nullable()->after('budget');
-            $table->string('payment_id')->nullable()->after('verified_at');
-            $table->enum('payment_status', ['pending', 'paid', 'expired', 'cancelled'])->default('pending')->after('payment_id');
-        });
+        // Schema::table('campaign_announcements', function (Blueprint $table) {
+        //     $table->timestamp('verified_at')->nullable()->after('budget');
+        //     $table->string('payment_id')->nullable()->after('verified_at');
+        //     $table->enum('payment_status', ['pending', 'paid', 'expired', 'cancelled'])->default('pending')->after('payment_id');
+        // });
     }
 
     /**

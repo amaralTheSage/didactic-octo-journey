@@ -162,8 +162,7 @@ class CampaignAnnouncementInfolist
                     Actions::make([
                         ProposeAction::make(),
 
-                        Action
-                            ::make('remove_proposal')
+                        Action::make('remove_proposal')
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
