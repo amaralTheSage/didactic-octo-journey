@@ -40,7 +40,9 @@ class RejectProposal extends Action
             return false;
         });
 
-        $this->label('Rejeitar Proposta');
+        $this->label(function ($record) {
+            return Auth::user()->role === UserRoles::Influencer ? 'Não Vou Participar' : 'Rejeitar Proposta';
+        });
         $this->color('danger');
         $this->icon('heroicon-o-x-circle');
 

@@ -253,7 +253,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $influencerA1 = User::create([
-            'name' => '1 Influencer',
+            'name' => '1 Influenciador',
             'email' => 'influencer@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -274,7 +274,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $influencerA2 = User::create([
-            'name' => '2 Influencer',
+            'name' => '2 Influenciador',
             'email' => 'influencera2@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -291,7 +291,6 @@ class DatabaseSeeder extends Seeder
             'stories_price' => rand(200, 2000),
             'carrousel_price' => rand(300, 3000),
             'commission_cut' => rand(10, 50),
-
         ]);
 
         // -------------------------------------------------------
@@ -356,7 +355,7 @@ class DatabaseSeeder extends Seeder
 
                 $proposal = \App\Models\Proposal::create([
                     'message' => fake()->paragraph(2),
-                    'proposed_agency_cut' => rand(5, 10) + (rand(0, 99) / 100),
+                    'proposed_agency_cut' => rand(5, 30),
                     'campaign_announcement_id' => $announcement->id,
                     'agency_id' => $agency->id,
                     'agency_approval' => collect(['pending', 'approved', 'rejected'])->random(),

@@ -373,9 +373,8 @@ class Register extends SimplePage
 
                                 TextInput::make('commission_cut')
                                     ->label('Porcentagem da Comissão')
-                                    ->suffix('%')
+                                    ->prefix('%')
                                     ->numeric()
-                                    ->inputMode('decimal')
                                     ->minValue(0)
                                     ->maxValue(100),
 

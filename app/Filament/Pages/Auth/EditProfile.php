@@ -450,7 +450,7 @@ class EditProfile extends BaseEditProfile
                                 ->count('category_id');
 
                             if ($categories > 1) {
-                                $fail('Selecione subcategorias de apenas uma categoria.');
+                                $fail('Selecione Categorias de apenas uma categoria.');
                             }
                         },
                     ])
@@ -580,9 +580,8 @@ class EditProfile extends BaseEditProfile
 
                                     TextInput::make('commission_cut')
                                         ->label('Comissão')
-                                        ->suffix('%')
+                                        ->prefix('%')
                                         ->numeric()
-                                        ->inputMode('decimal')
                                         ->minValue(0)
                                         ->maxValue(100),
                                 ]),

@@ -140,7 +140,7 @@ class EditProposalAction extends Action
 
             Group::make([
                 TextInput::make('proposed_agency_cut')
-                    ->label('Parcela da Agência (%)')
+                    ->label('Comissão da Campanha (%)')
                     ->numeric()
                     ->minValue(0)->placeholder(fn($record) => "{$record->announcement->agency_cut}")
                     ->maxValue(100)
@@ -218,6 +218,8 @@ class EditProposalAction extends Action
 
             return $data;
         });
+
+        $this->modalSubmitActionLabel('Editar Proposta');
 
         $this->action(function ($record, array $data) {
             try {

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->text('message')->nullable();
-            $table->decimal('proposed_agency_cut', 5, 2)->nullable()->default('0');
+            $table->integer('proposed_agency_cut')->nullable()->default('0');
 
             $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
             $table->foreignId('agency_id')->constrained('users')->cascadeOnDelete();

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('reels_price', 11, 2)->nullable();
             $table->decimal('stories_price', 11, 2)->nullable();
             $table->decimal('carrousel_price', 11, 2)->nullable();
-            $table->decimal('commission_cut', 5, 2)->nullable();
+            $table->integer('commission_cut')->nullable();
 
             $table->timestamps();
         });

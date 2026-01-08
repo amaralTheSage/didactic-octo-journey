@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
 use App\Actions\Filament\ProposeAction;
+use App\Enums\PaymentStatus;
+use App\Models\CampaignAnnouncement;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -38,16 +40,16 @@ class CampaignAnnouncementInfolist
                             ->columnSpanFull()
                             ->placeholder('Sem descrição'),
 
+                        TextEntry::make('categories.title')->limitList(1)->listWithLineBreaks()->separator(' ')->expandableLimitedList()
+                            ->label('Categoria')
+                            ->badge()
+                            ->color('info')->columnSpan(2),
+
                         TextEntry::make('product.name')
                             ->label('Produto')
                             ->weight(FontWeight::SemiBold),
 
-                        TextEntry::make('categories.title')->limitList(2)->listWithLineBreaks()->expandableLimitedList()
-                            ->label('Categoria')
-                            ->badge()
-                            ->color('info'),
-
-                        TextEntry::make('product.description')
+                        TextEntry::make('product.description')->hiddenLabel()
                             ->label(' ')
                             ->columnSpan(2),
 
@@ -67,8 +69,9 @@ class CampaignAnnouncementInfolist
                         Action::make('validateNow')
                             ->label('Validar')
                             ->color('success')
+                            ->visible(fn(CampaignAnnouncement $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && $record->payments()->where('status', PaymentStatus::PAID)->doesntExist())
                             ->action(function ($record) {
-                                return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
+                                return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
                             }),
 
                         Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
@@ -122,7 +125,7 @@ class CampaignAnnouncementInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')->color('primary')
-                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -141,13 +144,12 @@ class CampaignAnnouncementInfolist
                                         ->weight('bold'),
 
                                     TextEntry::make('agency_cut')
-                                        ->label('Porcentagem da Agência')
+                                        ->label('Comissão da Campanha')
                                         ->suffix('%')
                                         ->numeric()
                                         ->columnSpan(3)
                                         ->size(TextSize::Large)
                                         ->weight('bold'),
-
                                 ])->columnSpan(2),
 
                         ]),
@@ -159,13 +161,13 @@ class CampaignAnnouncementInfolist
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
-                                fn ($record) => Gate::allows('is_agency')
+                                fn($record) => Gate::allows('is_agency')
                                     && $record->proposals()
-                                        ->where('agency_id', Auth::id())
-                                        ->exists()
+                                    ->where('agency_id', Auth::id())
+                                    ->exists()
                             )
                             ->action(
-                                fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                             ),
                     ]),
                 ]),

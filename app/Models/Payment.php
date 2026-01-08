@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,7 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'status' => PaymentStatus::class,
         'metadata' => 'array',
         'paid_at' => 'datetime',
         'expires_at' => 'datetime',

@@ -47,7 +47,8 @@ class CampaignAnnouncementForm
                                 ->required(),
                             TextInput::make('price')
                                 ->numeric()
-                                ->inputMode('decimal')->prefix('R$')
+                                ->inputMode('decimal')
+                                ->prefix('R$')
                                 ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
                                 ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
                                 ->placeholder('0,00')
@@ -102,15 +103,13 @@ class CampaignAnnouncementForm
                         ->placeholder('0,00'),
 
                     TextInput::make('agency_cut')
-                        ->label('Porcentagem da Agência')
+                        ->label('Comissão da Campanha')
                         ->numeric()
                         ->required()
                         ->prefix('%')
-                        ->inputMode('decimal')
                         ->maxValue(100)
                         ->minValue(0)
-                        ->step('0.01')
-                        ->placeholder('30,00'),
+                        ->placeholder('30'),
                 ])->columns(2)->columnSpanFull(),
 
                 Group::make()->columns(3)->schema([

@@ -24,7 +24,9 @@ class AcceptProposal extends Action
     {
         parent::setUp();
 
-        $this->label('Aprovar Proposta');
+        $this->label(function ($record) {
+            return Auth::user()->role === UserRoles::Influencer ? 'Vou Participar' : 'Aprovar Proposta';
+        });
         $this->color(Color::Green);
         $this->icon('heroicon-o-check-circle');
         $this->button();

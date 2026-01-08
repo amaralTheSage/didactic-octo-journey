@@ -42,8 +42,9 @@ class ViewProposal
                             ->label('Produto'),
                         TextEntry::make('announcement.budget')
                             ->label('Orçamento')
-                            ->money('BRL'),
-                        TextEntry::make('announcement.category.title')
+                            ->money('BRL')
+                            ->visible(Gate::denies('is_influencer')),
+                        TextEntry::make('announcement.categories.title')
                             ->label('Categoria')
                             ->badge(),
                     ])
@@ -70,7 +71,7 @@ class ViewProposal
                             ->columnSpanFull(),
 
                         TextEntry::make('proposed_agency_cut')
-                            ->label('Porcentagem Proposta')
+                            ->label('Comissão Proposta')
                             ->placeholder('-')
                             ->weight(FontWeight::Bold)
                             ->formatStateUsing(function ($state, $record) {
@@ -105,6 +106,7 @@ class ViewProposal
                         TextEntry::make('proposed_budget')
                             ->label('Orçamento Proposto')
                             ->placeholder('-')
+                            ->visible(Gate::denies('is_influencer'))
                             ->state(function ($record) {
                                 $influencers = $record->influencers()
                                     ->get()
@@ -184,8 +186,13 @@ class ViewProposal
                         return [
                             RepeatableEntry::make('influencers')
                                 ->hiddenLabel()
+                                ->state(
+                                    fn($record) => $record->influencers()
+                                        ->get()
+                                        ->sortByDesc(fn($user) => $user->id === Auth::id())
+                                        ->values()
+                                )
                                 ->schema([
-
                                     ImageEntry::make('avatar_url')
                                         ->hiddenLabel()
                                         ->circular()
@@ -228,7 +235,7 @@ class ViewProposal
                                         ->hiddenLabel()->columnSpan(5),
 
                                     // ── Prices
-                                    Group::make()->visible(Gate::denies('is_influencer'))
+                                    Group::make()->visible(fn($record) => $record->id === Auth::id() || Gate::denies('is_influencer'))
                                         ->schema([
                                             TextEntry::make('pivot_reels_price')
                                                 ->label('Reels')
@@ -271,6 +278,7 @@ class ViewProposal
                                                 ->weight(FontWeight::SemiBold)
                                                 ->suffix('%')
                                                 ->placeholder('-')
+                                                ->visible(Gate::denies('is_company'))
                                                 ->state(function ($record) use ($proposalId) {
                                                     return DB::table('proposal_user')
                                                         ->where('proposal_id', $proposalId)
@@ -278,13 +286,14 @@ class ViewProposal
                                                         ->value('commission_cut');
                                                 }),
                                         ])
-                                        ->columns(4)
+                                        ->columns(fn() => Gate::denies('is_company') ? 4 : 3)
                                         ->columnSpanFull(),
 
                                     Section::make('Redes Sociais')
                                         ->collapsible()->visible(Gate::denies('is_influencer'))
                                         ->collapsed()
                                         ->schema([
+
                                             Group::make()
                                                 ->columns(3)
                                                 ->schema([
@@ -299,19 +308,29 @@ class ViewProposal
                                                     TextEntry::make('social_followers')->hiddenLabel()
                                                         ->state('Seguidores')
                                                         ->weight(FontWeight::SemiBold),
-                                                ]),
-                                            Group::make()->columns(3)->schema([
-                                                TextEntry::make('instagram_label')->hiddenLabel()->state('Instagram'),
-                                                TextEntry::make('influencer_info.instagram')->hiddenLabel()
-                                                    ->prefix('@')->badge()->copyable()
-                                                    ->placeholder('-'),
-                                                TextEntry::make('influencer_info.instagram_followers')->hiddenLabel()
-                                                    ->numeric()
-                                                    ->icon('heroicon-o-users')
-                                                    ->placeholder('-'),
-                                            ]),
+                                                ])->visible(function ($record) {
+                                                    $info = $record->influencer_info;
+                                                    return $info && ($info->instagram || $info->youtube || $info->tiktok || $info->twitter || $info->facebook);
+                                                }),
 
-                                            Group::make()->columns(3)->schema([
+
+                                            TextEntry::make('placeholder')->hiddenLabel()->visible(fn($record) => !($record->influencer_info?->instagram || $record->influencer_info?->youtube || $record->influencer_info?->tiktok || $record->influencer_info?->twitter || $record->influencer_info?->facebook))
+                                                ->state('Nenhuma rede social cadastrada.'),
+
+                                            Group::make()
+                                                ->visible(fn($record) => $record->influencer_info?->instagram)
+                                                ->columns(3)->schema([
+                                                    TextEntry::make('instagram_label')->hiddenLabel()->state('Instagram'),
+                                                    TextEntry::make('influencer_info.instagram')->hiddenLabel()
+                                                        ->prefix('@')->badge()->copyable()
+                                                        ->placeholder('-'),
+                                                    TextEntry::make('influencer_info.instagram_followers')->hiddenLabel()
+                                                        ->numeric()
+                                                        ->icon('heroicon-o-users')
+                                                        ->placeholder('-'),
+                                                ]),
+
+                                            Group::make()->visible(fn($record) => $record->influencer_info?->youtube)->columns(3)->schema([
                                                 TextEntry::make('youtube_label')->hiddenLabel()->state('YouTube'),
                                                 TextEntry::make('influencer_info.youtube')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -322,7 +341,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->schema([
+                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->tiktok)->schema([
                                                 TextEntry::make('tiktok_label')->hiddenLabel()->state('TikTok'),
                                                 TextEntry::make('influencer_info.tiktok')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -333,7 +352,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->schema([
+                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->twitter)->schema([
                                                 TextEntry::make('twitter_label')->hiddenLabel()->state('Twitter'),
                                                 TextEntry::make('influencer_info.twitter')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -344,7 +363,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->schema([
+                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->facebook)->schema([
                                                 TextEntry::make('facebook_label')->hiddenLabel()->state('Facebook'),
                                                 TextEntry::make('influencer_info.facebook')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()

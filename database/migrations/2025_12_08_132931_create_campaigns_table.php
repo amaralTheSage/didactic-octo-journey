@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
 
             $table->decimal('budget', 14, 2);
-            $table->decimal('agency_cut', 5, 2);
+            $table->integer('agency_cut');
 
             $table->foreignId('product_id')->constrained();
             $table->foreignId('influencer_id')->nullable()->constrained('users');

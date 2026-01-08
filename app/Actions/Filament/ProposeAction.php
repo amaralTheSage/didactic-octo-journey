@@ -37,14 +37,14 @@ class ProposeAction extends Action
         $this->button();
 
         $this->visible(
-            fn ($record) => Gate::allows('is_agency')
+            fn($record) => Gate::allows('is_agency')
                 && ! $record->proposals()
                     ->where('agency_id', Auth::id())
                     ->exists()
         );
 
         $this->modalHeading('Enviar Proposta');
-        $this->modalDescription(fn ($record) => "Envie sua proposta para a campanha: {$record->name}");
+        $this->modalDescription(fn($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
         $this->modalWidth('3xl');
 
@@ -78,7 +78,7 @@ class ProposeAction extends Action
                         ->select('users.id', 'users.name')
                         ->whereIn('users.id', $state)
                         ->get()
-                        ->map(fn ($influencer) => [
+                        ->map(fn($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
                             'stories_price' => $influencer->influencer_info->stories_price,
@@ -92,7 +92,7 @@ class ProposeAction extends Action
                 })
                 ->searchable()
                 ->reactive()
-                ->visible(fn () => Gate::allows('is_agency')),
+                ->visible(fn() => Gate::allows('is_agency')),
 
             Repeater::make('selected_influencers')
                 ->hiddenLabel()
@@ -139,8 +139,7 @@ class ProposeAction extends Action
                         ->minValue(0)
                         ->maxValue(100)
                         ->placeholder('-')
-                        ->suffix('%')
-                        ->inputMode('decimal')
+                        ->prefix('%')
                         ->required(),
                 ])
                 ->default(function (Get $get) {
@@ -156,7 +155,7 @@ class ProposeAction extends Action
                         ->select('users.id', 'users.name')
                         ->whereIn('users.id', $filterIds)
                         ->get()
-                        ->map(fn ($influencer) => [
+                        ->map(fn($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
                             'stories_price' => $influencer->influencer_info->stories_price,
@@ -170,7 +169,7 @@ class ProposeAction extends Action
 
             TextEntry::make('summary')
                 ->hiddenLabel()
-                ->state(fn ($record) => new HtmlString("
+                ->state(fn($record) => new HtmlString("
                     <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
                         <span><strong>Reels:</strong> {$record->n_reels}</span>
                         <span><strong>Stories:</strong> {$record->n_stories}</span>
@@ -184,14 +183,13 @@ class ProposeAction extends Action
 
             Group::make([
                 TextInput::make('proposed_agency_cut')
-                    ->label('Proposta de Parcela da Agência')
-                    ->suffix('%')
+                    ->label('Proposta de Comissão da Campanha')
+                    ->prefix('%')
                     ->numeric()
-                    ->inputMode('decimal')
-                    ->minValue(0)->placeholder(fn ($record) => "{$record->agency_cut}")
+                    ->minValue(0)->placeholder(fn($record) => "{$record->agency_cut}")
                     ->maxValue(100)
-                    ->default(fn ($record) => $record->agency_cut)
-                    ->helperText(fn ($record) => "Porcentagem original: {$record->agency_cut}%"),
+                    ->default(fn($record) => $record->agency_cut)
+                    ->helperText(fn($record) => "Comissão original: {$record->agency_cut}%"),
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
@@ -210,7 +208,7 @@ class ProposeAction extends Action
                             $influencers
                         );
 
-                        return 'R$ '.number_format($range['min'], 2, ',', '.').' - R$ '.number_format($range['max'], 2, ',', '.');
+                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2),
@@ -244,8 +242,8 @@ class ProposeAction extends Action
 
                 $record->company->notify(
                     Notification::make()
-                        ->title('Proposta recebida para a campanha '.$record->name)
-                        ->body('A agência '.Auth::user()->name.' demonstrou interesse em sua campanha')
+                        ->title('Proposta recebida para a campanha ' . $record->name)
+                        ->body('A agência ' . Auth::user()->name . ' demonstrou interesse em sua campanha')
                         ->actions([
                             Action::make('view')
                                 ->label('Ver proposta')
@@ -262,7 +260,7 @@ class ProposeAction extends Action
                     User::find($influencerId)?->notify(
                         Notification::make()
                             ->title('Você foi incluído em uma proposta')
-                            ->body('Sua agência incluiu você na proposta para a campanha: '.$record->name)
+                            ->body('Sua agência incluiu você na proposta para a campanha: ' . $record->name)
                             ->info()
                             ->toDatabase()
                     );
@@ -274,7 +272,7 @@ class ProposeAction extends Action
                     ->success()
                     ->send();
             } catch (\Exception $e) {
-                Log::error('Erro ao enviar proposta: '.$e->getMessage());
+                Log::error('Erro ao enviar proposta: ' . $e->getMessage());
 
                 Notification::make()
                     ->title('Erro ao enviar Proposta')

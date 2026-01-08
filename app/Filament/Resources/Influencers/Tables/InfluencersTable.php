@@ -52,7 +52,7 @@ class InfluencersTable
                     ->searchable(),
 
                 TextColumn::make('subcategories')
-                    ->label('Subcategorias')
+                    ->label('Categorias')
                     ->placeholder('-')
                     ->badge()->listWithLineBreaks()
                     ->limitList(1)
@@ -67,7 +67,7 @@ class InfluencersTable
                     ->wrap(),
 
                 TextColumn::make('total_followers')
-                    ->label('Seguidores (Total)')
+                    ->label('Seguidores')
                     ->state(function ($record) {
                         $info = $record->influencer_info;
                         if (! $info) {

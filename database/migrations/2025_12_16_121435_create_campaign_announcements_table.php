@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->decimal('agency_cut', 5, 2)->after('name');
+            $table->integer('agency_cut')->after('name');
 
             $table->decimal('budget', 14, 2);
 
