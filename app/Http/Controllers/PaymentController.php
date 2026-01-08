@@ -39,8 +39,6 @@ class PaymentController extends Controller
             'user_id' => Auth::id(),
             'amount' => $amount * 100,
             'status' => PaymentStatus::PENDING,
-            // 'qrcode_base64' => $response['brCodeBase64'],
-            // 'qrcode_url' => $response['qrCodeUrl'] ?? null,
             'expires_at' => now()->addMinutes(15),
             'metadata' => [
                 'abacate_response' => $response,

@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
+    use HasUuids;
+
     protected $fillable = [
         'abacate_id',
         'campaign_id',
         'user_id',
         'amount',
         'status',
-        // 'qrcode_base64',
-        // 'qrcode_url',
         'metadata',
         'paid_at',
         'expires_at',
@@ -35,10 +36,5 @@ class Payment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function getAmountInReais(): float
-    {
-        return $this->amount / 100;
     }
 }

@@ -67,17 +67,14 @@ function paymentListener(payment) {
 
         init() {
             // Subscribe to Reverb channel
-            window.Echo.channel(`payment.${paymentId}`)
+            window.Echo.channel(`payments`)
                 .listen('.payment.received', (e) => {
                     console.log('Pagamento recebido!', e);
                     
                     if (e.status === 'PAID') {
                         this.paid = true;
                         
-                        // Redirecionar ou fazer algo
-                        setTimeout(() => {
-                            window.location.href = '/payment/success';
-                        }, 2000);
+                        console.log('pago')
                     }
                 });
         }
