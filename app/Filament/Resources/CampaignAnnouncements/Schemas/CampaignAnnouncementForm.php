@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
 use App\Models\Attribute;
+use App\Models\Category;
 use App\Models\User;
 use App\Enums\UserRoles;
 use Filament\Forms\Components\Hidden;
@@ -62,10 +63,19 @@ class CampaignAnnouncementForm
                             fn($action) => $action->modalHeading('Criar Produto')
                         ),
 
-                    Select::make('category_ids')
-                        ->relationship('categories', 'title')
+                    Select::make('subcategory_ids')
+                        ->relationship('subcategories', 'title')
                         ->label('Categorias')
                         ->multiple()
+                        ->options(
+                            Category::with('subcategories')->get()
+                                ->mapWithKeys(fn($category) => [
+                                    $category->title => $category->subcategories
+                                        ->pluck('title', 'id')
+                                        ->toArray(),
+                                ])
+                                ->toArray()
+                        )
                         ->searchable()
                         ->preload()
                         ->required(),
@@ -122,7 +132,8 @@ class CampaignAnnouncementForm
                     ->compact()
                     ->collapsible()->collapsed()
                     ->label('Atributos Gerais')
-                    ->addable(false)->deletable(false)
+                    ->addable(false)
+                    ->deletable(false)
                     ->reorderable(false)
                     ->default(function () {
                         return Attribute::with('values')->get()->map(function ($attribute) {
@@ -150,55 +161,50 @@ class CampaignAnnouncementForm
                                     fn(Get $get) => Attribute::find($get('attribute_id'))
                                         ?->values()
                                         ->pluck('title', 'id') ?? []
-                                )
+                                )->multiple()
                                 ->searchable()
                                 ->preload()
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set) {
-                                    // Clear custom title when switching away from "Outro"
-                                    if ($state) {
-                                        $value = \App\Models\AttributeValue::find($state);
-                                        if ($value && ! in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
+                                    // $state is now an array. Check if "Outro" is NOT in the selection.
+                                    if (filled($state)) {
+                                        $hasOutro = \App\Models\AttributeValue::whereIn('id', $state)
+                                            ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                            ->exists();
+
+                                        if (!$hasOutro) {
                                             $set('title', null);
                                         }
                                     }
                                 })
-                                ->visible(
-                                    fn(Get $get) => Attribute::find($get('attribute_id'))
-                                        ?->values()
-                                        ->exists() ?? false
-                                )
                                 ->columnSpan(function (Get $get) {
-                                    $selectedId = $get('attribute_value_id');
-                                    if ($selectedId) {
-                                        $value = \App\Models\AttributeValue::find($selectedId);
-                                        if ($value && in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
-                                            return 1; // Take half space when "Outro" is selected
-                                        }
-                                    }
+                                    $state = $get('attribute_value_id');
+                                    if (filled($state)) {
+                                        $hasOutro = \App\Models\AttributeValue::whereIn('id', $state)
+                                            ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                            ->exists();
 
-                                    return 2; // Take full space otherwise
+                                        return $hasOutro ? 1 : 2;
+                                    }
+                                    return 2;
                                 }),
 
                             TextInput::make('title')
                                 ->label('Especifique')
                                 ->placeholder('Especifique...')
                                 ->visible(function (Get $get) {
-                                    $attributeId = $get('attribute_id');
-                                    $attribute = Attribute::find($attributeId);
+                                    $attribute = Attribute::find($get('attribute_id'));
 
-                                    // If no predefined values, always show
-                                    if (! $attribute || ! $attribute->values()->exists()) {
+                                    // If no predefined values exist, always show
+                                    if (!$attribute || !$attribute->values()->exists()) {
                                         return true;
                                     }
 
-                                    // If "Outro" is selected, show
-                                    $selectedId = $get('attribute_value_id');
-                                    if ($selectedId) {
-                                        $value = \App\Models\AttributeValue::find($selectedId);
-                                        if ($value && in_array(strtolower($value->title), ['outro', 'outra', 'outros', 'outras'])) {
-                                            return true;
-                                        }
+                                    $state = $get('attribute_value_id');
+                                    if (filled($state)) {
+                                        return \App\Models\AttributeValue::whereIn('id', $state)
+                                            ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                            ->exists();
                                     }
 
                                     return false;

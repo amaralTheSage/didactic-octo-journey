@@ -128,15 +128,22 @@ class EditProposalAction extends Action
                 ->hiddenLabel()
                 ->state(fn($record) => new HtmlString("
                     <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
-                        <span><strong>Reels:</strong> {$record->announcement->n_reels}</span>
-                        <span><strong>Stories:</strong> {$record->announcement->n_stories}</span>
-                        <span><strong>Carrosséis:</strong> {$record->announcement->n_carrousels}</span>
+                        <span><strong>Reels:</strong> {$record->n_reels}</span>
+                        <span><strong>Stories:</strong> {$record->n_stories}</span>
+                        <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
                     </div>"))
                 ->visible(function (Get $get) {
                     $filterIds = $get('influencer_ids') ?? [];
 
                     return ! empty($filterIds);
                 }),
+
+            Group::make([
+                TextInput::make('n_reels')->label('Reels')->numeric()->required()->live(),
+                TextInput::make('n_stories')->label('Stories')->numeric()->required()->live(),
+                TextInput::make('n_carrousels')->label('Carrosséis')->numeric()->required()->live(),
+            ])->columns(3)
+                ->visible(fn() => Gate::allows('is_company')),
 
             Group::make([
                 TextInput::make('proposed_agency_cut')
@@ -148,7 +155,8 @@ class EditProposalAction extends Action
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
-                    ->disabled()->live()
+                    ->disabled()
+                    ->live()
                     ->placeholder(function (Get $get, $record) {
                         $influencers = $get('selected_influencers') ?? [];
 
@@ -157,9 +165,9 @@ class EditProposalAction extends Action
                         }
 
                         $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
-                            $record->announcement->n_reels,
-                            $record->announcement->n_stories,
-                            $record->announcement->n_carrousels,
+                            (int) $get('n_reels'),
+                            (int) $get('n_stories'),
+                            (int) $get('n_carrousels'),
                             $influencers
                         );
 
@@ -226,6 +234,9 @@ class EditProposalAction extends Action
                 $record->update([
                     'message' => $data['message'] ?? null,
                     'proposed_agency_cut' => $data['proposed_agency_cut'] ?? null,
+                    'n_reels' => $data['n_reels'],
+                    'n_stories' => $data['n_stories'],
+                    'n_carrousels' => $data['n_carrousels'],
                 ]);
 
                 // Get old prices for comparison

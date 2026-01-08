@@ -40,7 +40,7 @@ class CampaignAnnouncementInfolist
                             ->columnSpanFull()
                             ->placeholder('Sem descrição'),
 
-                        TextEntry::make('categories.title')->limitList(1)->listWithLineBreaks()->separator(' ')->expandableLimitedList()
+                        TextEntry::make('subcategories.title')
                             ->label('Categoria')
                             ->badge()
                             ->color('info')->columnSpan(2),
@@ -168,6 +168,19 @@ class CampaignAnnouncementInfolist
                             )
                             ->action(
                                 fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                            ),
+
+                        Action::make('viewProposals')
+                            ->label('Ver Propostas')
+                            ->color('secondary')
+                            ->url(
+                                function (CampaignAnnouncement $record) {
+
+                                    return route('filament.admin.resources.campaign-announcements.index', [
+                                        'search' => $record->name,
+                                        'activeTab' => 'proposals',
+                                    ]);
+                                }
                             ),
                     ]),
                 ]),

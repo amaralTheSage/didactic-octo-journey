@@ -208,6 +208,10 @@ body {
     color: var(--foreground);
 }
 
+.fi-dropdown-header {
+    @apply bg-primary/20 font-bold tracking-wider;
+}
+
 .fi-sidebar {
     background: var(--color-sidebar);
     color: var(--sidebar-foreground);

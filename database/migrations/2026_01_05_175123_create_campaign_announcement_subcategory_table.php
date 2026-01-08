@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('campaign_announcement_category', function (Blueprint $table) {
+        Schema::create('campaign_announcement_subcategory', function (Blueprint $table) {
             $table->id();
             $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('campaign_announcement_category');
+        Schema::dropIfExists('campaign_announcement_subcategory');
     }
 };

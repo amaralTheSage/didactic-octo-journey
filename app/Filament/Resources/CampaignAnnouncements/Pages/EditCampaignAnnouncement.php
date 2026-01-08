@@ -18,11 +18,17 @@ class EditCampaignAnnouncement extends EditRecord
 
         $pivotData = [];
         foreach ($rows as $row) {
-            $valueId = $row['attribute_value_id'] ?? null;
-            if ($valueId) {
-                $pivotData[$valueId] = [
-                    'title' => $row['title'] ?? null,
-                ];
+            $valueIds = $row['attribute_value_id'] ?? [];
+
+            // Ensure we handle both single values or arrays
+            $valueIds = is_array($valueIds) ? $valueIds : [$valueIds];
+
+            foreach ($valueIds as $id) {
+                if ($id) {
+                    $pivotData[$id] = [
+                        'title' => $row['title'] ?? null,
+                    ];
+                }
             }
         }
 
@@ -34,39 +40,27 @@ class EditCampaignAnnouncement extends EditRecord
         /** @var \App\Models\CampaignAnnouncement $record */
         $record = $this->record;
 
-        $selectedValues = $record->attribute_values
-            ->mapWithKeys(fn ($value) => [
-                $value->attribute_id => [
-                    'id' => $value->id,
-                    'title' => $value->pivot->title ?? null,
-                ],
-            ]);
+        // Group selected values by attribute_id
+        $selectedValues = $record->attribute_values->groupBy('attribute_id');
 
         $data['attribute_values'] = Attribute::with('values')->get()
             ->map(function ($attribute) use ($selectedValues) {
-                $selected = $selectedValues[$attribute->id] ?? null;
+                $selected = $selectedValues->get($attribute->id);
 
                 return [
                     'attribute_id' => $attribute->id,
                     'attribute' => $attribute,
-                    'attribute_value_id' => $selected['id'] ?? null,
-                    'title' => $selected['title'] ?? null,
+                    // Map all related IDs into an array for the multiple select
+                    'attribute_value_id' => $selected ? $selected->pluck('id')->toArray() : [],
+                    // We take the title from the first occurrence if multiple exist
+                    'title' => $selected ? $selected->first()->pivot->title : null,
                 ];
             })
             ->toArray();
 
         if (! empty($data['location'])) {
-            [$country, $state, $city] = array_pad(
-                explode('|', $data['location']),
-                3,
-                null
-            );
-
-            $data['location_data'] = [[
-                'country' => $country,
-                'state' => $state,
-                'city' => $city,
-            ]];
+            [$country, $state, $city] = array_pad(explode('|', $data['location']), 3, null);
+            $data['location_data'] = [['country' => $country, 'state' => $state, 'city' => $city]];
         }
 
         return $data;

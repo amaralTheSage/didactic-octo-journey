@@ -18,6 +18,10 @@ class Proposal extends Model
         'company_approval',
         'agency_approval',
 
+        'n_reels',
+        'n_stories',
+        'n_carrousels',
+
         'status',
     ];
 

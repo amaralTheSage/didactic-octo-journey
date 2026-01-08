@@ -125,7 +125,7 @@ class CampaignAnnouncementsTable
                     ->toggleable()
                     ->visible(fn($livewire) => self::anTab($livewire)),
 
-                TextColumn::make('category.title')->label('Categoria')->badge()->toggleable(isToggledHiddenByDefault: true)
+                TextColumn::make('subcategories.title')->label('Categoria')->badge()->toggleable(isToggledHiddenByDefault: true)->limitList(2)->listWithLineBreaks()->expandableLimitedList()
                     ->searchable()->visible(fn($livewire) => self::anTab($livewire)),
 
                 TextColumn::make('created_at')->label('Anunciada em')
@@ -148,7 +148,7 @@ class CampaignAnnouncementsTable
                 //     ->searchable()
                 //     ->visible(fn($livewire) => self::prTab($livewire)),
 
-                TextColumn::make('announcement.category.title')->label('Categoria')
+                TextColumn::make('announcement.subcategories.title')->label('Categoria')
                     ->badge()
                     ->searchable()
                     ->visible(fn($livewire) => self::prTab($livewire) && Gate::denies('is_company')),
@@ -220,15 +220,15 @@ class CampaignAnnouncementsTable
                         }
 
                         $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
-                            $record->announcement->n_reels,
-                            $record->announcement->n_stories,
-                            $record->announcement->n_carrousels,
+                            $record->n_reels,
+                            $record->n_stories,
+                            $record->n_carrousels,
                             $influencers
                         );
 
                         return new HtmlString('
                                 <div class="flex flex-col gap-0.5 text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
+                                    <span class="text-gray-600 dark:text-gray-400">de R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
                                     <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
                                 </div>
                             ');

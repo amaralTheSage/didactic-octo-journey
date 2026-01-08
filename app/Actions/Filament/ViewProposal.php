@@ -84,7 +84,7 @@ class ViewProposal
                                 $difference = $state - $announcementCut;
 
                                 if ($difference === 0) {
-                                    return "{$state}% <span class='text-xs text-gray-500'>(sem variação)</span>";
+                                    return new HtmlString("{$state}% <span class='text-xs text-gray-500'> (sem variação)</span>");
                                 }
 
                                 $arrow = $difference > 0
@@ -122,17 +122,15 @@ class ViewProposal
                                 }
 
                                 $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
-                                    $record->announcement->n_reels,
-                                    $record->announcement->n_stories,
-                                    $record->announcement->n_carrousels,
+                                    $record->n_reels,
+                                    $record->n_stories,
+                                    $record->n_carrousels,
                                     $influencers
                                 );
 
                                 return new HtmlString('
-                                    <div class="flex flex-col gap-0.5 text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
-                                        <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
-                                    </div>
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">de R$ ' . number_format($range['min'], 2, ',', '.') . '
+                                        à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
                                 ');
                             }),
 

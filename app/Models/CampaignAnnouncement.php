@@ -63,9 +63,9 @@ class CampaignAnnouncement extends Model
         )->withPivot('title');
     }
 
-    public function categories(): BelongsToMany
+    public function subcategories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class, 'campaign_announcement_category');
+        return $this->belongsToMany(Subcategory::class, 'campaign_announcement_subcategory');
     }
 
     public function product(): BelongsTo

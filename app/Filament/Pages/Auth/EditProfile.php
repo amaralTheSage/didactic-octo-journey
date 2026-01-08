@@ -433,7 +433,7 @@ class EditProfile extends BaseEditProfile
 
                 Select::make('subcategories')
                     ->multiple()
-                    ->label('Categoria')
+                    ->label('Categorias')
                     ->options(
                         Category::with('subcategories')->get()
                             ->mapWithKeys(fn($category) => [
@@ -443,17 +443,6 @@ class EditProfile extends BaseEditProfile
                             ])
                             ->toArray()
                     )
-                    ->rules([
-                        fn(): Closure => function (string $attribute, $value, Closure $fail) {
-                            $categories = Subcategory::whereIn('id', $value)
-                                ->distinct('category_id')
-                                ->count('category_id');
-
-                            if ($categories > 1) {
-                                $fail('Selecione Categorias de apenas uma categoria.');
-                            }
-                        },
-                    ])
                     ->visible(fn(Get $get) => $get('role') === 'influencer'),
             ]);
     }

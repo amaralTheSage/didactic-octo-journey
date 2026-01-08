@@ -32,7 +32,7 @@ class ProposeAction extends Action
         parent::setUp();
 
         $this->label('Me Interesso');
-        $this->color('secondary');
+        $this->color('success');
 
         $this->button();
 
@@ -54,6 +54,11 @@ class ProposeAction extends Action
                 ->placeholder('Descreva por que sua agência é ideal para esta campanha...')
                 ->rows(4)
                 ->maxLength(1000),
+
+            Hidden::make('n_reels')->default(fn($record) => $record->n_reels),
+            Hidden::make('n_stories')->default(fn($record) => $record->n_stories),
+            Hidden::make('n_carrousels')->default(fn($record) => $record->n_carrousels),
+
 
             Select::make('influencer_ids')
                 ->label('Selecionar Influenciadores')
@@ -99,6 +104,7 @@ class ProposeAction extends Action
                 ->addable(false)
                 ->deletable(false)
                 ->reorderable(false)
+
                 ->table([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
@@ -134,13 +140,19 @@ class ProposeAction extends Action
                         ->required(),
 
                     TextInput::make('commission_cut')
-                        ->label('Carrossel')
-                        ->numeric()
-                        ->minValue(0)
-                        ->maxValue(100)
-                        ->placeholder('-')
-                        ->prefix('%')
-                        ->required(),
+                        ->label('Comissão')
+                        ->mask('999')
+                        ->suffix('%')
+                        ->required()
+                        ->extraInputAttributes([
+                            'style' => 'font-weight: bold; color: #07c9de; text-align: right; border: none; border-radius: 0;',
+                        ])
+                        ->extraAttributes(
+                            [
+                                'class' => 'bg-gray-50 dark:bg-white/5 rounded-lg',
+                                'style' => 'font-weight: bold; color: #07c9de; text-align: right; border: none; border-radius: 0.5rem; margin: 0px;',
+                            ]
+                        ),
                 ])
                 ->default(function (Get $get) {
                     $filterIds = $get('influencer_ids') ?? [];
@@ -170,11 +182,15 @@ class ProposeAction extends Action
             TextEntry::make('summary')
                 ->hiddenLabel()
                 ->state(fn($record) => new HtmlString("
-                    <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
-                        <span><strong>Reels:</strong> {$record->n_reels}</span>
-                        <span><strong>Stories:</strong> {$record->n_stories}</span>
-                        <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
-                    </div>"))
+                <div  style=' display: flex; justify-content: space-between; flex-wrap:wrap; gap: 0.5rem;'>
+                    <div style=' display: flex; gap: 0.5rem;'>
+                    <span><strong>Reels:</strong> {$record->n_reels}</span>
+                    <span><strong>Stories:</strong> {$record->n_stories}</span>
+                    <span><strong>Carrosséis:</strong> {$record->n_carrousels}</span>
+                    </div>
+
+                    <span><strong>Comissão:</strong> Porcentagem que o influenciador deixa para a agência</span>
+                </div>"))
                 ->visible(function (Get $get) {
                     $filterIds = $get('influencer_ids') ?? [];
 
@@ -221,6 +237,9 @@ class ProposeAction extends Action
                     'agency_id' => Auth::id(),
                     'message' => $data['message'],
                     'proposed_agency_cut' => $data['proposed_agency_cut'],
+                    'n_reels' => $data['n_reels'],
+                    'n_stories' => $data['n_stories'],
+                    'n_carrousels' => $data['n_carrousels'],
                 ]);
 
                 $pivotData = [];

@@ -15,11 +15,17 @@ class CreateCampaignAnnouncement extends CreateRecord
 
         $pivotData = [];
         foreach ($rows as $row) {
-            $valueId = $row['attribute_value_id'] ?? null;
-            if ($valueId) {
-                $pivotData[$valueId] = [
-                    'title' => $row['title'] ?? null,
-                ];
+            $valueIds = $row['attribute_value_id'] ?? [];
+
+            // Convert to array if it's a single value (fallback)
+            $valueIds = is_array($valueIds) ? $valueIds : [$valueIds];
+
+            foreach ($valueIds as $id) {
+                if ($id) {
+                    $pivotData[$id] = [
+                        'title' => $row['title'] ?? null,
+                    ];
+                }
             }
         }
 
@@ -32,10 +38,10 @@ class CreateCampaignAnnouncement extends CreateRecord
                 Action::make('validateNow')
                     ->label('Validar')
                     ->color('success')
-                    ->action(fn () => dump('foi')),
+                    ->action(fn() => dump('foi')),
             ])
             ->send()
-            ->ToDatabase();
+            ->toDatabase();
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
