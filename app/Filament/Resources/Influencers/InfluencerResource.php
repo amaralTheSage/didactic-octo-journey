@@ -8,7 +8,7 @@ use App\Filament\Resources\Influencers\Pages\ListInfluencers;
 use App\Filament\Resources\Influencers\Schemas\InfluencerForm;
 use App\Filament\Resources\Influencers\Tables\InfluencersTable;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

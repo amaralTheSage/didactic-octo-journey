@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Illuminate\Database\Eloquent\Model;
 
 class InfluencerInfo extends Model

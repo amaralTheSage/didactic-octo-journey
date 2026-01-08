@@ -4,7 +4,7 @@ namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
 use App\Services\ChatService;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -31,7 +31,7 @@ class ViewProposal
             ->slideOver()
 
             ->modalWidth('xl')
-            ->schema(fn ($record) => [
+            ->schema(fn($record) => [
                 Section::make('Campanha')
                     ->schema([
                         TextEntry::make('announcement.name')
@@ -60,13 +60,13 @@ class ViewProposal
 
                             TextEntry::make('agency.name')->weight(FontWeight::Bold)
                                 ->hiddenLabel()->columnSpan(2)->alignStart(),
-                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRoles $state): string => __("roles.$state->value"))
+                            TextEntry::make('agency.role')->formatStateUsing(fn(UserRoles $state): string => __("roles.$state->value"))
                                 ->hiddenLabel()->badge()->alignStart(),
 
                         ])->columns(5)->columnSpan(2),
 
                         TextEntry::make('message')
-                            ->label('Mensagem')->visible(fn ($record) => isset($record->message))
+                            ->label('Mensagem')->visible(fn($record) => isset($record->message))
                             ->columnSpanFull(),
 
                         TextEntry::make('proposed_agency_cut')
@@ -108,7 +108,7 @@ class ViewProposal
                             ->state(function ($record) {
                                 $influencers = $record->influencers()
                                     ->get()
-                                    ->map(fn ($inf) => [
+                                    ->map(fn($inf) => [
                                         'reels_price' => $inf->pivot->reels_price ?? 0,
                                         'stories_price' => $inf->pivot->stories_price ?? 0,
                                         'carrousel_price' => $inf->pivot->carrousel_price ?? 0,
@@ -128,8 +128,8 @@ class ViewProposal
 
                                 return new HtmlString('
                                     <div class="flex flex-col gap-0.5 text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">De R$ '.number_format($range['min'], 2, ',', '.').'</span>
-                                        <span class="text-gray-600 dark:text-gray-400">à R$ '.number_format($range['max'], 2, ',', '.').'</span>
+                                        <span class="text-gray-600 dark:text-gray-400">De R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
+                                        <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
                                     </div>
                                 ');
                             }),
@@ -142,14 +142,14 @@ class ViewProposal
                             ->label('Conversar')
                             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                             ->color('secondary')
-                            ->visible(fn ($record) => Gate::allows('is_company'))
+                            ->visible(fn($record) => Gate::allows('is_company'))
                             ->action(function ($record) {
 
                                 $proposalId = $record->id;
 
                                 $chat = \App\Models\Chat::query()
                                     ->where('proposal_id', $proposalId)
-                                    ->whereHas('users', fn ($q) => $q->where('users.id', Auth::id()))
+                                    ->whereHas('users', fn($q) => $q->where('users.id', Auth::id()))
                                     ->first();
 
                                 if (! $chat) {
@@ -199,7 +199,7 @@ class ViewProposal
 
                                             TextEntry::make('role')
                                                 ->formatStateUsing(
-                                                    fn (UserRoles $state): string => __("roles.$state->value")
+                                                    fn(UserRoles $state): string => __("roles.$state->value")
                                                 )
                                                 ->hiddenLabel()
                                                 ->badge(),
@@ -216,8 +216,8 @@ class ViewProposal
 
                                             return $approval ?? 'pending';
                                         })
-                                        ->formatStateUsing(fn ($state) => __("approval_status.{$state}"))
-                                        ->color(fn ($state) => match ($state) {
+                                        ->formatStateUsing(fn($state) => __("approval_status.{$state}"))
+                                        ->color(fn($state) => match ($state) {
                                             'approved' => 'success',
                                             'rejected' => 'danger',
                                             'pending' => 'warning',
@@ -371,12 +371,12 @@ class ViewProposal
 
                     Action::make('remove_proposal')->icon(Heroicon::Trash)->hiddenLabel()->requiresConfirmation()->modalHeading('Remover Proposta')
                         ->color('gray')->visible(
-                            fn ($record, $livewire) => Gate::allows('is_agency')
+                            fn($record, $livewire) => Gate::allows('is_agency')
                                 && $record
-                                    ->exists()
+                                ->exists()
                         )
                         ->action(
-                            fn ($record) => $record->delete()
+                            fn($record) => $record->delete()
                         ),
                 ]),
 

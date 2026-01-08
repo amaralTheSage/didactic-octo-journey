@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -94,8 +94,8 @@ class User extends Authenticatable implements HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/'.$this->avatar)
-            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
+            ? asset('storage/' . $this->avatar)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -104,7 +104,7 @@ class User extends Authenticatable implements HasAvatar
             return null;
         }
 
-        return asset('storage/'.$this->avatar);
+        return asset('storage/' . $this->avatar);
     }
 
     /**

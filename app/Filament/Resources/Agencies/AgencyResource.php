@@ -8,7 +8,7 @@ use App\Filament\Resources\Agencies\Schemas\AgencyForm;
 use App\Filament\Resources\Agencies\Schemas\AgencyInfolist;
 use App\Filament\Resources\Agencies\Tables\AgenciesTable;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

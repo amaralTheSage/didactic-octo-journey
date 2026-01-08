@@ -1,0 +1,62 @@
+{
+    "id": "evt_xW0J4jEn4PEQGrDRdNAScfdR",
+    "event": "billing.paid",
+    "data": {
+        "pixQrCode": {
+            "id": "pix_char_f65KX5sXPejSxPqs31t4CabL",
+            "amount": 100,
+            "kind": "PIX",
+            "status": "PAID",
+            "metadata": {
+                "campaign_id": 8
+            }
+        },
+        "payment": {
+            "amount": 100,
+            "fee": 80,
+            "method": "PIX"
+        }
+    },
+    "devMode": true,
+    "webhookSecret": "1234"
+}
+
+{
+  "Host": "urge-motorola-stevens-recently.trycloudflare.com",
+  "Content-Type": "application/json",
+  "User-Agent": "AbacatePay/1.0.1",
+  "X-Webhook-Secret": "1234",
+  "X-Webhook-Signature": "SOk/9uBwQEDKrGWq9yBJ/nuL4m64SMDFkHoMStwvIhs="
+}
+
+{
+  "errors": {
+    "data.pixQrCode.status": [
+      "O data.pix qr code.status selecionado é inválido."
+    ]
+  },
+  "request_data": {
+    "id": "evt_3GG2F0SnyuMCQcBZa2rAgMDP",
+    "event": "billing.paid",
+    "data": {
+      "pixQrCode": {
+        "id": "pix_char_LWAa1rypJKpqNJQn2Acbmw23",
+        "amount": 100,
+        "kind": "PIX",
+        "status": "PAID",
+        "metadata": {
+          "campaign_id": 8
+        }
+      },
+      "payment": {
+        "amount": 100,
+        "fee": 80,
+        "method": "PIX"
+      }
+    },
+    "devMode": true,
+    "webhookSecret": "1234"
+  },
+  "url": "http://urge-motorola-stevens-recently.trycloudflare.com/payments/abacate?webhookSecret=1234",
+  "ip": "127.0.0.1"
+}

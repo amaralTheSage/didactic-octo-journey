@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Chat;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Illuminate\Support\Facades\Auth;
 
 //      Criei essa classe como forma de organizar a

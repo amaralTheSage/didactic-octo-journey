@@ -7,7 +7,7 @@ use App\Actions\Filament\ViewAgencyDetails;
 use App\Models\CampaignAnnouncement;
 use App\Models\Proposal;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -37,7 +37,7 @@ class AgenciesTable
                     ->circular(),
 
                 TextColumn::make('name')->label(' ')
-                    ->description(fn ($record) => $record->influencers()->count().' Influenciadores')
+                    ->description(fn($record) => $record->influencers()->count() . ' Influenciadores')
                     ->searchable(),
 
                 TextColumn::make('influencer_categories')
@@ -45,7 +45,7 @@ class AgenciesTable
                     ->badge()
                     ->getStateUsing(function ($record) {
                         return $record->influencers
-                            ->flatMap(fn ($inf) => $inf->subcategories)
+                            ->flatMap(fn($inf) => $inf->subcategories)
                             ->pluck('title')
                             ->unique()
                             ->values()
@@ -118,10 +118,10 @@ class AgenciesTable
                 Action::make('viewCampaigns')->hiddenLabel()
                     ->tooltip('Visualizar campanhas em comum')
                     ->icon('heroicon-o-presentation-chart-line')
-                    ->url(fn ($record) => route('filament.admin.resources.campaigns.index', [
+                    ->url(fn($record) => route('filament.admin.resources.campaigns.index', [
                         'search' => $record->name,
                     ]))->visible(
-                        fn (Model $record) => $record->campaigns()
+                        fn(Model $record) => $record->campaigns()
                             ->where('company_id', Auth::id())
                             ->exists()
                     ),
@@ -148,7 +148,7 @@ class AgenciesTable
                                 ->required()
                                 ->searchable()
                                 ->live()
-                                ->afterStateUpdated(fn (callable $set) => $set('influencer_ids', [])),
+                                ->afterStateUpdated(fn(callable $set) => $set('influencer_ids', [])),
 
                             Select::make('influencer_ids')
                                 ->label('Influenciadores')
@@ -159,7 +159,7 @@ class AgenciesTable
                                         return [];
                                     }
 
-                                    return User::where('role', \App\UserRoles::Influencer)
+                                    return User::where('role', \App\Enums\UserRoles::Influencer)
                                         ->whereHas('influencer_info', function ($query) use ($agencyId) {
                                             $query->whereIn('agency_id', $agencyId)
                                                 ->where('association_status', 'approved');
@@ -168,7 +168,7 @@ class AgenciesTable
                                 })
                                 ->required()
                                 ->searchable()
-                                ->disabled(fn (callable $get) => ! $get('agency_id'))
+                                ->disabled(fn(callable $get) => ! $get('agency_id'))
                                 ->helperText('Selecione uma agência primeiro'),
 
                             Select::make('campaign_announcement_id')
@@ -194,7 +194,7 @@ class AgenciesTable
                             foreach ($agencyIds as $agencyId) {
                                 // Filter influencers belonging specifically to this agency
                                 $agencyInfluencerIds = User::whereIn('id', $selectedInfluencerIds)
-                                    ->whereHas('influencer_info', fn ($q) => $q->where('agency_id', $agencyId))
+                                    ->whereHas('influencer_info', fn($q) => $q->where('agency_id', $agencyId))
                                     ->pluck('id')
                                     ->toArray();
 
@@ -225,7 +225,7 @@ class AgenciesTable
                                 User::find($agencyId)?->notify(
                                     Notification::make()
                                         ->title('Nova proposta de campanha')
-                                        ->body(Auth::user()->name.' enviou uma proposta para '.$campaign->name)
+                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
                                         ->toDatabase()
                                 );
                             }
@@ -235,7 +235,7 @@ class AgenciesTable
                                 $influencer->notify(
                                     Notification::make()
                                         ->title('Você foi selecionado para uma campanha')
-                                        ->body('Campanha: '.$campaign->name)
+                                        ->body('Campanha: ' . $campaign->name)
                                         ->toDatabase()
                                 );
                             });

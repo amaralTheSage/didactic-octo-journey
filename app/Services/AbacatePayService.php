@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AbacatePayService
 {
@@ -51,7 +52,7 @@ class AbacatePayService
         }
 
         $expectedSignature = base64_encode(
-            hash_hmac('sha256', $rawBody, config('services.abacate.public_key'), true)
+            hash_hmac('sha256', $rawBody, config('services.abacatepay.public_key'), true)
         );
 
         $isValidSignature = hash_equals($expectedSignature, $signatureFromHeader);

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;

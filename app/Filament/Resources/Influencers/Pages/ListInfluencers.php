@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Influencers\Pages;
 
 use App\Filament\Resources\Influencers\InfluencerResource;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;

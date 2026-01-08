@@ -8,7 +8,7 @@ use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

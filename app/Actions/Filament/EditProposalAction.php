@@ -4,7 +4,7 @@ namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
 use App\Models\User;
-use App\UserRoles;
+use App\Enums\UserRoles;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -45,28 +45,28 @@ class EditProposalAction extends Action
     {
         parent::setUp();
 
-        $this->label(fn () => 'Editar Proposta');
+        $this->label(fn() => 'Editar Proposta');
 
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
         $this->groupedIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION_GROUPED) ?? Heroicon::PencilSquare);
 
-        $this->modalHeading(fn () => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
+        $this->modalHeading(fn() => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
 
         $this->modalWidth('2xl');
 
-        $this->visible(fn ($livewire) => $livewire->activeTab === 'proposals' && Gate::denies('is_influencer'));
+        $this->visible(fn($livewire) => $livewire->activeTab === 'proposals' && Gate::denies('is_influencer'));
 
         $this->schema([
             Textarea::make('message')
                 ->label('Mensagem')
                 ->rows(4)
                 ->maxLength(1000)
-                ->visible(fn () => Gate::allows('is_agency')),
+                ->visible(fn() => Gate::allows('is_agency')),
 
             Select::make('influencer_ids')
                 ->label('Selecionar Influenciadores')
                 ->multiple()
-                ->getOptionLabelUsing(fn ($value) => User::find($value)?->name)
+                ->getOptionLabelUsing(fn($value) => User::find($value)?->name)
                 ->options(
                     function ($record) {
                         return $record->agency
@@ -87,7 +87,7 @@ class EditProposalAction extends Action
                         ->select('users.id', 'users.name')
                         ->whereIn('users.id', $state)
                         ->get()
-                        ->map(fn ($influencer) => [
+                        ->map(fn($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
                             'stories_price' => $influencer->influencer_info->stories_price,
@@ -100,7 +100,7 @@ class EditProposalAction extends Action
                 })
                 ->searchable()
                 ->reactive()
-                ->visible(fn () => Gate::denies('is_influencer')),
+                ->visible(fn() => Gate::denies('is_influencer')),
 
             Repeater::make('selected_influencers')
                 ->hiddenLabel()
@@ -122,11 +122,11 @@ class EditProposalAction extends Action
                     TextInput::make('carrousel_price')->label('Carrossel')->numeric()->prefix('R$')->required(),
                 ])
                 ->live()
-                ->visible(fn () => Gate::allows('is_agency') || Gate::allows('is_company')),
+                ->visible(fn() => Gate::allows('is_agency') || Gate::allows('is_company')),
 
             TextEntry::make('summary')
                 ->hiddenLabel()
-                ->state(fn ($record) => new HtmlString("
+                ->state(fn($record) => new HtmlString("
                     <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
                         <span><strong>Reels:</strong> {$record->announcement->n_reels}</span>
                         <span><strong>Stories:</strong> {$record->announcement->n_stories}</span>
@@ -142,9 +142,9 @@ class EditProposalAction extends Action
                 TextInput::make('proposed_agency_cut')
                     ->label('Parcela da Agência (%)')
                     ->numeric()
-                    ->minValue(0)->placeholder(fn ($record) => "{$record->announcement->agency_cut}")
+                    ->minValue(0)->placeholder(fn($record) => "{$record->announcement->agency_cut}")
                     ->maxValue(100)
-                    ->visible(fn () => Gate::denies('is_influencer')),
+                    ->visible(fn() => Gate::denies('is_influencer')),
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
@@ -163,7 +163,7 @@ class EditProposalAction extends Action
                             $influencers
                         );
 
-                        return 'R$ '.number_format($range['min'], 2, ',', '.').' - R$ '.number_format($range['max'], 2, ',', '.');
+                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2),
@@ -207,7 +207,7 @@ class EditProposalAction extends Action
 
             $data['selected_influencers'] = $record->influencers()
                 ->get()
-                ->map(fn ($influencer) => [
+                ->map(fn($influencer) => [
                     'user_id' => $influencer->id,
                     'name' => $influencer->name,
                     'reels_price' => $influencer->pivot->reels_price ?? $influencer->influencer_info->reels_price ?? 0,
@@ -230,7 +230,7 @@ class EditProposalAction extends Action
                 $oldPrices = $record->influencers()
                     ->get()
                     ->keyBy('id')
-                    ->map(fn ($inf) => [
+                    ->map(fn($inf) => [
                         'reels' => $inf->pivot->reels_price,
                         'stories' => $inf->pivot->stories_price,
                         'carrousel' => $inf->pivot->carrousel_price,
@@ -269,7 +269,7 @@ class EditProposalAction extends Action
                     User::find($userId)?->notify(
                         Notification::make()
                             ->title('Preços atualizados na proposta')
-                            ->body('Os valores da sua participação na campanha '.$record->announcement->name.' foram atualizados por '.Auth::user()->name)
+                            ->body('Os valores da sua participação na campanha ' . $record->announcement->name . ' foram atualizados por ' . Auth::user()->name)
                             ->info()
                             ->toDatabase()
                     );
@@ -280,7 +280,7 @@ class EditProposalAction extends Action
                     $record->agency->notify(
                         Notification::make()
                             ->title('Proposta atualizada pela empresa')
-                            ->body(Auth::user()->name.' atualizou os valores dos influenciadores na proposta para '.$record->announcement->name)
+                            ->body(Auth::user()->name . ' atualizou os valores dos influenciadores na proposta para ' . $record->announcement->name)
                             ->info()
                             ->toDatabase()
                     );
