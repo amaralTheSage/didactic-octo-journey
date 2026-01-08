@@ -14,6 +14,8 @@ class PaymentController extends Controller
 {
     public function store(Request $request)
     {
+        Log::info('Iniciando criação de pagamento via AbacatePay');
+
         $amount = 1;
         Gate::authorize('is_company');
 
@@ -47,8 +49,10 @@ class PaymentController extends Controller
         ]);
     }
 
+
     public function pix_webhook(Request $request)
     {
+
         Log::info('Webhook pix: Pagamento recebido, iniciando processamento...');
 
         Log::info($request);

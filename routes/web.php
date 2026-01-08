@@ -12,7 +12,7 @@ Route::get('/', function () {
 
 Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
-Route::post('/payments/abacate', [PaymentController::class, 'pix_webhook'])->name('payments.webhook')->middleware('auth');
+Route::post('/payments/abacate', [PaymentController::class, 'pix_webhook'])->name('payments.webhook')->withoutMiddleware('verify_csrf_token');
 
 Route::middleware('auth')
     ->prefix('/chats')
@@ -37,4 +37,4 @@ Route::middleware('auth')
 //     })->name('dashboard');
 // });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
