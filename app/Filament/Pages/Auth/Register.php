@@ -6,8 +6,11 @@ use App\Models\Category;
 use App\Models\InfluencerInfo;
 use App\Models\User;
 use App\Enums\UserRoles;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
+use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Auth\Events\Registered;
@@ -15,6 +18,7 @@ use Filament\Auth\Http\Responses\Contracts\RegistrationResponse;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -32,7 +36,10 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Auth\SessionGuard;
@@ -74,6 +81,7 @@ class Register extends SimplePage
 
         $this->form->fill();
 
+
         $this->callHook('afterFill');
     }
 
@@ -83,62 +91,74 @@ class Register extends SimplePage
             $this->rateLimit(2);
         } catch (TooManyRequestsException $exception) {
             $this->getRateLimitedNotification($exception)?->send();
-
             return null;
         }
 
-        $user = $this->wrapInDatabaseTransaction(function (): Model {
+        $user = $this->wrapInDatabaseTransaction(function () {
             $this->callHook('beforeValidate');
-
             $data = $this->form->getState();
-
             $this->callHook('afterValidate');
 
+            $isInfluencer = ($data['role'] === 'influencer');
+
             $influencerData = $data['influencer_data'] ?? [];
+            $subcategories = $influencerData['subcategories'] ?? [];
 
             $data = $this->mutateFormDataBeforeRegister($data);
-
             $this->callHook('beforeRegister');
 
             $user = $this->handleRegistration($data);
 
-            if ($data['role'] === 'influencer') {
+            if ($isInfluencer) {
+                // Save Influencer Profile
                 InfluencerInfo::create([
                     'user_id' => $user->id,
                     ...$influencerData,
                 ]);
+
+                // Save Subcategories
+                if (!empty($subcategories)) {
+                    $user->subcategories()->sync($subcategories);
+                }
+
+                // Save Attributes from Step 3
+                if (!empty($data['attribute_values'])) {
+                    $pivotData = [];
+                    foreach ($data['attribute_values'] as $row) {
+                        $ids = (array)($row['attribute_value_id'] ?? []);
+                        foreach ($ids as $id) {
+                            if ($id) {
+                                $pivotData[$id] = ['title' => $row['title'] ?? null];
+                            }
+                        }
+                    }
+                    $user->attribute_values()->sync($pivotData);
+                }
+
+                // Notify Agency
+                $agencyId = $influencerData['agency_id'] ?? null;
+                if ($agencyId) {
+                    $agency = User::find($agencyId);
+                    if ($agency) {
+                        $agency->notify(
+                            Notification::make()
+                                ->title('Convite de associação de ' . $user->name)
+                                ->body('Revise o pedido na página de influenciadores.')
+                                ->toDatabase()
+                        );
+                    }
+                }
             }
 
             $this->form->model($user)->saveRelationships();
-
             $this->callHook('afterRegister');
 
             return $user;
         });
 
-        $data = $this->form->getState();
-
-        if ($data['role'] === 'influencer' && isset($data['subcategories'])) {
-
-            foreach ($data['subcategories'] as $sub) {
-                $user->subcategories()->attach($sub);
-            }
-        }
-
-        $agency = User::whereId($data['influencer_data']['agency_id'])->first();
-
-        if ($data['role'] === 'influencer' && isset($agency)) {
-            $agency->notify(
-                Notification::make()->title('Convite de associação de ' . $user->name)->body('Revise o pedido na página de influenciadores.')->toDatabase()
-            );
-        }
-
         event(new Registered($user));
-
         $this->sendEmailVerificationNotification($user);
-
         Filament::auth()->login($user);
-
         session()->regenerate();
 
         return app(RegistrationResponse::class);
@@ -204,21 +224,52 @@ class Register extends SimplePage
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            FileUpload::make('avatar')
-                ->label('Imagem')
-                ->disk('public')
-                ->directory('avatars')
-                ->alignCenter()
-                ->image()
-                ->avatar()
-                ->circleCropper()
-                ->imageEditor()
-                ->imagePreviewHeight('100'),
+            Wizard::make(
+                [
+                    Step::make('Informações Básicas')
+                        ->schema([
+                            $this->getBaseInfoColumn(),
+                        ]),
 
-            $this->getNameFormComponent(),
-            Textarea::make('bio')->rows(5)->placeholder('Sou Youtuber e Streamer na área da tecnologia...')->required(),
+                    Step::make('Informações de Influenciador')->schema([
+                        $this->getInfluencerColumn(),
+                    ])->visible(fn(Get $get) => $get('role') === 'influencer'),
 
-            Section::make()->schema([
+                    Step::make('Atributos')->schema([
+                        $this->getAttributesRepeater(),
+                    ])->visible(fn(Get $get) => $get('role') === 'influencer'),
+                ]
+            ),
+        ]);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+    //
+    // -----------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------------------
+
+    protected function getBaseInfoColumn(): Group
+    {
+        return Group::make()
+            ->schema([
+
+                FileUpload::make('avatar')
+                    ->hiddenLabel()
+                    ->disk('public')
+                    ->directory('avatars')
+                    ->alignCenter()
+                    ->image()
+                    ->avatar()
+                    ->circleCropper(),
+
+                $this->getNameFormComponent(),
+
+                Textarea::make('bio')
+                    ->rows(5)
+                    ->placeholder('Sou criador de conteúdo...')
+                    ->required(),
+
                 Select::make('role')
                     ->options([
                         'influencer' => 'Influenciador',
@@ -228,176 +279,237 @@ class Register extends SimplePage
                     ->required()
                     ->live(),
 
-                Section::make('Canais de Mídia Social')
-                    ->description('Informe o @ do seu perfil e número de seguidores em cada plataforma.')
-                    ->schema([
+                TextInput::make('pix_address')->label('Endereço Pix'),
 
-                        Select::make('subcategories')
-                            ->multiple()
-                            ->label('Categoria')
-                            ->options(
-                                Category::with('subcategories')->get()
-                                    ->mapWithKeys(function ($category) {
-                                        return [
-                                            $category->title => $category->subcategories
-                                                ->filter(fn($subcategory) => $subcategory->title !== null)
-                                                ->pluck('title', 'id')
-                                                ->toArray(),
-                                        ];
-                                    })
-                                    ->toArray()
-                            ),
 
-                        Group::make()->columns(2)->dehydrated()->statePath('influencer_data')->schema([
-                            Select::make('agency_id')
-                                ->label('Agência Vinculada')->columnSpan(2)
-                                ->helperText('Selecione a agência responsável pelo seu perfil.')
-                                ->searchable()
-                                ->preload()
+                $this->getEmailFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getPasswordConfirmationFormComponent(),
 
-                                ->getSearchResultsUsing(
-                                    fn(string $search): array => User::query()
-                                        ->where('role', UserRoles::Agency)
-                                        ->where('name', 'ilike', "%{$search}%")
-                                        ->limit(50)
-                                        ->pluck('name', 'id')
-                                        ->toArray()
-                                )
-                                ->getOptionLabelUsing(fn($value): ?string => User::find($value)?->name),
 
-                            Repeater::make('location_data')
-                                ->label('Localização')->addable(false)
-                                ->table([
-                                    TableColumn::make('País'),
-                                    TableColumn::make('Estado'),
-                                    TableColumn::make('Cidade'),
-                                ])
-                                ->deletable(false)
-                                ->schema([
-
-                                    Select::make('country')->columnSpan(1)
-                                        ->label('País')
-                                        ->placeholder('Selecione um país')
-                                        ->options([
-                                            'BR' => 'Brasil',
-                                            'US' => 'Estados Unidos',
-                                            'AR' => 'Argentina',
-                                            'UY' => 'Uruguai',
-                                            'PY' => 'Paraguai',
-                                            // Add more countries
-                                        ])
-                                        ->searchable()
-                                        ->reactive()
-                                        ->afterStateUpdated(function (callable $set) {
-                                            $set('state', null);
-                                            $set('city', null);
-                                        })
-                                        ->required(),
-
-                                    Select::make('state')->columnSpan(1)
-                                        ->label('Estado')
-                                        ->placeholder('Selecione um estado')
-                                        ->options(function () {
-                                            return Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-                                                ->collect()
-                                                ->sortBy('nome')
-                                                ->pluck('nome', 'sigla')
-                                                ->toArray();
-                                        })
-                                        ->searchable()
-                                        ->reactive()
-                                        ->afterStateUpdated(function (callable $set) {
-                                            $set('city', null);
-                                        })
-                                        ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                                        ->required(fn(Get $get) => $get('country') === 'BR'),
-
-                                    Select::make('city')->columnSpan(1)
-                                        ->label('Cidade')
-                                        ->placeholder('Selecione uma cidade')
-                                        ->options(function (Get $get) {
-                                            $state = $get('state');
-                                            if (! $state) {
-                                                return [];
-                                            }
-
-                                            return Http::get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
-                                                ->collect()
-                                                ->pluck('nome', 'nome')
-                                                ->toArray();
-                                        })
-                                        ->searchable()
-                                        ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                                        ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
-                                        ->disabled(fn(Get $get) => ! $get('state')),
-                                ])->compact()
-                                ->columnSpan(2),
-
-                            Group::make()->columns(2)->schema([
-                                TextEntry::make('handle_label')->label('@ do Perfil'),
-                                TextEntry::make('followers_label')->label('Seguidores'),
-                            ])->columnSpan(2),
-
-                            Group::make()->schema([
-                                TextInput::make('instagram')->hiddenLabel()->prefix('@')->placeholder('Instagram'),
-                                TextInput::make('twitter')->hiddenLabel()->prefix('@')->placeholder('Twitter'),
-                                TextInput::make('youtube')->hiddenLabel()->prefix('@')->placeholder('Youtube'),
-                                TextInput::make('tiktok')->hiddenLabel()->prefix('@')->placeholder('TikTok'),
-                                TextInput::make('facebook')->hiddenLabel()->prefix('@')->placeholder('Facebook'),
-                            ])->columnSpan(1),
-
-                            Group::make()->schema([
-                                TextInput::make('instagram_followers')->hiddenLabel()->numeric(),
-                                TextInput::make('twitter_followers')->hiddenLabel()->numeric(),
-                                TextInput::make('youtube_followers')->hiddenLabel()->numeric(),
-                                TextInput::make('tiktok_followers')->hiddenLabel()->numeric(),
-                                TextInput::make('facebook_followers')->hiddenLabel()->numeric(),
-                            ])->columnSpan(1),
-
-                            Group::make()->columns(1)->schema([
-                                TextInput::make('reels_price')
-                                    ->label('Preço de Reels')
-                                    ->numeric()
-                                    ->inputMode('decimal')
-                                    ->prefix('R$'),
-
-                                TextInput::make('stories_price')
-                                    ->label('Preço de Stories')
-                                    ->numeric()->inputMode('decimal')
-                                    ->prefix('R$'),
-
-                                TextInput::make('carrousel_price')
-                                    ->label('Preço de Carrossel')
-                                    ->numeric()->inputMode('decimal')
-                                    ->prefix('R$'),
-
-                                TextInput::make('commission_cut')
-                                    ->label('Porcentagem da Comissão')
-                                    ->prefix('%')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100),
-
-                            ])
-                                ->columnSpan(2),
-                        ]),
-                    ])
-                    ->visible(fn(Get $get): bool => $get('role') === 'influencer'),
-            ]),
-
-            TextInput::make('pix_address')->label('Endereço Pix'),
-
-            $this->getEmailFormComponent(),
-            $this->getPasswordFormComponent(),
-            $this->getPasswordConfirmationFormComponent(),
-        ]);
+            ]);
     }
 
-    // -----------------------------------------------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------------------------------
-    //
-    // -----------------------------------------------------------------------------------------------------------
-    // -----------------------------------------------------------------------------------------------------------
+    protected function getInfluencerColumn(): Group
+    {
+        return Group::make()
+            ->statePath('influencer_data')
+            ->dehydrated()
+            ->schema([
+                Select::make('subcategories')
+                    ->multiple()
+                    ->label('Categorias')
+                    ->options(
+                        Category::with('subcategories')->get()
+                            ->mapWithKeys(fn($category) => [
+                                $category->title => $category->subcategories
+                                    ->pluck('title', 'id')
+                                    ->toArray(),
+                            ])
+                            ->toArray()
+                    ),
+
+                Select::make('agency_id')
+                    ->label('Agência Vinculada')
+                    ->searchable()
+                    ->preload()
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => User::where('role', UserRoles::Agency)
+                            ->where('name', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray()
+                    )
+                    ->getOptionLabelUsing(
+                        fn($value) => User::find($value)?->name
+                    ),
+
+                Group::make()
+                    ->statePath('location_data')->columns(2)
+                    ->schema([
+                        Select::make('country')
+                            ->label('País')
+                            ->placeholder('Selecione um país')
+                            ->options([
+                                'BR' => 'Brasil',
+                                'US' => 'Estados Unidos',
+                                'AR' => 'Argentina',
+                                'UY' => 'Uruguai',
+                                'PY' => 'Paraguai',
+                            ])->columnSpan(2)
+                            ->searchable()
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $set) {
+                                $set('state', null);
+                                $set('city', null);
+                            })
+                            ->required(),
+
+                        Select::make('state')
+                            ->label('Estado')
+                            ->placeholder('Selecione um estado')
+                            ->options(
+                                fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                    ->collect()
+                                    ->sortBy('nome')
+                                    ->pluck('nome', 'sigla')
+                                    ->toArray()
+                            )
+                            ->searchable()
+                            ->reactive()
+                            ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR'),
+
+                        Select::make('city')
+                            ->label('Cidade')
+                            ->placeholder('Selecione uma cidade')
+                            ->options(function (Get $get) {
+                                if (! $get('state')) {
+                                    return [];
+                                }
+
+                                return Http::get(
+                                    "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
+                                )
+                                    ->collect()
+                                    ->pluck('nome', 'nome')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
+                    ]),
+
+                Section::make('Redes Sociais')->collapsed()->collapsible()
+                    ->schema([
+                        Group::make()->columns(2)->schema([
+                            TextInput::make('instagram')->placeholder('@Instagram'),
+                            TextInput::make('instagram_followers')->label('Seguidores')->numeric(),
+
+                            TextInput::make('youtube')->placeholder('@YouTube'),
+                            TextInput::make('youtube_followers')->label('Seguidores')->numeric(),
+
+                            TextInput::make('tiktok')->placeholder('@TikTok'),
+                            TextInput::make('tiktok_followers')->label('Seguidores')->numeric(),
+
+                            TextInput::make('twitter')->placeholder('@Twitter'),
+                            TextInput::make('twitter_followers')->label('Seguidores')->numeric(),
+
+                            TextInput::make('facebook')->placeholder('@Facebook'),
+                            TextInput::make('facebook_followers')->label('Seguidores')->numeric(),
+                        ]),
+                    ]),
+
+                Section::make('Tabela de Preços')
+                    ->schema([
+                        TextInput::make('reels_price')
+                            ->label('Reels')
+                            ->numeric()
+                            ->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('stories_price')
+                            ->label('Stories')
+                            ->numeric()->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('carrousel_price')
+                            ->label('Carrossel')
+                            ->numeric()->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('commission_cut')
+                            ->label('Comissão')
+                            ->suffix('%')
+                            ->extraInputAttributes(['style' => 'text-align: right;'])
+                            ->mask('999')
+                            ->minValue(0)
+                            ->maxValue(100),
+                    ])->columns(4),
+            ])
+            ->visible(fn(Get $get) => $get('role') === 'influencer');
+    }
+
+    protected function getAttributesRepeater()
+    {
+        return Repeater::make('attribute_values')
+            ->compact()
+            ->collapsible()
+            ->collapsed()
+            ->label('Atributos Gerais')
+            ->addable(false)
+            ->deletable(false)
+            ->reorderable(false)
+            ->default(function () {
+                // Simply load all attributes for a fresh registration
+                return Attribute::all()->map(fn($attribute) => [
+                    'attribute_id' => $attribute->id,
+                    'attribute_value_id' => [],
+                    'title' => null,
+                ])->toArray();
+            })
+            ->table([
+                TableColumn::make('Atributo'),
+                TableColumn::make('Valor'),
+            ])
+            ->schema([
+                Hidden::make('attribute_id'),
+
+                TextEntry::make('attribute_title')
+                    ->label('Atributo')
+                    ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
+
+                Group::make()->schema([
+                    Select::make('attribute_value_id')
+                        ->label('Valor')
+                        ->options(
+                            fn(Get $get) =>
+                            AttributeValue::where('attribute_id', $get('attribute_id'))
+                                ->pluck('title', 'id')
+                        )
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if (filled($state)) {
+                                $hasOutro = AttributeValue::whereIn('id', $state)
+                                    ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                    ->exists();
+
+                                if (!$hasOutro) {
+                                    $set('title', null);
+                                }
+                            }
+                        })
+                        ->columnSpan(
+                            fn(Get $get) =>
+                            AttributeValue::whereIn('id', (array)($get('attribute_value_id') ?? []))
+                                ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                ->exists() ? 1 : 2
+                        ),
+
+                    TextInput::make('title')
+                        ->label('Especifique')
+                        ->placeholder('Especifique...')
+                        ->visible(
+                            fn(Get $get) =>
+                            AttributeValue::whereIn('id', (array)($get('attribute_value_id') ?? []))
+                                ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                ->exists()
+                        )
+                        ->columnSpan(1),
+                ])->columns(2)->columnSpanFull(),
+            ]);
+    }
+
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::FourExtraLarge;
+    }
+
+
 
     protected function getNameFormComponent(): Component
     {
@@ -506,16 +618,16 @@ class Register extends SimplePage
      */
     protected function mutateFormDataBeforeRegister(array $data): array
     {
-        if (! empty($data['location_data'])) {
-            $loc = $data['location_data'][0] ?? [];
+        if (isset($data['influencer_data']['location_data'])) {
+            $loc = $data['influencer_data']['location_data'];
 
-            $data['location'] = implode('|', [
+            $data['influencer_data']['location'] = implode('|', [
                 $loc['country'] ?? '',
                 $loc['state'] ?? '',
                 $loc['city'] ?? '',
             ]);
 
-            unset($data['location_data']);
+            unset($data['influencer_data']['location_data']);
         }
 
         return $data;

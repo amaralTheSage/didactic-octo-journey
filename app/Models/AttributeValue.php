@@ -24,4 +24,14 @@ class AttributeValue extends Model
             'campaign_announcement_id'
         )->withTimestamps();
     }
+
+    public function influencer_infos(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            InfluencerInfo::class,
+            'attribute_value_influencer_info',
+            'attribute_value_id',
+            'influencer_info_id'
+        )->withPivot('title')->withTimestamps();
+    }
 }

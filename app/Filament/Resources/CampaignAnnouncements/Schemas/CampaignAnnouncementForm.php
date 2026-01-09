@@ -128,9 +128,12 @@ class CampaignAnnouncementForm
                     TextInput::make('n_carrousels')->default(0)->numeric()->label('Carrosséis'),
                 ])->columnSpan(2),
 
+
+                # CampaignAnnouncementForm
                 Repeater::make('attribute_values')
                     ->compact()
-                    ->collapsible()->collapsed()
+                    ->collapsible()
+                    ->collapsed()
                     ->label('Atributos Gerais')
                     ->addable(false)
                     ->deletable(false)

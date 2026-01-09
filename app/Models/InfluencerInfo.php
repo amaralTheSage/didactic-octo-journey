@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRoles;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class InfluencerInfo extends Model
 {

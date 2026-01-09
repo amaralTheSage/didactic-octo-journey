@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\UserRoles;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -41,6 +42,23 @@ class User extends Authenticatable implements HasAvatar
      *
      * @var list<string>
      */
+
+
+    public function influencer_info(): HasOne
+    {
+        return $this->hasOne(InfluencerInfo::class);
+    }
+
+    public function attribute_values(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            AttributeValue::class,
+            // 'attribute_value_user',
+            // 'user_id',
+            // 'attribute_value_id'
+        )->withPivot('title')->withTimestamps();
+    }
+
     public function chats()
     {
         return $this->belongsToMany(Chat::class);
@@ -63,10 +81,7 @@ class User extends Authenticatable implements HasAvatar
             ->orWhere('influencer_id', $this->id);
     }
 
-    public function influencer_info(): HasOne
-    {
-        return $this->hasOne(InfluencerInfo::class);
-    }
+
 
     public function influencers()
     {

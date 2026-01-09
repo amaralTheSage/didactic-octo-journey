@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\User;
 use App\Enums\UserRoles;
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -15,9 +17,13 @@ use Filament\Auth\Notifications\VerifyEmailChange;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Pages\Concerns;
 use Filament\Panel;
@@ -28,6 +34,8 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
@@ -37,6 +45,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -157,14 +166,11 @@ class EditProfile extends BaseEditProfile
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-
         $user = $this->getUser();
 
         if ($user->role === UserRoles::Influencer && $user->influencer_info) {
             $data['influencer_data'] = $user->influencer_info->toArray();
-        }
-        if ($user->role === UserRoles::Influencer && $user->influencer_info) {
-            $data['subcategories'] = $user->subcategories->pluck('id')->toArray();
+            $data['influencer_data']['subcategories'] = $user->subcategories->pluck('id')->toArray();
         }
 
         if (! empty($user->influencer_info->location)) {
@@ -176,6 +182,27 @@ class EditProfile extends BaseEditProfile
 
             $data['influencer_data']['location_data'] = compact('country', 'state', 'city');
         }
+
+        $existingSelections = $user->attribute_values()
+            ->withPivot('title')
+            ->get()
+            ->groupBy('attribute_id');
+
+        // 2. Map Attributes
+        $data['attribute_values'] = Attribute::with('values')->get()
+            ->map(function ($attribute) use ($existingSelections) {
+                $selected = $existingSelections->get($attribute->id);
+
+                return [
+                    'attribute_id'       => $attribute->id,
+
+                    'attribute_title'    => $attribute->title,
+                    'attribute_value_id' => $selected ? $selected->pluck('id')->toArray() : [],
+                    'title'              => $selected ? $selected->first()->pivot->title : null,
+                ];
+            })->toArray();
+
+
 
         return $data;
     }
@@ -267,9 +294,31 @@ class EditProfile extends BaseEditProfile
      */
     protected function handleRecordUpdate(Model $record, mixed $data): Model
     {
-        $record->subcategories()->sync(
-            $data['subcategories'] ?? []
-        );
+        $repeaterRows = $data['attribute_values'] ?? [];
+        $influencerData = $this->influencerData ?? [];
+        $subcategoryIds = $this->influencerData['subcategories'] ?? [];
+
+
+
+        unset($data['attribute_values'], $data['influencer_data']);
+
+
+        $pivotData = [];
+        foreach ($repeaterRows as $row) {
+            $ids = $row['attribute_value_id'] ?? [];
+            $ids = is_array($ids) ? $ids : [$ids]; // Handle single/array
+
+            foreach ($ids as $id) {
+                if ($id) {
+                    $pivotData[$id] = ['title' => $row['title'] ?? null];
+                }
+            }
+        }
+
+        $record->attribute_values()->sync($pivotData);
+
+        # SUBCATEGORIES
+        $record->subcategories()->sync($subcategoryIds);
 
         if (Filament::hasEmailChangeVerification() && array_key_exists('email', $data)) {
             $this->sendEmailChangeVerification($record, $data['email']);
@@ -278,8 +327,15 @@ class EditProfile extends BaseEditProfile
         }
 
         $record->update($data);
-        $record->influencer_info()->updateOrCreate(['user_id' => $record->id], $this->influencerData);
 
+        if ($record->role->value === 'influencer') {
+            unset($influencerData['subcategories']);
+
+            $record->influencer_info()->updateOrCreate(
+                ['user_id' => $record->id],
+                $influencerData
+            );
+        }
         return $record;
     }
 
@@ -424,12 +480,41 @@ class EditProfile extends BaseEditProfile
     {
         return Group::make()
             ->schema([
+
+                FileUpload::make('avatar')
+                    ->hiddenLabel()
+                    ->disk('public')
+                    ->directory('avatars')
+                    ->alignCenter()
+                    ->image()
+                    ->avatar()
+                    ->circleCropper(),
+
                 $this->getNameFormComponent(),
 
                 Textarea::make('bio')
                     ->rows(5)
                     ->placeholder('Sou criador de conteúdo...')
                     ->required(),
+
+
+
+
+                $this->getEmailFormComponent(),
+                $this->getPasswordFormComponent(),
+                $this->getPasswordConfirmationFormComponent(),
+
+                TextInput::make('pix_address')->label('Endereço Pix'),
+
+            ]);
+    }
+
+    protected function getInfluencerColumn(): Group
+    {
+        return Group::make()
+            ->statePath('influencer_data')
+            ->dehydrated()
+            ->schema([
 
                 Select::make('subcategories')
                     ->multiple()
@@ -442,181 +527,262 @@ class EditProfile extends BaseEditProfile
                                     ->toArray(),
                             ])
                             ->toArray()
+                    ),
+                Select::make('agency_id')
+                    ->label('Agência Vinculada')
+                    ->searchable()
+                    ->preload()
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => User::where('role', UserRoles::Agency)
+                            ->where('name', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray()
                     )
-                    ->visible(fn(Get $get) => $get('role') === 'influencer'),
-            ]);
-    }
+                    ->getOptionLabelUsing(
+                        fn($value) => User::find($value)?->name
+                    ),
 
-    protected function getInfluencerColumn(): Group
-    {
-        return Group::make()
-            ->statePath('influencer_data')
-            ->dehydrated()
-            ->schema([
-
-                Section::make('Dados do Influenciador')
+                Group::make()
+                    ->statePath('location_data')->columns(2)
                     ->schema([
-                        Select::make('agency_id')
-                            ->label('Agência Vinculada')
+                        Select::make('country')
+                            ->label('País')
+                            ->placeholder('Selecione um país')
+                            ->options([
+                                'BR' => 'Brasil',
+                                'US' => 'Estados Unidos',
+                                'AR' => 'Argentina',
+                                'UY' => 'Uruguai',
+                                'PY' => 'Paraguai',
+                            ])->columnSpan(2)
                             ->searchable()
-                            ->preload()
-                            ->getSearchResultsUsing(
-                                fn(string $search): array => User::where('role', UserRoles::Agency)
-                                    ->where('name', 'ilike', "%{$search}%")
-                                    ->limit(50)
-                                    ->pluck('name', 'id')
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $set) {
+                                $set('state', null);
+                                $set('city', null);
+                            }),
+
+                        Select::make('state')
+                            ->label('Estado')
+                            ->placeholder('Selecione um estado')
+                            ->options(
+                                fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                    ->collect()
+                                    ->sortBy('nome')
+                                    ->pluck('nome', 'sigla')
                                     ->toArray()
                             )
-                            ->getOptionLabelUsing(
-                                fn($value) => User::find($value)?->name
-                            ),
+                            ->searchable()
+                            ->reactive()
+                            ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR'),
 
-                        Group::make()
-                            ->statePath('location_data')->columns(2)
-                            ->schema([
-                                Select::make('country')
-                                    ->label('País')
-                                    ->placeholder('Selecione um país')
-                                    ->options([
-                                        'BR' => 'Brasil',
-                                        'US' => 'Estados Unidos',
-                                        'AR' => 'Argentina',
-                                        'UY' => 'Uruguai',
-                                        'PY' => 'Paraguai',
-                                    ])->columnSpan(2)
-                                    ->searchable()
-                                    ->reactive()
-                                    ->afterStateUpdated(function (callable $set) {
-                                        $set('state', null);
-                                        $set('city', null);
-                                    })
-                                    ->required(),
+                        Select::make('city')
+                            ->label('Cidade')
+                            ->placeholder('Selecione uma cidade')
+                            ->options(function (Get $get) {
+                                if (! $get('state')) {
+                                    return [];
+                                }
 
-                                Select::make('state')
-                                    ->label('Estado')
-                                    ->placeholder('Selecione um estado')
-                                    ->options(
-                                        fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-                                            ->collect()
-                                            ->sortBy('nome')
-                                            ->pluck('nome', 'sigla')
-                                            ->toArray()
-                                    )
-                                    ->searchable()
-                                    ->reactive()
-                                    ->afterStateUpdated(fn(callable $set) => $set('city', null))
-                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                                    ->required(fn(Get $get) => $get('country') === 'BR'),
-
-                                Select::make('city')
-                                    ->label('Cidade')
-                                    ->placeholder('Selecione uma cidade')
-                                    ->options(function (Get $get) {
-                                        if (! $get('state')) {
-                                            return [];
-                                        }
-
-                                        return Http::get(
-                                            "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
-                                        )
-                                            ->collect()
-                                            ->pluck('nome', 'nome')
-                                            ->toArray();
-                                    })
-                                    ->searchable()
-                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                                    ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
-                            ]),
-
-                        Section::make('Redes Sociais')->collapsed()->collapsible()
-                            ->schema([
-                                Group::make()->columns(2)->schema([
-                                    TextInput::make('instagram')->placeholder('@Instagram'),
-                                    TextInput::make('instagram_followers')->numeric(),
-
-                                    TextInput::make('youtube')->placeholder('@YouTube'),
-                                    TextInput::make('youtube_followers')->numeric(),
-
-                                    TextInput::make('tiktok')->placeholder('@TikTok'),
-                                    TextInput::make('tiktok_followers')->numeric(),
-
-                                    TextInput::make('twitter')->placeholder('@Twitter'),
-                                    TextInput::make('twitter_followers')->numeric(),
-
-                                    TextInput::make('facebook')->placeholder('@Facebook'),
-                                    TextInput::make('facebook_followers')->numeric(),
-                                ]),
-                            ]),
-
-                        Section::make('Tabela de Preços')
-                            ->schema([
-                                Group::make()->columns(2)->schema([
-                                    TextInput::make('reels_price')
-                                        ->label('Reels')
-                                        ->numeric()
-                                        ->inputMode('decimal')
-                                        ->prefix('R$'),
-
-                                    TextInput::make('stories_price')
-                                        ->label('Stories')
-                                        ->numeric()->inputMode('decimal')
-                                        ->prefix('R$'),
-
-                                    TextInput::make('carrousel_price')
-                                        ->label('Carrossel')
-                                        ->numeric()->inputMode('decimal')
-                                        ->prefix('R$'),
-
-                                    TextInput::make('commission_cut')
-                                        ->label('Comissão')
-                                        ->prefix('%')
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->maxValue(100),
-                                ]),
-                            ]),
+                                return Http::get(
+                                    "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
+                                )
+                                    ->collect()
+                                    ->pluck('nome', 'nome')
+                                    ->toArray();
+                            })
+                            ->searchable()
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
                     ]),
+
+                Section::make('Redes Sociais')->collapsed()->collapsible()
+                    ->schema([
+                        Group::make()->columns(2)->schema([
+                            TextInput::make('instagram')->placeholder('@Instagram'),
+                            TextInput::make('instagram_followers')->numeric(),
+
+                            TextInput::make('youtube')->placeholder('@YouTube'),
+                            TextInput::make('youtube_followers')->numeric(),
+
+                            TextInput::make('tiktok')->placeholder('@TikTok'),
+                            TextInput::make('tiktok_followers')->numeric(),
+
+                            TextInput::make('twitter')->placeholder('@Twitter'),
+                            TextInput::make('twitter_followers')->numeric(),
+
+                            TextInput::make('facebook')->placeholder('@Facebook'),
+                            TextInput::make('facebook_followers')->numeric(),
+                        ]),
+                    ]),
+
+                Section::make('Tabela de Preços')
+                    ->schema([
+                        TextInput::make('reels_price')
+                            ->label('Reels')
+                            ->numeric()
+                            ->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('stories_price')
+                            ->label('Stories')
+                            ->numeric()->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('carrousel_price')
+                            ->label('Carrossel')
+                            ->numeric()->inputMode('decimal')
+                            ->prefix('R$'),
+
+                        TextInput::make('commission_cut')
+                            ->label('Comissão')
+                            ->suffix('%')
+                            ->extraInputAttributes(['style' => 'text-align: right;'])
+                            ->mask('999')
+                            ->minValue(0)
+                            ->maxValue(100),
+                    ])->columns(4),
             ])
             ->visible(fn(Get $get) => $get('role') === 'influencer');
     }
 
+    protected function getAttributesRepeater()
+    {
+        return Repeater::make('attribute_values')
+            ->compact()
+            ->collapsible()
+            ->collapsed()
+            ->label('Atributos Gerais')
+            ->addable(false)
+            ->deletable(false)
+            ->reorderable(false)
+            ->default(function () {
+                $user = $this->getUser();
+                $influencerInfo = $user->influencer_info;
+
+                return Attribute::with('values')->get()->map(function ($attribute) use ($influencerInfo) {
+                    $data = [
+                        'attribute_id' => $attribute->id,
+                        'attribute' => $attribute,
+                    ];
+
+                    if ($influencerInfo) {
+                        // Load existing values for this attribute
+                        $existingValues = $influencerInfo->attributeValues()
+                            ->where('attribute_id', $attribute->id)
+                            ->get();
+
+                        if ($existingValues->isNotEmpty()) {
+                            $data['attribute_value_id'] = $existingValues->pluck('id')->toArray();
+
+                            // Get custom title if exists
+                            $customTitle = $existingValues->first()->pivot->title;
+                            if ($customTitle) {
+                                $data['title'] = $customTitle;
+                            }
+                        }
+                    }
+
+                    return $data;
+                })->toArray();
+            })
+            ->table([
+                TableColumn::make('Atributo'),
+                TableColumn::make('Valor'),
+            ])
+            ->schema([
+                Hidden::make('attribute_id'),
+
+                TextEntry::make('attribute_title')
+                    ->label('Atributo')
+                    ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
+
+                Group::make()->schema([
+                    Select::make('attribute_value_id')
+                        ->label('Valor')
+                        ->options(
+                            fn(Get $get) => Attribute::find($get('attribute_id'))
+                                ?->values()
+                                ->pluck('title', 'id') ?? []
+                        )->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if (filled($state)) {
+                                $hasOutro = AttributeValue::whereIn('id', $state)
+                                    ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                    ->exists();
+
+                                if (!$hasOutro) {
+                                    $set('title', null);
+                                }
+                            }
+                        })
+                        ->columnSpan(function (Get $get) {
+                            $state = $get('attribute_value_id');
+                            if (filled($state)) {
+                                $hasOutro = AttributeValue::whereIn('id', $state)
+                                    ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                    ->exists();
+
+                                return $hasOutro ? 1 : 2;
+                            }
+                            return 2;
+                        }),
+
+                    TextInput::make('title')
+                        ->label('Especifique')
+                        ->placeholder('Especifique...')
+                        ->visible(function (Get $get) {
+                            $attribute = Attribute::find($get('attribute_id'));
+
+                            if (!$attribute || !$attribute->values()->exists()) {
+                                return true;
+                            }
+
+                            $state = $get('attribute_value_id');
+                            if (filled($state)) {
+                                return AttributeValue::whereIn('id', $state)
+                                    ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
+                                    ->exists();
+                            }
+
+                            return false;
+                        })
+                        ->columnSpan(1),
+                ])->columns(2)->columnSpanFull(),
+            ]);
+    }
+
     public function getMaxContentWidth(): Width
     {
-        return ($this->data['role'] ?? null) === 'influencer'
-            ? Width::FiveExtraLarge
-            : Width::Medium;
+        return Width::FourExtraLarge;
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema->components([
+            Wizard::make(
+                [
+                    Step::make('Informações Básicas')
+                        ->schema([
+                            $this->getBaseInfoColumn(),
+                        ]),
 
-            Group::make()->schema([
+                    Step::make('Informações de Influenciador')->schema([
+                        $this->getInfluencerColumn(),
+                    ])->visible(Gate::allows('is_influencer')),
 
-                FileUpload::make('avatar')
-                    ->hiddenLabel()
-                    ->disk('public')
-                    ->directory('avatars')
-                    ->alignCenter()
-                    ->image()
-                    ->avatar()
-                    ->circleCropper(),
-
-                $this->getBaseInfoColumn(),
-
-                $this->getEmailFormComponent(),
-                $this->getPasswordFormComponent(),
-                $this->getPasswordConfirmationFormComponent(),
-
-            ]),
-            Group::make()->schema([
-                TextInput::make('pix_address')->label('Endereço Pix'),
-
-                $this->getInfluencerColumn(),
-            ]),
-        ])->columns(fn() => ($this->data['role'] ?? null) === 'influencer'
-            ? 2
-            : 1);
+                    Step::make('Atributos')->schema([
+                        $this->getAttributesRepeater(),
+                    ])->visible(Gate::allows('is_influencer')),
+                ]
+            ),
+        ]);
     }
 
     // -----------------------------------------------------------------------------------------------------------
