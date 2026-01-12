@@ -11,6 +11,10 @@ Route::get('/', function () {
     return redirect('/dashboard');
 })->name('home');
 
+Route::get('/login', function () {
+    return redirect('/dashboard/login');
+});
+
 Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
 Route::post('/payments/abacate', [PaymentController::class, 'pixwebhook'])->name('payments.webhook')->withoutMiddleware(VerifyCsrfToken::class);
@@ -32,10 +36,6 @@ Route::middleware('auth')
             ->name('chats.search-users');
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('dashboard', function () {
-//         return Inertia::render('dashboard');
-//     })->name('dashboard');
-// });
 
-require __DIR__.'/settings.php';
+
+require __DIR__ . '/settings.php';
