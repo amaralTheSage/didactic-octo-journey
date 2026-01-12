@@ -4,7 +4,6 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,8 +14,6 @@ Route::get('/', function () {
 Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
 Route::post('/payments/abacate', [PaymentController::class, 'pixwebhook'])->name('payments.webhook')->withoutMiddleware(VerifyCsrfToken::class);
-
-
 
 Route::middleware('auth')
     ->prefix('/chats')
@@ -41,4 +38,4 @@ Route::middleware('auth')
 //     })->name('dashboard');
 // });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

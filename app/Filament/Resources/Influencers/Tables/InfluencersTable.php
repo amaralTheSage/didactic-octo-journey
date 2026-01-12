@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\Influencers\Tables;
 
 use App\Actions\Filament\ViewInfluencerDetails;
+use App\Enums\UserRoles;
 use App\Models\CampaignAnnouncement;
 use App\Models\Category;
 use App\Models\Proposal;
 use App\Models\User;
-use App\Enums\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -54,17 +55,22 @@ class InfluencersTable
                 TextColumn::make('subcategories')
                     ->label('Categorias')
                     ->placeholder('-')
-                    ->badge()->listWithLineBreaks()
-                    ->limitList(1)
-                    ->expandableLimitedList()
+                    ->badge()
+                    ->separator(',')
+                    // ->listWithLineBreaks()
+                    // ->limitList(1)
+                    // ->expandableLimitedList()
+
+                    ->wrap()
                     ->state(function (Model $record) {
-                        return $record->subcategories->pluck('title')->toArray();
+                        return $record->subcategories->pluck('title')->join(',');
                     })
-                    ->tooltip(
-                        fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
-                    )
-                    ->sortable(false)
-                    ->wrap(),
+                    ->extraAttributes([
+                        'class' => 'line-clamp-expandable',
+                    ]),
+                // ->tooltip(
+                //     fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
+                // ),
 
                 TextColumn::make('total_followers')
                     ->label('Seguidores')

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\UserRoles;
 use App\Models\Chat;
 use App\Models\User;
-use App\Enums\UserRoles;
 use Illuminate\Support\Facades\Auth;
 
 //      Criei essa classe como forma de organizar a

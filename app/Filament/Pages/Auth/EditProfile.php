@@ -2,13 +2,11 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Models\Category;
-use App\Models\Subcategory;
-use App\Models\User;
 use App\Enums\UserRoles;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
-use Closure;
+use App\Models\Category;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
@@ -53,6 +51,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Js;
 use Illuminate\Validation\Rules\Password;
 use League\Uri\Components\Query;
+use Leandrocfe\FilamentPtbrFormFields\Money;
 use LogicException;
 use Throwable;
 
@@ -194,15 +193,13 @@ class EditProfile extends BaseEditProfile
                 $selected = $existingSelections->get($attribute->id);
 
                 return [
-                    'attribute_id'       => $attribute->id,
+                    'attribute_id' => $attribute->id,
 
-                    'attribute_title'    => $attribute->title,
+                    'attribute_title' => $attribute->title,
                     'attribute_value_id' => $selected ? $selected->pluck('id')->toArray() : [],
-                    'title'              => $selected ? $selected->first()->pivot->title : null,
+                    'title' => $selected ? $selected->first()->pivot->title : null,
                 ];
             })->toArray();
-
-
 
         return $data;
     }
@@ -298,10 +295,7 @@ class EditProfile extends BaseEditProfile
         $influencerData = $this->influencerData ?? [];
         $subcategoryIds = $this->influencerData['subcategories'] ?? [];
 
-
-
         unset($data['attribute_values'], $data['influencer_data']);
-
 
         $pivotData = [];
         foreach ($repeaterRows as $row) {
@@ -317,7 +311,7 @@ class EditProfile extends BaseEditProfile
 
         $record->attribute_values()->sync($pivotData);
 
-        # SUBCATEGORIES
+        // SUBCATEGORIES
         $record->subcategories()->sync($subcategoryIds);
 
         if (Filament::hasEmailChangeVerification() && array_key_exists('email', $data)) {
@@ -336,6 +330,7 @@ class EditProfile extends BaseEditProfile
                 $influencerData
             );
         }
+
         return $record;
     }
 
@@ -497,9 +492,6 @@ class EditProfile extends BaseEditProfile
                     ->placeholder('Sou criador de conteúdo...')
                     ->required(),
 
-
-
-
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
@@ -621,21 +613,17 @@ class EditProfile extends BaseEditProfile
 
                 Section::make('Tabela de Preços')
                     ->schema([
-                        TextInput::make('reels_price')
+                        Money::make('reels_price')
                             ->label('Reels')
-                            ->numeric()
-                            ->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
-                        TextInput::make('stories_price')
+                        Money::make('stories_price')
                             ->label('Stories')
-                            ->numeric()->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
-                        TextInput::make('carrousel_price')
+                        Money::make('carrousel_price')
                             ->label('Carrossel')
-                            ->numeric()->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         TextInput::make('commission_cut')
                             ->label('Comissão')
@@ -717,7 +705,7 @@ class EditProfile extends BaseEditProfile
                                     ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                     ->exists();
 
-                                if (!$hasOutro) {
+                                if (! $hasOutro) {
                                     $set('title', null);
                                 }
                             }
@@ -731,6 +719,7 @@ class EditProfile extends BaseEditProfile
 
                                 return $hasOutro ? 1 : 2;
                             }
+
                             return 2;
                         }),
 
@@ -740,7 +729,7 @@ class EditProfile extends BaseEditProfile
                         ->visible(function (Get $get) {
                             $attribute = Attribute::find($get('attribute_id'));
 
-                            if (!$attribute || !$attribute->values()->exists()) {
+                            if (! $attribute || ! $attribute->values()->exists()) {
                                 return true;
                             }
 

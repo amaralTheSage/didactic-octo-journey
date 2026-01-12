@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Influencers\Pages;
 
-use App\Filament\Resources\Influencers\InfluencerResource;
 use App\Enums\UserRoles;
+use App\Filament\Resources\Influencers\InfluencerResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;

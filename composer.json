@@ -22,6 +22,7 @@
         "laravel/reverb": "^1.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
+        "leandrocfe/filament-ptbr-form-fields": "^4.0",
         "owenvoke/blade-fontawesome": "^2.9",
         "socialiteproviders/instagram": "^5.1",
         "stechstudio/filament-impersonate": "^4.0",

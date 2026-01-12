@@ -2,10 +2,10 @@
 
 namespace App\Actions\Filament;
 
+use App\Enums\UserRoles;
 use App\Models\Chat;
 use App\Models\Proposal;
 use App\Services\ChatService;
-use App\Enums\UserRoles;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Colors\Color;
@@ -68,7 +68,7 @@ class AcceptProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao aprovar proposta: ' . $e->getMessage());
+                Log::error('Erro ao aprovar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao Aprovar Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -92,7 +92,7 @@ class AcceptProposal extends Action
                     ->toDatabase();
 
                 $notifyRecipients = function ($recipients) use ($notification) {
-                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                    collect($recipients)->each(fn ($recipient) => $recipient->notify($notification));
                 };
 
                 match ($role) {
@@ -104,7 +104,7 @@ class AcceptProposal extends Action
                 if ($role === UserRoles::Company) {
                     $chat = Chat::query()
                         ->where('proposal_id', $record->id)
-                        ->whereHas('users', fn($q) => $q->where('users.id', Auth::user()->id))
+                        ->whereHas('users', fn ($q) => $q->where('users.id', Auth::user()->id))
                         ->first();
 
                     if (! $chat) {

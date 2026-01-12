@@ -51,7 +51,6 @@ class PaymentController extends Controller
         ]);
     }
 
-
     public function pixwebhook(Request $request)
     {
         Log::info('Webhook pix: Pagamento recebido, iniciando processamento...');
@@ -132,7 +131,7 @@ class PaymentController extends Controller
 
             Log::info('Webhook pix: Status do pagamento atualizados com sucesso', [
                 'campanha' => CampaignAnnouncement::whereId($campaignId)->first(),
-                'status' => $paymentStatus
+                'status' => $paymentStatus,
             ]);
         } catch (Throwable $e) {
             Log::error('Webhook pix: Webhook falhou na atualização de status dos pagamentos', [
@@ -142,8 +141,6 @@ class PaymentController extends Controller
 
             throw $e;
         }
-
-
 
         Log::info('Webhook pix: Pagamento processado com sucesso!');
 

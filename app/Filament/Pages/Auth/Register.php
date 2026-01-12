@@ -2,15 +2,14 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Models\Category;
-use App\Models\InfluencerInfo;
-use App\Models\User;
 use App\Enums\UserRoles;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use App\Models\Category;
+use App\Models\InfluencerInfo;
+use App\Models\User;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
-use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Auth\Events\Registered;
@@ -50,6 +49,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Password;
+use Leandrocfe\FilamentPtbrFormFields\Money;
 use LogicException;
 
 /**
@@ -81,7 +81,6 @@ class Register extends SimplePage
 
         $this->form->fill();
 
-
         $this->callHook('afterFill');
     }
 
@@ -91,6 +90,7 @@ class Register extends SimplePage
             $this->rateLimit(2);
         } catch (TooManyRequestsException $exception) {
             $this->getRateLimitedNotification($exception)?->send();
+
             return null;
         }
 
@@ -117,15 +117,15 @@ class Register extends SimplePage
                 ]);
 
                 // Save Subcategories
-                if (!empty($subcategories)) {
+                if (! empty($subcategories)) {
                     $user->subcategories()->sync($subcategories);
                 }
 
                 // Save Attributes from Step 3
-                if (!empty($data['attribute_values'])) {
+                if (! empty($data['attribute_values'])) {
                     $pivotData = [];
                     foreach ($data['attribute_values'] as $row) {
-                        $ids = (array)($row['attribute_value_id'] ?? []);
+                        $ids = (array) ($row['attribute_value_id'] ?? []);
                         foreach ($ids as $id) {
                             if ($id) {
                                 $pivotData[$id] = ['title' => $row['title'] ?? null];
@@ -281,11 +281,9 @@ class Register extends SimplePage
 
                 TextInput::make('pix_address')->label('Endereço Pix'),
 
-
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
-
 
             ]);
     }
@@ -403,21 +401,17 @@ class Register extends SimplePage
 
                 Section::make('Tabela de Preços')
                     ->schema([
-                        TextInput::make('reels_price')
+                        Money::make('reels_price')
                             ->label('Reels')
-                            ->numeric()
-                            ->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
-                        TextInput::make('stories_price')
+                        Money::make('stories_price')
                             ->label('Stories')
-                            ->numeric()->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
-                        TextInput::make('carrousel_price')
+                        Money::make('carrousel_price')
                             ->label('Carrossel')
-                            ->numeric()->inputMode('decimal')
-                            ->prefix('R$'),
+                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         TextInput::make('commission_cut')
                             ->label('Comissão')
@@ -464,8 +458,7 @@ class Register extends SimplePage
                     Select::make('attribute_value_id')
                         ->label('Valor')
                         ->options(
-                            fn(Get $get) =>
-                            AttributeValue::where('attribute_id', $get('attribute_id'))
+                            fn(Get $get) => AttributeValue::where('attribute_id', $get('attribute_id'))
                                 ->pluck('title', 'id')
                         )
                         ->multiple()
@@ -478,14 +471,13 @@ class Register extends SimplePage
                                     ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                     ->exists();
 
-                                if (!$hasOutro) {
+                                if (! $hasOutro) {
                                     $set('title', null);
                                 }
                             }
                         })
                         ->columnSpan(
-                            fn(Get $get) =>
-                            AttributeValue::whereIn('id', (array)($get('attribute_value_id') ?? []))
+                            fn(Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
                                 ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                 ->exists() ? 1 : 2
                         ),
@@ -494,8 +486,7 @@ class Register extends SimplePage
                         ->label('Especifique')
                         ->placeholder('Especifique...')
                         ->visible(
-                            fn(Get $get) =>
-                            AttributeValue::whereIn('id', (array)($get('attribute_value_id') ?? []))
+                            fn(Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
                                 ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                 ->exists()
                         )
@@ -508,8 +499,6 @@ class Register extends SimplePage
     {
         return Width::FourExtraLarge;
     }
-
-
 
     protected function getNameFormComponent(): Component
     {

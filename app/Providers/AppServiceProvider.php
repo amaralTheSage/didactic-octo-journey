@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use App\Enums\UserRoles;
 use App\Models\CampaignAnnouncement;
 use App\Models\User;
 use App\Observers\CampaignAnnouncementObserver;
-use App\Enums\UserRoles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;

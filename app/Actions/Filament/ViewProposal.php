@@ -2,9 +2,9 @@
 
 namespace App\Actions\Filament;
 
+use App\Enums\UserRoles;
 use App\Helpers\ProposedBudgetCalculator;
 use App\Services\ChatService;
-use App\Enums\UserRoles;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -29,7 +29,9 @@ class ViewProposal
         return ViewAction::make('viewProposal')
             ->label('Ver Proposta')
             ->slideOver()
-
+            ->extraModalFooterActions([
+                ViewChangeLogs::make(),
+            ])
             ->modalWidth('xl')
             ->schema(fn($record) => [
                 Section::make('Campanha')
@@ -38,13 +40,22 @@ class ViewProposal
                             ->label('Campanha')
                             ->weight(FontWeight::Bold),
 
+                        TextEntry::make('announcement.company.name')->icon('heroicon-o-building-office-2')
+                            ->url(route('filament.admin.resources.companies.index', [
+                                'search' => $record->announcement->company->name,
+                                'tableAction' => 'viewCompanyDetails',
+                                'tableActionRecord' => $record->announcement->company_id,
+                            ]))
+                            ->label('Empresa'),
+
                         TextEntry::make('announcement.product.name')
                             ->label('Produto'),
                         TextEntry::make('announcement.budget')
                             ->label('Orçamento')
                             ->money('BRL')
                             ->visible(Gate::denies('is_influencer')),
-                        TextEntry::make('announcement.categories.title')
+                        TextEntry::make('announcement.subcategories.title')
+                            ->placeholder('-')
                             ->label('Categoria')
                             ->badge(),
                     ])
@@ -308,11 +319,11 @@ class ViewProposal
                                                         ->weight(FontWeight::SemiBold),
                                                 ])->visible(function ($record) {
                                                     $info = $record->influencer_info;
+
                                                     return $info && ($info->instagram || $info->youtube || $info->tiktok || $info->twitter || $info->facebook);
                                                 }),
 
-
-                                            TextEntry::make('placeholder')->hiddenLabel()->visible(fn($record) => !($record->influencer_info?->instagram || $record->influencer_info?->youtube || $record->influencer_info?->tiktok || $record->influencer_info?->twitter || $record->influencer_info?->facebook))
+                                            TextEntry::make('placeholder')->hiddenLabel()->visible(fn($record) => ! ($record->influencer_info?->instagram || $record->influencer_info?->youtube || $record->influencer_info?->tiktok || $record->influencer_info?->twitter || $record->influencer_info?->facebook))
                                                 ->state('Nenhuma rede social cadastrada.'),
 
                                             Group::make()
@@ -375,6 +386,7 @@ class ViewProposal
                                         ->columnSpanFull(),
                                 ])
                                 ->columns(5),
+
                         ];
                     }),
 

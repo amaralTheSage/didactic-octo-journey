@@ -15,6 +15,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -58,7 +59,6 @@ class ProposeAction extends Action
             Hidden::make('n_reels')->default(fn($record) => $record->n_reels),
             Hidden::make('n_stories')->default(fn($record) => $record->n_stories),
             Hidden::make('n_carrousels')->default(fn($record) => $record->n_carrousels),
-
 
             Select::make('influencer_ids')
                 ->label('Selecionar Influenciadores')
@@ -121,23 +121,38 @@ class ProposeAction extends Action
                     TextInput::make('reels_price')
                         ->label('Reels')
                         ->numeric()
+                        ->required()
                         ->prefix('R$')
-                        ->inputMode('decimal')
-                        ->required(),
+                        ->placeholder('0,00')
+                        ->mask(RawJs::make(<<<'JS'
+                                    $money($input, ',', '.', 2)
+                                JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                     TextInput::make('stories_price')
                         ->label('Stories')
                         ->numeric()
+                        ->required()
                         ->prefix('R$')
-                        ->inputMode('decimal')
-                        ->required(),
+                        ->placeholder('0,00')
+                        ->mask(RawJs::make(<<<'JS'
+                                    $money($input, ',', '.', 2)
+                                JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                     TextInput::make('carrousel_price')
                         ->label('Carrossel')
                         ->numeric()
+                        ->required()
                         ->prefix('R$')
-                        ->inputMode('decimal')
-                        ->required(),
+                        ->placeholder('0,00')
+                        ->mask(RawJs::make(<<<'JS'
+                                    $money($input, ',', '.', 2)
+                                JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                     TextInput::make('commission_cut')
                         ->label('Comissão')

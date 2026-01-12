@@ -27,6 +27,11 @@ class Proposal extends Model
 
     protected $with = ['agency'];
 
+    public function change_logs()
+    {
+        return $this->hasMany(ProposalChangeLog::class);
+    }
+
     public function agency(): BelongsTo
     {
         return $this->belongsTo(User::class, 'agency_id');

@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Agencies;
 
+use App\Enums\UserRoles;
 use App\Filament\Resources\Agencies\Pages\EditAgency;
 use App\Filament\Resources\Agencies\Pages\ListAgencies;
 use App\Filament\Resources\Agencies\Schemas\AgencyForm;
 use App\Filament\Resources\Agencies\Schemas\AgencyInfolist;
 use App\Filament\Resources\Agencies\Tables\AgenciesTable;
 use App\Models\User;
-use App\Enums\UserRoles;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

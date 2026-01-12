@@ -35,10 +35,10 @@ class CreateCampaignAnnouncement extends CreateRecord
             ->title('Campanha criada com sucesso')
             ->body('Gostaria de validar esta campanha agora?')
             ->actions([
-                Action::make('validateNow')
-                    ->label('Validar')
-                    ->color('success')
-                    ->action(fn() => dump('foi')),
+                // Action::make('validateNow')
+                //     ->label('Validar')
+                //     ->color('success')
+                //     ->action(fn () => dump('foi')),
             ])
             ->send()
             ->toDatabase();

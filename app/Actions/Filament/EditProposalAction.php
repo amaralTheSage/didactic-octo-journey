@@ -2,9 +2,11 @@
 
 namespace App\Actions\Filament;
 
-use App\Helpers\ProposedBudgetCalculator;
-use App\Models\User;
 use App\Enums\UserRoles;
+use App\Helpers\ProposalChangeDiffFinder;
+use App\Helpers\ProposedBudgetCalculator;
+use App\Models\ProposalChangeLog;
+use App\Models\User;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -23,6 +25,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,6 +34,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log as FacadesLog;
 use Illuminate\Support\HtmlString;
+use Leandrocfe\FilamentPtbrFormFields\Money;
 
 class EditProposalAction extends Action
 {
@@ -47,12 +51,16 @@ class EditProposalAction extends Action
 
         $this->label(fn() => 'Editar Proposta');
 
+        $this->extraModalFooterActions([
+            ViewChangeLogs::make(),
+        ]);
+
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
         $this->groupedIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION_GROUPED) ?? Heroicon::PencilSquare);
 
         $this->modalHeading(fn() => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
 
-        $this->modalWidth('2xl');
+        $this->modalWidth('3xl');
 
         $this->visible(fn($livewire) => $livewire->activeTab === 'proposals' && Gate::denies('is_influencer'));
 
@@ -108,7 +116,7 @@ class EditProposalAction extends Action
                 ->deletable(false)
                 ->reorderable(false)
                 ->table([
-                    TableColumn::make('Nome'),
+                    TableColumn::make('Nome')->width('25%'),
                     TableColumn::make('Reels'),
                     TableColumn::make('Stories'),
                     TableColumn::make('Carrossel'),
@@ -117,9 +125,33 @@ class EditProposalAction extends Action
                 ->schema([
                     Hidden::make('user_id'),
                     TextEntry::make('name')->label('Nome'),
-                    TextInput::make('reels_price')->label('Reels')->numeric()->prefix('R$')->required(),
-                    TextInput::make('stories_price')->label('Stories')->numeric()->prefix('R$')->required(),
-                    TextInput::make('carrousel_price')->label('Carrossel')->numeric()->prefix('R$')->required(),
+                    TextInput::make('reels_price')
+                        ->label('Reels')
+                        ->required()
+                        ->prefix('R$')
+                        ->mask(RawJs::make(<<<'JS'
+                            $money($input, ',', '.', 2)
+                        JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                    TextInput::make('stories_price')
+                        ->label('Stories')
+                        ->required()
+                        ->prefix('R$')
+                        ->mask(RawJs::make(<<<'JS'
+                            $money($input, ',', '.', 2)
+                        JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                    TextInput::make('carrousel_price')
+                        ->label('Carrossel')
+                        ->required()
+                        ->prefix('R$')
+                        ->mask(RawJs::make(<<<'JS'
+                            $money($input, ',', '.', 2)
+                        JS))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
                 ])
                 ->live()
                 ->visible(fn() => Gate::allows('is_agency') || Gate::allows('is_company')),
@@ -231,24 +263,37 @@ class EditProposalAction extends Action
 
         $this->action(function ($record, array $data) {
             try {
-                $record->update([
-                    'message' => $data['message'] ?? null,
-                    'proposed_agency_cut' => $data['proposed_agency_cut'] ?? null,
-                    'n_reels' => $data['n_reels'],
-                    'n_stories' => $data['n_stories'],
-                    'n_carrousels' => $data['n_carrousels'],
+                // --- capture "before" ---
+                $beforeProposal = Arr::only($record->attributesToArray(), [
+                    'message',
+                    'proposed_agency_cut',
+                    'n_reels',
+                    'n_stories',
+                    'n_carrousels',
                 ]);
 
-                // Get old prices for comparison
-                $oldPrices = $record->influencers()
+                $beforeInfluencers = $record->influencers()
                     ->get()
-                    ->keyBy('id')
-                    ->map(fn($inf) => [
-                        'reels' => $inf->pivot->reels_price,
-                        'stories' => $inf->pivot->stories_price,
-                        'carrousel' => $inf->pivot->carrousel_price,
-                    ]);
+                    ->mapWithKeys(fn($inf) => [
+                        $inf->id => [
+                            'name' => $inf->name,
+                            'reels_price' => (float) $inf->pivot->reels_price,
+                            'stories_price' => (float) $inf->pivot->stories_price,
+                            'carrousel_price' => (float) $inf->pivot->carrousel_price,
+                        ],
+                    ])->toArray();
 
+                // --- update proposal fields (defensive) ---
+                $record->update(array_filter([
+                    'message' => $data['message'] ?? null,
+                    'proposed_agency_cut' => $data['proposed_agency_cut'] ?? null,
+                    'n_reels' => $data['n_reels'] ?? null,
+                    'n_stories' => $data['n_stories'] ?? null,
+                    'n_carrousels' => $data['n_carrousels'] ?? null,
+                ], fn($v) => ! is_null($v)));
+
+                // --- build pivot data and detect price changes for notifications ---
+                $oldPrices = $beforeInfluencers;
                 $pivotData = [];
                 $priceChanges = [];
 
@@ -262,23 +307,114 @@ class EditProposalAction extends Action
 
                     $pivotData[$userId] = $newPrices;
 
-                    // Check if prices changed
                     if (isset($oldPrices[$userId])) {
                         $old = $oldPrices[$userId];
                         if (
-                            $old['reels'] != $newPrices['reels_price'] ||
-                            $old['stories'] != $newPrices['stories_price'] ||
-                            $old['carrousel'] != $newPrices['carrousel_price']
+                            ($old['reels_price'] ?? $old['reels'] ?? null) != $newPrices['reels_price'] ||
+                            ($old['stories_price'] ?? $old['stories'] ?? null) != $newPrices['stories_price'] ||
+                            ($old['carrousel_price'] ?? $old['carrousel'] ?? null) != $newPrices['carrousel_price']
                         ) {
-                            $priceChanges[$userId] = true;
+                            $priceChanges[$userId] = [
+                                'from' => $old,
+                                'to' => $newPrices,
+                            ];
                         }
+                    } else {
+                        // new influencer added — keep for notifications if desired
+                        $priceChanges[$userId] = [
+                            'from' => null,
+                            'to' => $newPrices,
+                        ];
                     }
                 }
 
+                // --- sync pivot (this actually adds/removes) ---
                 $record->influencers()->sync($pivotData);
 
-                // Notify influencers whose prices changed
-                foreach ($priceChanges as $userId => $changed) {
+                // --- capture "after" ---
+                $afterProposal = Arr::only($record->fresh()->attributesToArray(), [
+                    'message',
+                    'proposed_agency_cut',
+                    'n_reels',
+                    'n_stories',
+                    'n_carrousels',
+                ]);
+
+                $afterInfluencers = $record->influencers()
+                    ->get()
+                    ->mapWithKeys(fn($inf) => [
+                        $inf->id => [
+                            'name' => $inf->name,
+                            'reels_price' => (float) $inf->pivot->reels_price,
+                            'stories_price' => (float) $inf->pivot->stories_price,
+                            'carrousel_price' => (float) $inf->pivot->carrousel_price,
+                        ],
+                    ])->toArray();
+
+                // --- proposal diff ---
+                $proposalDiff = ProposalChangeDiffFinder::findDiff($beforeProposal, $afterProposal);
+
+                // --- influencer diffs: added, removed, modified ---
+                $beforeIds = array_keys($beforeInfluencers);
+                $afterIds  = array_keys($afterInfluencers);
+
+                $added   = array_diff($afterIds, $beforeIds);
+                $removed = array_diff($beforeIds, $afterIds);
+                $kept    = array_intersect($beforeIds, $afterIds);
+
+                $influencerDiff = [];
+
+                // Added influencers
+                foreach ($added as $id) {
+                    $influencerDiff[$id] = [
+                        'name'  => $afterInfluencers[$id]['name'] ?? null,
+                        'added' => true,
+                        'from'  => null,
+                        'to'    => Arr::except($afterInfluencers[$id], ['name']),
+                    ];
+                }
+
+                // Removed influencers
+                foreach ($removed as $id) {
+                    $influencerDiff[$id] = [
+                        'name'    => $beforeInfluencers[$id]['name'] ?? null,
+                        'removed' => true,
+                        'from'    => Arr::except($beforeInfluencers[$id] ?? [], ['name']),
+                        'to'      => null,
+                    ];
+                }
+
+                // Modified (prices changed)
+                foreach ($kept as $id) {
+                    $from = Arr::except($beforeInfluencers[$id] ?? [], ['name']);
+                    $to   = Arr::except($afterInfluencers[$id] ?? [], ['name']);
+
+                    $diff = ProposalChangeDiffFinder::findDiff($from, $to);
+
+                    if (! empty($diff)) {
+                        $influencerDiff[$id] = [
+                            'name'    => $afterInfluencers[$id]['name'] ?? $beforeInfluencers[$id]['name'] ?? null,
+                            'changes' => $diff,
+                            'from'    => $from,
+                            'to'      => $to,
+                        ];
+                    }
+                }
+
+                // --- persist change log only if something changed ---
+                if (! empty($proposalDiff) || ! empty($influencerDiff)) {
+                    ProposalChangeLog::create([
+                        'proposal_id' => $record->id,
+                        'user_id' => Auth::id(),
+                        'changes' => [
+                            'proposal' => $proposalDiff,
+                            'influencers' => $influencerDiff,
+                        ],
+                    ]);
+                }
+
+                // --- notifications (unchanged behaviour) ---
+                foreach ($priceChanges as $userId => $change) {
                     User::find($userId)?->notify(
                         Notification::make()
                             ->title('Preços atualizados na proposta')
@@ -288,7 +424,6 @@ class EditProposalAction extends Action
                     );
                 }
 
-                // If company made changes, notify the agency
                 if (Auth::user()->role === UserRoles::Company && ! empty($priceChanges)) {
                     $record->agency->notify(
                         Notification::make()

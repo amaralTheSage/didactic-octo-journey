@@ -42,8 +42,6 @@ class User extends Authenticatable implements HasAvatar
      *
      * @var list<string>
      */
-
-
     public function influencer_info(): HasOne
     {
         return $this->hasOne(InfluencerInfo::class);
@@ -81,8 +79,6 @@ class User extends Authenticatable implements HasAvatar
             ->orWhere('influencer_id', $this->id);
     }
 
-
-
     public function influencers()
     {
         return $this->hasManyThrough(
@@ -109,8 +105,8 @@ class User extends Authenticatable implements HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+            ? asset('storage/'.$this->avatar)
+            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -119,7 +115,7 @@ class User extends Authenticatable implements HasAvatar
             return null;
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**

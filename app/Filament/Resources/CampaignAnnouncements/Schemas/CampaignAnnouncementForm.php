@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\CampaignAnnouncements\Schemas;
 
+use App\Enums\UserRoles;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\User;
-use App\Enums\UserRoles;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -17,8 +17,10 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Leandrocfe\FilamentPtbrFormFields\Money;
 
 class CampaignAnnouncementForm
 {
@@ -46,15 +48,9 @@ class CampaignAnnouncementForm
                         ->createOptionForm([
                             TextInput::make('name')
                                 ->required(),
-                            TextInput::make('price')
-                                ->numeric()
-                                ->inputMode('decimal')
-                                ->prefix('R$')
-                                ->formatStateUsing(fn($state) => number_format($state / 100, 2, ',', '.'))
-                                ->dehydrateStateUsing(fn($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
-                                ->placeholder('0,00')
-                                ->step('0.01')
-                                ->required(),
+
+                            Money::make('price')
+                                ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
                             MarkdownEditor::make('description')
                                 ->nullable()->columnSpan(2),
                             Hidden::make('company_id')->default(Auth::id()),
@@ -105,12 +101,10 @@ class CampaignAnnouncementForm
                 ]),
 
                 Group::make([
-                    TextInput::make('budget')
+                    Money::make('budget')
                         ->label('Orçamento')
-                        ->numeric()->required()
-                        ->inputMode('decimal')
-                        ->prefix('R$')
-                        ->placeholder('0,00'),
+                        ->required()
+                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                     TextInput::make('agency_cut')
                         ->label('Comissão da Campanha')
@@ -128,8 +122,7 @@ class CampaignAnnouncementForm
                     TextInput::make('n_carrousels')->default(0)->numeric()->label('Carrosséis'),
                 ])->columnSpan(2),
 
-
-                # CampaignAnnouncementForm
+                // CampaignAnnouncementForm
                 Repeater::make('attribute_values')
                     ->compact()
                     ->collapsible()
@@ -175,7 +168,7 @@ class CampaignAnnouncementForm
                                             ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                             ->exists();
 
-                                        if (!$hasOutro) {
+                                        if (! $hasOutro) {
                                             $set('title', null);
                                         }
                                     }
@@ -189,6 +182,7 @@ class CampaignAnnouncementForm
 
                                         return $hasOutro ? 1 : 2;
                                     }
+
                                     return 2;
                                 }),
 
@@ -199,7 +193,7 @@ class CampaignAnnouncementForm
                                     $attribute = Attribute::find($get('attribute_id'));
 
                                     // If no predefined values exist, always show
-                                    if (!$attribute || !$attribute->values()->exists()) {
+                                    if (! $attribute || ! $attribute->values()->exists()) {
                                         return true;
                                     }
 
