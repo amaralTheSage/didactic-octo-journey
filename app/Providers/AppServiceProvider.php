@@ -6,6 +6,8 @@ use App\Enums\UserRoles;
 use App\Models\CampaignAnnouncement;
 use App\Models\User;
 use App\Observers\CampaignAnnouncementObserver;
+use Filament\Forms\Components\TextInput;
+use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -28,6 +30,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        TextInput::macro('moneyBRL', function () {
+            /** @var TextInput $this */
+            return $this
+                ->prefix('R$')
+                ->placeholder('0,00')
+                ->mask(RawJs::make(<<<'JS'
+                $money($input, ',', '.', 2)
+            JS))
+                ->formatStateUsing(fn($state) => is_numeric($state) ? number_format((float) $state, 2, ',', '.') : $state)
+                ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state));
+        });
 
         CampaignAnnouncement::observe(CampaignAnnouncementObserver::class);
 

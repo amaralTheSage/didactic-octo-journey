@@ -47,6 +47,30 @@ class User extends Authenticatable implements HasAvatar
         return $this->hasOne(InfluencerInfo::class);
     }
 
+
+    // if agency
+    public function agency_loans()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'borrowed_influencer_agency',
+            'agency_id',
+            'influencer_id',
+        );
+    }
+
+    // if influencer
+    public function agency_loans_influencer()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'borrowed_influencer_agency',
+            'influencer_id',
+            'agency_id'
+        );
+    }
+
+
     public function attribute_values(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -91,6 +115,16 @@ class User extends Authenticatable implements HasAvatar
         );
     }
 
+    public function borrowed_influencers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'borrowed_influencer_agency',
+            'agency_id',
+            'influencer_id'
+        )->withTimestamps();
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
@@ -105,8 +139,8 @@ class User extends Authenticatable implements HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/'.$this->avatar)
-            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
+            ? asset('storage/' . $this->avatar)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -115,7 +149,7 @@ class User extends Authenticatable implements HasAvatar
             return null;
         }
 
-        return asset('storage/'.$this->avatar);
+        return asset('storage/' . $this->avatar);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Helpers\ProposedBudgetCalculator;
+use App\Models\CampaignAnnouncement;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
@@ -60,51 +61,132 @@ class ProposeAction extends Action
             Hidden::make('n_stories')->default(fn($record) => $record->n_stories),
             Hidden::make('n_carrousels')->default(fn($record) => $record->n_carrousels),
 
-            Select::make('influencer_ids')
-                ->label('Selecionar Influenciadores')
-                ->multiple()
-                ->options(
-                    function () {
-                        return Auth::user()
+
+            Group::make()->schema([
+
+                Select::make('influencer_ids')
+                    ->label('Selecionar Influenciadores')
+                    ->multiple()
+                    ->options(
+                        function () {
+                            return Auth::user()
+                                ->influencers()
+                                ->where('association_status', 'approved')
+                                ->pluck('name', 'users.id');
+                        }
+                    )->afterStateUpdated(function ($state, callable $set, Get $get) {
+                        $borrowedIds = $get('borrowed_influencer_ids') ?? [];
+
+                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+
+
+                        $borrowedInfluencers = Auth::user()
+                            ->agency_loans()
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', $borrowedIds)
+                            ->get()
+                            ->map(fn($influencer) => [
+                                'user_id' => $influencer->id,
+                                'name' => $influencer->name,
+                                'stories_price'   => $formatPrice($influencer->influencer_info?->stories_price),
+                                'reels_price'     => $formatPrice($influencer->influencer_info?->reels_price),
+                                'carrousel_price' => $formatPrice($influencer->influencer_info?->carrousel_price),
+                                'commission_cut' => $influencer->influencer_info->commission_cut,
+                            ])
+                            ->toArray();
+
+
+                        $ownInfluencers = Auth::user()
                             ->influencers()
-                            ->where('association_status', 'approved')
-                            ->pluck('name', 'users.id');
-                    }
-                )->afterStateUpdated(function ($state, callable $set) {
-                    if (empty($state)) {
-                        $set('selected_influencers', []);
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', (array)$state)
+                            ->get()
+                            ->map(fn($influencer) => [
+                                'user_id' => $influencer->id,
+                                'name' => $influencer->name,
+                                'stories_price'   => $formatPrice($influencer->influencer_info?->stories_price),
+                                'reels_price'     => $formatPrice($influencer->influencer_info?->reels_price),
+                                'carrousel_price' => $formatPrice($influencer->influencer_info?->carrousel_price),
+                                'commission_cut' => $influencer->influencer_info->commission_cut ?? 0,
+                            ])
+                            ->toArray();
 
-                        return;
-                    }
+                        $influencers = array_merge($ownInfluencers, $borrowedInfluencers);
 
-                    $influencers = Auth::user()
-                        ->influencers()
-                        ->with('influencer_info')
-                        ->select('users.id', 'users.name')
-                        ->whereIn('users.id', $state)
-                        ->get()
-                        ->map(fn($influencer) => [
-                            'user_id' => $influencer->id,
-                            'name' => $influencer->name,
-                            'stories_price' => $influencer->influencer_info->stories_price,
-                            'reels_price' => $influencer->influencer_info->reels_price,
-                            'carrousel_price' => $influencer->influencer_info->carrousel_price,
-                            'commission_cut' => $influencer->influencer_info->commission_cut,
-                        ])
-                        ->toArray();
+                        $set('selected_influencers', $influencers);
+                    })
+                    ->searchable()
+                    ->reactive()->columnSpan(3)
 
-                    $set('selected_influencers', $influencers);
-                })
-                ->searchable()
-                ->reactive()
-                ->visible(fn() => Gate::allows('is_agency')),
+                    ->visible(fn() => Gate::allows('is_agency')),
+
+                Select::make('borrowed_influencer_ids')
+                    ->label('Influenciadores Emprestados')
+                    ->multiple()
+                    ->options(
+                        function () {
+                            return Auth::user()
+                                ->borrowed_influencers()
+                                ->pluck('name', 'users.id');
+                        }
+                    )->afterStateUpdated(function ($state, callable $set, Get $get) {
+                        $ownIds = $get('influencer_ids') ?? [];
+
+                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+
+                        $borrowedInfluencers = Auth::user()
+                            ->agency_loans()
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', (array)$state)
+                            ->get()
+                            ->map(fn($influencer) => [
+                                'user_id' => $influencer->id,
+                                'name' => $influencer->name,
+                                'stories_price'   => $formatPrice($influencer->influencer_info?->stories_price),
+                                'reels_price'     => $formatPrice($influencer->influencer_info?->reels_price),
+                                'carrousel_price' => $formatPrice($influencer->influencer_info?->carrousel_price),
+                                'commission_cut' => $influencer->influencer_info->commission_cut,
+                            ])
+                            ->toArray();
+
+
+                        $ownInfluencers = Auth::user()
+                            ->influencers()
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', $ownIds)
+                            ->get()
+                            ->map(fn($influencer) => [
+                                'user_id' => $influencer->id,
+                                'name' => $influencer->name,
+                                'stories_price'   => $formatPrice($influencer->influencer_info?->stories_price),
+                                'reels_price'     => $formatPrice($influencer->influencer_info?->reels_price),
+                                'carrousel_price' => $formatPrice($influencer->influencer_info?->carrousel_price),
+                                'commission_cut' => $influencer->influencer_info->commission_cut ?? 0,
+                            ])
+                            ->toArray();
+
+                        $influencers = array_merge($ownInfluencers, $borrowedInfluencers);
+
+                        $set('selected_influencers', $influencers);
+                    })
+                    ->searchable()
+                    ->reactive()
+                    ->live()
+                    ->columnSpan(2)
+                    ->visible(fn() => Gate::allows('is_agency')),
+
+            ])->columns(5),
+
 
             Repeater::make('selected_influencers')
                 ->hiddenLabel()
                 ->addable(false)
                 ->deletable(false)
                 ->reorderable(false)
-
                 ->table([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
@@ -120,39 +202,18 @@ class ProposeAction extends Action
 
                     TextInput::make('reels_price')
                         ->label('Reels')
-                        ->numeric()
                         ->required()
-                        ->prefix('R$')
-                        ->placeholder('0,00')
-                        ->mask(RawJs::make(<<<'JS'
-                                    $money($input, ',', '.', 2)
-                                JS))
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
-                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                        ->moneyBRL(),
 
                     TextInput::make('stories_price')
                         ->label('Stories')
-                        ->numeric()
                         ->required()
-                        ->prefix('R$')
-                        ->placeholder('0,00')
-                        ->mask(RawJs::make(<<<'JS'
-                                    $money($input, ',', '.', 2)
-                                JS))
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
-                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                        ->moneyBRL(),
 
                     TextInput::make('carrousel_price')
                         ->label('Carrossel')
-                        ->numeric()
                         ->required()
-                        ->prefix('R$')
-                        ->placeholder('0,00')
-                        ->mask(RawJs::make(<<<'JS'
-                                    $money($input, ',', '.', 2)
-                                JS))
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, ',', '.'))
-                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                        ->moneyBRL(),
 
                     TextInput::make('commission_cut')
                         ->label('Comissão')
@@ -170,18 +231,40 @@ class ProposeAction extends Action
                         ),
                 ])
                 ->default(function (Get $get) {
-                    $filterIds = $get('influencer_ids') ?? [];
+                    $ownIds = $get('influencer_ids') ?? [];
+                    $borrowedIds = $get('borrowed_influencer_ids') ?? [];
 
-                    if (empty($filterIds)) {
+                    if (empty($ownIds) && empty($borrowedIds)) {
                         return [];
                     }
 
-                    return Auth::user()
-                        ->influencers()
-                        ->with('influencer_info')
-                        ->select('users.id', 'users.name')
-                        ->whereIn('users.id', $filterIds)
-                        ->get()
+                    $influencers = collect();
+
+                    // Get own influencers
+                    if (!empty($ownIds)) {
+                        $ownInfluencers = Auth::user()
+                            ->influencers()
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', $ownIds)
+                            ->get();
+
+                        $influencers = $influencers->merge($ownInfluencers);
+                    }
+
+                    // Get borrowed influencers
+                    if (!empty($borrowedIds)) {
+                        $borrowedInfluencers = Auth::user()
+                            ->agency_loans()
+                            ->with('influencer_info')
+                            ->select('users.id', 'users.name')
+                            ->whereIn('users.id', $borrowedIds)
+                            ->get()->toArray();
+
+                        $influencers = $influencers->merge($borrowedInfluencers);
+                    }
+
+                    return $influencers
                         ->map(fn($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
@@ -192,7 +275,7 @@ class ProposeAction extends Action
                         ])
                         ->toArray();
                 })
-                ->reactive(),
+                ->live(),
 
             TextEntry::make('summary')
                 ->hiddenLabel()
@@ -245,7 +328,7 @@ class ProposeAction extends Action
             ])->columns(2),
         ]);
 
-        $this->action(function ($record, array $data) {
+        $this->action(function (CampaignAnnouncement $record, array $data) {
             try {
                 $proposal = $record->proposals()->create([
                     'campaign_announcement_id' => $record->id,
@@ -294,7 +377,7 @@ class ProposeAction extends Action
                     User::find($influencerId)?->notify(
                         Notification::make()
                             ->title('Você foi incluído em uma proposta')
-                            ->body('Sua agência incluiu você na proposta para a campanha: ' . $record->name)
+                            ->body($proposal->agency->name . ' incluiu você na proposta para a campanha: ' . $record->name)
                             ->info()
                             ->toDatabase()
                     );

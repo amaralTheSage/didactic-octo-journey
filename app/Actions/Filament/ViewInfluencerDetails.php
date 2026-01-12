@@ -2,16 +2,22 @@
 
 namespace App\Actions\Filament;
 
+use App\Enums\UserRoles;
+use App\Models\User;
 use App\Services\ChatService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class ViewInfluencerDetails
@@ -23,6 +29,57 @@ class ViewInfluencerDetails
             ->label('Detalhes')
             ->slideOver()
             ->modalWidth('xl')
+            ->extraModalFooterActions([
+                Action::make('lendInfluencer')
+                    ->label('Emprestar Influenciador')
+                    ->icon(Heroicon::OutlinedUserPlus)
+                    ->color('secondary')
+                    ->schema([
+                        Select::make('agency_id')
+                            ->label('Agência')
+                            ->placeholder('Selecione uma agência')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->options(fn() => User::where('role', 'agency')->whereNot('id', Auth::id())->pluck('name', 'id'))
+                            ->getSearchResultsUsing(
+                                fn(string $search): array => User::where('role', 'agency')
+                                    ->whereNot('id', Auth::id())
+                                    ->where('name', 'ilike', "%{$search}%")
+                                    ->limit(50)
+                                    ->pluck('name', 'id')
+                                    ->toArray()
+                            )
+                            ->getOptionLabelUsing(
+                                fn($value) => User::find($value)?->name
+                            ),
+                    ])
+                    ->action(function (array $data, $record): void {
+                        DB::table('borrowed_influencer_agency')->insert([
+                            'influencer_id' => $record->id,
+                            'agency_id' => $data['agency_id'],
+                        ]);
+
+                        $targetAgency = User::find($data['agency_id']);
+
+                        $lender = Auth::user()->name;
+
+                        if ($targetAgency) {
+                            $targetAgency->notify(
+                                Notification::make()
+                                    ->title('Influenciador Emprestado')
+                                    ->body("A agência {$lender} lhe emprestou o influenciador {$record->name}.")
+                                    ->success()
+                                    ->ToDatabase()
+                            );
+                        }
+
+                        Notification::make()
+                            ->title('Influenciador Emprestado')
+                            ->success()
+                            ->send();
+                    }),
+            ])
             ->schema([
                 Section::make('Informações do Influencer')
                     ->schema([
@@ -31,7 +88,7 @@ class ViewInfluencerDetails
                                 ->hiddenLabel()
                                 ->circular()
                                 ->imageSize(100)
-                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name)),
+                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name)),
 
                             TextEntry::make('name')->weight(FontWeight::Bold)
                                 ->label('Nome'),
@@ -112,7 +169,7 @@ class ViewInfluencerDetails
                             ->label('Agência')
                             ->placeholder('Independente')
                             ->icon(Heroicon::OutlinedBuildingStorefront)->columnSpan(2)->url(
-                                fn ($record) => route('filament.admin.resources.agencies.index', [
+                                fn($record) => route('filament.admin.resources.agencies.index', [
                                     'search' => $record->influencer_info->agency->name,
                                     'tableAction' => 'viewAgencyDetails',
                                     'tableActionRecord' => $record->influencer_info->agency->getKey(),
@@ -144,7 +201,7 @@ class ViewInfluencerDetails
                         'sm' => 3,
                         'lg' => 3,
                     ])
-                    ->visible(fn ($record) => (bool) $record->influencer_info),
+                    ->visible(fn($record) => (bool) $record->influencer_info),
 
                 Section::make('Redes Sociais')->columns([
                     'default' => 2,
@@ -155,7 +212,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.instagram')
                             ->label('Instagram')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://instagram.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://instagram.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -167,7 +224,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.youtube')
                             ->label('YouTube')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://youtube.com/@{$state}" : null)
+                            ->url(fn($state) => $state ? "https://youtube.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -179,7 +236,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.tiktok')
                             ->label('TikTok')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://tiktok.com/@{$state}" : null)
+                            ->url(fn($state) => $state ? "https://tiktok.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -191,7 +248,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.twitter')
                             ->label('Twitter')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://twitter.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://twitter.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -203,7 +260,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.facebook')
                             ->label('Facebook')
                             ->prefix('@')
-                            ->url(fn ($state) => $state ? "https://facebook.com/{$state}" : null)
+                            ->url(fn($state) => $state ? "https://facebook.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 

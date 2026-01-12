@@ -4,11 +4,15 @@ namespace App\Filament\Resources\Influencers\Pages;
 
 use App\Enums\UserRoles;
 use App\Filament\Resources\Influencers\InfluencerResource;
+use App\Models\InfluencerInfo;
+use App\Models\InfluencerLoan;
+use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ListInfluencers extends ListRecords
 {
@@ -38,6 +42,14 @@ class ListInfluencers extends ListRecords
                     $query->where('agency_id', Auth::id())->where('association_status', 'pending');
                 });
             }),
+            // 'Influenciadores Emprestados' => Tab::make()->modifyQueryUsing(
+            //     fn() =>
+            //     InfluencerLoan::query()
+            //         ->with(['agency', 'influencer'])
+            //         ->where('agency_id', Auth::id()),
+            // ),
+
+
         ];
     }
 }
