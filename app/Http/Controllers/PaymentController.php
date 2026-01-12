@@ -13,10 +13,22 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Throwable;
 
 class PaymentController extends Controller
 {
+
+    public function page(Request $request)
+    {
+        Gate::authorize('is_company');
+
+        return Inertia::render('payment-page', [
+            'payment' => $request['payment'],
+            'qrcode' => $request['qrcode'],
+            'brcode' => $request['brcode'],
+        ]);
+    }
     public function store(Request $request)
     {
         Log::info('Iniciando criação de pagamento via AbacatePay');
@@ -33,6 +45,7 @@ class PaymentController extends Controller
             campaignId: $validated['campaign_id']
         );
 
+
         $payment = Payment::create([
             'abacate_id' => $response['id'],
             'campaign_id' => $validated['campaign_id'],
@@ -45,10 +58,7 @@ class PaymentController extends Controller
             ],
         ]);
 
-        return to_route('filament.admin.pages.pix-qr-code', [
-            'payment_id' => $payment->id,
-            'qrcode_base64' => $response['brCodeBase64'],
-        ]);
+        return to_route('payments.page', ['payment' => $payment->id, 'qrcode' => $response['brCodeBase64'], 'brcode' => $response['brCode']]);
     }
 
     public function pixwebhook(Request $request)

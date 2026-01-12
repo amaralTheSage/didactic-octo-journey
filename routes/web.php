@@ -15,7 +15,9 @@ Route::get('/login', function () {
     return redirect('/dashboard/login');
 });
 
-Route::get('/payments/qrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
+Route::get('/payments/getqrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
+
+Route::get('/payments/code', [PaymentController::class, 'page'])->name('payments.page')->middleware('auth');
 
 Route::post('/payments/abacate', [PaymentController::class, 'pixwebhook'])->name('payments.webhook')->withoutMiddleware(VerifyCsrfToken::class);
 

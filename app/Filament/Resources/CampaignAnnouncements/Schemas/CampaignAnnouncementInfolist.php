@@ -69,9 +69,9 @@ class CampaignAnnouncementInfolist
                         Action::make('validateNow')
                             ->label('Validar')
                             ->color('success')
-                            ->visible(fn (CampaignAnnouncement $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && $record->payments()->where('status', PaymentStatus::PAID)->doesntExist())
+                            ->visible(fn(CampaignAnnouncement $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && $record->payments()->where('status', PaymentStatus::PAID)->doesntExist())
                             ->action(function ($record) {
-                                return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
+                                return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
                             }),
 
                         Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
@@ -125,7 +125,7 @@ class CampaignAnnouncementInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')->color('primary')
-                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -161,13 +161,13 @@ class CampaignAnnouncementInfolist
                             ->label('Remover Interesse')
                             ->color('danger')
                             ->visible(
-                                fn ($record) => Gate::allows('is_agency')
+                                fn($record) => Gate::allows('is_agency')
                                     && $record->proposals()
-                                        ->where('agency_id', Auth::id())
-                                        ->exists()
+                                    ->where('agency_id', Auth::id())
+                                    ->exists()
                             )
                             ->action(
-                                fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                             ),
 
                         Action::make('viewProposals')
