@@ -7,24 +7,24 @@ export default function PaymentPage({ payment, qrcode, brcode }) {
     const [paid, setPaid] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    console.log(brcode);
+    useEcho(
+        'payments',
+        'PaymentReceived',
+        ({ abacateId, status, campaignId }) => {
+            setPaid(true);
+            console.log(abacateId, status, campaignId);
+        },
+    );
 
-    useEcho('payments', 'PaymentReceived', ({ payment }) => {
-        setPaid(true);
-        console.log(payment);
-    });
-
-    // const handleCopyCode = async () => {
-    //     try {
-    //         await navigator.clipboard.writeText(
-    //             payment.metadata?.abacate_response?.brcode,
-    //         );
-    //         setCopied(true);
-    //         setTimeout(() => setCopied(false), 2000);
-    //     } catch (err) {
-    //         console.error('Failed to copy:', err);
-    //     }
-    // };
+    const handleCopyCode = async () => {
+        try {
+            await navigator.clipboard.writeText(brcode);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
 
     return (
         <>
@@ -125,7 +125,7 @@ export default function PaymentPage({ payment, qrcode, brcode }) {
                                     </div>
 
                                     <button
-                                        // onClick={handleCopyCode}
+                                        onClick={handleCopyCode}
                                         className="flex w-full transform items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg"
                                     >
                                         <Copy className="h-5 w-5" />
