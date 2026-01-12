@@ -10,6 +10,7 @@ import { initializeTheme } from './hooks/use-appearance';
 
 configureEcho({
     broadcaster: 'reverb',
+    forceTLS: true,
 });
 
 const appName = import.meta.env.VITE_APP_NAME || 'InfluHub';

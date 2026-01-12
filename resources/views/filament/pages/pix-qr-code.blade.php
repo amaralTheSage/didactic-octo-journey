@@ -77,7 +77,6 @@
             qrcodeBase64: '{{ $payment->qrcode_base64 }}',
 
             init() {
-
                 // Check if Echo is available
                 if (typeof window.Echo === 'undefined') {
                     console.error('Laravel Echo is not defined. check your broadcasting configuration.');
