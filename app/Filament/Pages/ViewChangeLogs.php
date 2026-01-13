@@ -12,6 +12,7 @@ class ViewChangeLogs extends Page
     public Proposal $proposal;
 
     protected static bool $shouldRegisterNavigation = false;
+
     public $logs;
 
     public function mount(Proposal $proposal)

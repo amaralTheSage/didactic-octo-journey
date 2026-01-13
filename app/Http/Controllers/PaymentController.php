@@ -18,7 +18,6 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-
     public function page(Request $request)
     {
         Gate::authorize('is_company');
@@ -27,8 +26,10 @@ class PaymentController extends Controller
             'payment' => $request['payment'],
             'qrcode' => $request['qrcode'],
             'brcode' => $request['brcode'],
+            'db_status' => Payment::whereId($request['payment'])->first()->status,
         ]);
     }
+
     public function store(Request $request)
     {
         Log::info('Iniciando criação de pagamento via AbacatePay');
@@ -44,7 +45,6 @@ class PaymentController extends Controller
             amount: $amount,
             campaignId: $validated['campaign_id']
         );
-
 
         $payment = Payment::create([
             'abacate_id' => $response['id'],

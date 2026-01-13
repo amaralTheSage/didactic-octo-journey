@@ -142,7 +142,7 @@ class Register extends SimplePage
                     if ($agency) {
                         $agency->notify(
                             Notification::make()
-                                ->title('Convite de associação de ' . $user->name)
+                                ->title('Convite de associação de '.$user->name)
                                 ->body('Revise o pedido na página de influenciadores.')
                                 ->toDatabase()
                         );
@@ -233,11 +233,11 @@ class Register extends SimplePage
 
                     Step::make('Informações de Influenciador')->schema([
                         $this->getInfluencerColumn(),
-                    ])->visible(fn(Get $get) => $get('role') === 'influencer'),
+                    ])->visible(fn (Get $get) => $get('role') === 'influencer'),
 
                     Step::make('Atributos')->schema([
                         $this->getAttributesRepeater(),
-                    ])->visible(fn(Get $get) => $get('role') === 'influencer'),
+                    ])->visible(fn (Get $get) => $get('role') === 'influencer'),
                 ]
             ),
         ]);
@@ -299,7 +299,7 @@ class Register extends SimplePage
                     ->label('Categorias')
                     ->options(
                         Category::with('subcategories')->get()
-                            ->mapWithKeys(fn($category) => [
+                            ->mapWithKeys(fn ($category) => [
                                 $category->title => $category->subcategories
                                     ->pluck('title', 'id')
                                     ->toArray(),
@@ -312,14 +312,14 @@ class Register extends SimplePage
                     ->searchable()
                     ->preload()
                     ->getSearchResultsUsing(
-                        fn(string $search): array => User::where('role', UserRoles::Agency)
+                        fn (string $search): array => User::where('role', UserRoles::Agency)
                             ->where('name', 'ilike', "%{$search}%")
                             ->limit(50)
                             ->pluck('name', 'id')
                             ->toArray()
                     )
                     ->getOptionLabelUsing(
-                        fn($value) => User::find($value)?->name
+                        fn ($value) => User::find($value)?->name
                     ),
 
                 Group::make()
@@ -347,7 +347,7 @@ class Register extends SimplePage
                             ->label('Estado')
                             ->placeholder('Selecione um estado')
                             ->options(
-                                fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                fn () => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
                                     ->collect()
                                     ->sortBy('nome')
                                     ->pluck('nome', 'sigla')
@@ -355,9 +355,9 @@ class Register extends SimplePage
                             )
                             ->searchable()
                             ->reactive()
-                            ->afterStateUpdated(fn(callable $set) => $set('city', null))
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->afterStateUpdated(fn (callable $set) => $set('city', null))
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR'),
 
                         Select::make('city')
                             ->label('Cidade')
@@ -375,8 +375,8 @@ class Register extends SimplePage
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state')),
                     ]),
 
                 Section::make('Redes Sociais')->collapsed()->collapsible()
@@ -403,15 +403,15 @@ class Register extends SimplePage
                     ->schema([
                         Money::make('reels_price')
                             ->label('Reels')
-                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                            ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         Money::make('stories_price')
                             ->label('Stories')
-                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                            ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         Money::make('carrousel_price')
                             ->label('Carrossel')
-                            ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                            ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         TextInput::make('commission_cut')
                             ->label('Comissão')
@@ -422,7 +422,7 @@ class Register extends SimplePage
                             ->maxValue(100),
                     ])->columns(4),
             ])
-            ->visible(fn(Get $get) => $get('role') === 'influencer');
+            ->visible(fn (Get $get) => $get('role') === 'influencer');
     }
 
     protected function getAttributesRepeater()
@@ -437,7 +437,7 @@ class Register extends SimplePage
             ->reorderable(false)
             ->default(function () {
                 // Simply load all attributes for a fresh registration
-                return Attribute::all()->map(fn($attribute) => [
+                return Attribute::all()->map(fn ($attribute) => [
                     'attribute_id' => $attribute->id,
                     'attribute_value_id' => [],
                     'title' => null,
@@ -452,13 +452,13 @@ class Register extends SimplePage
 
                 TextEntry::make('attribute_title')
                     ->label('Atributo')
-                    ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
+                    ->state(fn (Get $get) => Attribute::find($get('attribute_id'))?->title),
 
                 Group::make()->schema([
                     Select::make('attribute_value_id')
                         ->label('Valor')
                         ->options(
-                            fn(Get $get) => AttributeValue::where('attribute_id', $get('attribute_id'))
+                            fn (Get $get) => AttributeValue::where('attribute_id', $get('attribute_id'))
                                 ->pluck('title', 'id')
                         )
                         ->multiple()
@@ -477,7 +477,7 @@ class Register extends SimplePage
                             }
                         })
                         ->columnSpan(
-                            fn(Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
+                            fn (Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
                                 ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                 ->exists() ? 1 : 2
                         ),
@@ -486,7 +486,7 @@ class Register extends SimplePage
                         ->label('Especifique')
                         ->placeholder('Especifique...')
                         ->visible(
-                            fn(Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
+                            fn (Get $get) => AttributeValue::whereIn('id', (array) ($get('attribute_value_id') ?? []))
                                 ->whereRaw("LOWER(title) IN ('outro', 'outra', 'outros', 'outras')")
                                 ->exists()
                         )
@@ -528,7 +528,7 @@ class Register extends SimplePage
             ->required()
             ->rule(Password::default())
             ->showAllValidationMessages()
-            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
             ->same('passwordConfirmation')
             ->validationAttribute(__('filament-panels::auth/pages/register.form.password.validation_attribute'));
     }
@@ -628,7 +628,7 @@ class Register extends SimplePage
             return null;
         }
 
-        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before') . ' ' . $this->loginAction->toHtml());
+        return new HtmlString(__('filament-panels::auth/pages/register.actions.login.before').' '.$this->loginAction->toHtml());
     }
 
     public function content(Schema $schema): Schema

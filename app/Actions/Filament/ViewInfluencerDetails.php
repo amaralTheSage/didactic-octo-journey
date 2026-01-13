@@ -2,7 +2,6 @@
 
 namespace App\Actions\Filament;
 
-use App\Enums\UserRoles;
 use App\Models\User;
 use App\Services\ChatService;
 use Filament\Actions\Action;
@@ -13,7 +12,6 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
@@ -41,9 +39,9 @@ class ViewInfluencerDetails
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->options(fn() => User::where('role', 'agency')->whereNot('id', Auth::id())->pluck('name', 'id'))
+                            ->options(fn () => User::where('role', 'agency')->whereNot('id', Auth::id())->pluck('name', 'id'))
                             ->getSearchResultsUsing(
-                                fn(string $search): array => User::where('role', 'agency')
+                                fn (string $search): array => User::where('role', 'agency')
                                     ->whereNot('id', Auth::id())
                                     ->where('name', 'ilike', "%{$search}%")
                                     ->limit(50)
@@ -51,7 +49,7 @@ class ViewInfluencerDetails
                                     ->toArray()
                             )
                             ->getOptionLabelUsing(
-                                fn($value) => User::find($value)?->name
+                                fn ($value) => User::find($value)?->name
                             ),
                     ])
                     ->action(function (array $data, $record): void {
@@ -88,7 +86,7 @@ class ViewInfluencerDetails
                                 ->hiddenLabel()
                                 ->circular()
                                 ->imageSize(100)
-                                ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->name)),
+                                ->defaultImageUrl(fn ($record) => 'https://ui-avatars.com/api/?name='.urlencode($record->name)),
 
                             TextEntry::make('name')->weight(FontWeight::Bold)
                                 ->label('Nome'),
@@ -169,7 +167,7 @@ class ViewInfluencerDetails
                             ->label('Agência')
                             ->placeholder('Independente')
                             ->icon(Heroicon::OutlinedBuildingStorefront)->columnSpan(2)->url(
-                                fn($record) => route('filament.admin.resources.agencies.index', [
+                                fn ($record) => route('filament.admin.resources.agencies.index', [
                                     'search' => $record->influencer_info->agency->name,
                                     'tableAction' => 'viewAgencyDetails',
                                     'tableActionRecord' => $record->influencer_info->agency->getKey(),
@@ -201,7 +199,7 @@ class ViewInfluencerDetails
                         'sm' => 3,
                         'lg' => 3,
                     ])
-                    ->visible(fn($record) => (bool) $record->influencer_info),
+                    ->visible(fn ($record) => (bool) $record->influencer_info),
 
                 Section::make('Redes Sociais')->columns([
                     'default' => 2,
@@ -212,7 +210,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.instagram')
                             ->label('Instagram')
                             ->prefix('@')
-                            ->url(fn($state) => $state ? "https://instagram.com/{$state}" : null)
+                            ->url(fn ($state) => $state ? "https://instagram.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -224,7 +222,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.youtube')
                             ->label('YouTube')
                             ->prefix('@')
-                            ->url(fn($state) => $state ? "https://youtube.com/@{$state}" : null)
+                            ->url(fn ($state) => $state ? "https://youtube.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -236,7 +234,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.tiktok')
                             ->label('TikTok')
                             ->prefix('@')
-                            ->url(fn($state) => $state ? "https://tiktok.com/@{$state}" : null)
+                            ->url(fn ($state) => $state ? "https://tiktok.com/@{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -248,7 +246,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.twitter')
                             ->label('Twitter')
                             ->prefix('@')
-                            ->url(fn($state) => $state ? "https://twitter.com/{$state}" : null)
+                            ->url(fn ($state) => $state ? "https://twitter.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 
@@ -260,7 +258,7 @@ class ViewInfluencerDetails
                         TextEntry::make('influencer_info.facebook')
                             ->label('Facebook')
                             ->prefix('@')
-                            ->url(fn($state) => $state ? "https://facebook.com/{$state}" : null)
+                            ->url(fn ($state) => $state ? "https://facebook.com/{$state}" : null)
                             ->openUrlInNewTab()
                             ->placeholder('Não informado'),
 

@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-class User extends Authenticatable implements HasAvatar, FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Impersonate, Notifiable, TwoFactorAuthenticatable;
@@ -54,7 +54,6 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         return $this->hasOne(InfluencerInfo::class);
     }
 
-
     // if agency
     public function agency_loans()
     {
@@ -76,7 +75,6 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             'agency_id'
         );
     }
-
 
     public function attribute_values(): BelongsToMany
     {
@@ -146,8 +144,8 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+            ? asset('storage/'.$this->avatar)
+            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -156,7 +154,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             return null;
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**

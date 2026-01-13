@@ -22,7 +22,7 @@ class ViewChangeLogs extends Action
 
         $this->color(Color::Amber);
 
-        $this->modalContent(fn(Proposal $record) => view(
+        $this->modalContent(fn (Proposal $record) => view(
             'filament.pages.view-change-logs',
             [
                 'logs' => $record->change_logs()

@@ -3,9 +3,11 @@ import { useEcho } from '@laravel/echo-react';
 import { CheckCircle2, ChevronLeft, Copy } from 'lucide-react';
 import { useState } from 'react';
 
-export default function PaymentPage({ payment, qrcode, brcode }) {
-    const [paid, setPaid] = useState(false);
+export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
+    const [paid, setPaid] = useState(db_status === 'PAID');
     const [copied, setCopied] = useState(false);
+
+    console.log(db_status);
 
     useEcho(
         'payments',
@@ -33,7 +35,7 @@ export default function PaymentPage({ payment, qrcode, brcode }) {
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
                 <div className="mx-auto max-w-5xl">
                     <Link
-                        href="/admin/campaign-announcements"
+                        href="/dashboard/campaign-announcements"
                         className="inline-flex items-center gap-2 text-lg font-semibold text-blue-600 transition-colors hover:text-blue-700"
                     >
                         <ChevronLeft className="h-6 w-6" />
@@ -83,7 +85,7 @@ export default function PaymentPage({ payment, qrcode, brcode }) {
                                     </div>
                                 </div>
 
-                                <div className="mb-4 rounded-lg border-l-4 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 p-4">
+                                <div className="mb-4 rounded-lg border-l-4 border-secondary bg-gradient-to-r from-green-50 to-emerald-50 p-4">
                                     <p className="flex items-center gap-2 text-sm text-green-800">
                                         <span className="text-lg">⏱️</span>
                                         <span className="font-medium">
@@ -92,7 +94,7 @@ export default function PaymentPage({ payment, qrcode, brcode }) {
                                     </p>
                                 </div>
 
-                                <div className="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-4">
+                                <div className="rounded-lg border-l-4 border-secondary bg-blue-50 p-4">
                                     <p className="flex items-start gap-2 text-sm text-blue-800">
                                         <span className="flex-shrink-0 text-lg">
                                             ℹ️

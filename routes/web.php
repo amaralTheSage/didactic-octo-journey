@@ -5,7 +5,6 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect('/dashboard');
@@ -39,5 +38,4 @@ Route::middleware('auth')
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
 
-
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

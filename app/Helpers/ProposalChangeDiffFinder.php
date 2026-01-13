@@ -2,6 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Models\Proposal;
+use App\Models\ProposalChangeLog;
+use Illuminate\Support\Facades\Auth;
+
 class ProposalChangeDiffFinder
 {
     public static function findDiff(array $before, array $after): array
@@ -18,5 +22,24 @@ class ProposalChangeDiffFinder
         }
 
         return $diff;
+    }
+
+    public static function logProposalApproval(
+        Proposal $proposal,
+        string $role,
+        string $from,
+        string $to
+    ): void {
+        ProposalChangeLog::create([
+            'proposal_id' => $proposal->id,
+            'user_id' => Auth::id(),
+            'changes' => [
+                'approval' => [
+                    'role' => $role,
+                    'from' => $from,
+                    'to' => $to,
+                ],
+            ],
+        ]);
     }
 }

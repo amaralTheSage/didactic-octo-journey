@@ -17,7 +17,6 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Leandrocfe\FilamentPtbrFormFields\Money;
@@ -39,7 +38,7 @@ class CampaignAnnouncementForm
                         ->relationship(
                             'product',
                             'name',
-                            fn($query) => $query->where('company_id', Auth::id())
+                            fn ($query) => $query->where('company_id', Auth::id())
                         )
                         ->label('Produto')
                         ->searchable()
@@ -50,13 +49,13 @@ class CampaignAnnouncementForm
                                 ->required(),
 
                             Money::make('price')
-                                ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                                ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
                             MarkdownEditor::make('description')
                                 ->nullable()->columnSpan(2),
                             Hidden::make('company_id')->default(Auth::id()),
                         ])
                         ->createOptionAction(
-                            fn($action) => $action->modalHeading('Criar Produto')
+                            fn ($action) => $action->modalHeading('Criar Produto')
                         ),
 
                     Select::make('subcategory_ids')
@@ -65,7 +64,7 @@ class CampaignAnnouncementForm
                         ->multiple()
                         ->options(
                             Category::with('subcategories')->get()
-                                ->mapWithKeys(fn($category) => [
+                                ->mapWithKeys(fn ($category) => [
                                     $category->title => $category->subcategories
                                         ->pluck('title', 'id')
                                         ->toArray(),
@@ -92,7 +91,7 @@ class CampaignAnnouncementForm
                                 ->pluck('name', 'id')
                         )
                         ->searchable()
-                        ->default(fn() => session('selected_influencers', []))
+                        ->default(fn () => session('selected_influencers', []))
                         ->afterStateHydrated(function () {
                             // Clear session after loading
                             session()->forget('selected_influencers');
@@ -104,10 +103,11 @@ class CampaignAnnouncementForm
                     Money::make('budget')
                         ->label('Orçamento')
                         ->required()
-                        ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+                        ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                     TextInput::make('agency_cut')
                         ->label('Comissão da Campanha')
+                        ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                         ->numeric()
                         ->required()
                         ->prefix('%')
@@ -148,13 +148,13 @@ class CampaignAnnouncementForm
 
                         TextEntry::make('attribute_title')
                             ->label('Atributo')
-                            ->state(fn(Get $get) => Attribute::find($get('attribute_id'))?->title),
+                            ->state(fn (Get $get) => Attribute::find($get('attribute_id'))?->title),
 
                         Group::make()->schema([
                             Select::make('attribute_value_id')
                                 ->label('Valor')
                                 ->options(
-                                    fn(Get $get) => Attribute::find($get('attribute_id'))
+                                    fn (Get $get) => Attribute::find($get('attribute_id'))
                                         ?->values()
                                         ->pluck('title', 'id') ?? []
                                 )->multiple()
@@ -255,8 +255,8 @@ class CampaignAnnouncementForm
                             ->afterStateUpdated(function (callable $set) {
                                 $set('city', null);
                             })
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR'),
 
                         Select::make('city')->columnSpan(1)
                             ->label('Cidade')
@@ -273,9 +273,9 @@ class CampaignAnnouncementForm
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state'))
-                            ->disabled(fn(Get $get) => ! $get('state')),
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
+                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state'))
+                            ->disabled(fn (Get $get) => ! $get('state')),
                     ])->compact()
                     ->columnSpan(2),
 

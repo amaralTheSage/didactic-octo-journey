@@ -39,8 +39,8 @@ class AppServiceProvider extends ServiceProvider
                 ->mask(RawJs::make(<<<'JS'
                 $money($input, ',', '.', 2)
             JS))
-                ->formatStateUsing(fn($state) => is_numeric($state) ? number_format((float) $state, 2, ',', '.') : $state)
-                ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state));
+                ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format((float) $state, 2, ',', '.') : $state)
+                ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state));
         });
 
         CampaignAnnouncement::observe(CampaignAnnouncementObserver::class);

@@ -3,6 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Enums\UserRoles;
+use App\Helpers\ProposalChangeDiffFinder;
 use App\Models\Chat;
 use App\Models\Proposal;
 use App\Services\ChatService;
@@ -54,11 +55,39 @@ class AcceptProposal extends Action
 
             try {
                 if (Auth::user()->role === UserRoles::Company) {
+                    $from = $record->company_approval;
                     $record->update(['company_approval' => 'approved']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'company',
+                        $from,
+                        'approved'
+                    );
                 } elseif (Auth::user()->role === UserRoles::Agency) {
+                    $from = $record->agency_approval;
                     $record->update(['agency_approval' => 'approved']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'agency',
+                        $from,
+                        'approved'
+                    );
                 } elseif (Auth::user()->role === UserRoles::Influencer) {
+                    $from = DB::table('proposal_user')
+                        ->where('proposal_id', $record->id)
+                        ->where('user_id', Auth::id())
+                        ->value('influencer_approval');
+
                     $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'influencer',
+                        $from,
+                        'approved'
+                    );
                 }
 
                 Notification::make()

@@ -1,167 +1,195 @@
 <div class="space-y-6">
     @php
-        $numericFields = [
-                'budget',
-                'proposed_agency_cut',
-                'n_reels',
-                'n_stories',
-                'n_carrousels',
-                'reels_price',
-                'stories_price',
-                'carrousel_price',
-            ];
+        use Illuminate\Support\HtmlString;
 
-        function isNumericChange(string $field, array $numericFields): bool {
+        $numericFields = [
+            'budget',
+            'commission_cut',
+            'proposed_agency_cut',
+            'n_reels',
+            'n_stories',
+            'n_carrousels',
+            'reels_price',
+            'stories_price',
+            'carrousel_price',
+        ];
+
+        $moneyFields = [
+            'reels_price',
+            'stories_price',
+            'carrousel_price',
+        ];
+
+        function isNumericChange(string $field, array $numericFields): bool
+        {
             return in_array($field, $numericFields, true);
         }
 
-        function differenceIndicator(float $difference): ?Illuminate\Support\HtmlString 
+        function formatValue($value, string $field, array $moneyFields): string
+        {
+            if ($value === null || $value === '—') {
+                return '—';
+            }
+
+            if (in_array($field, $moneyFields, true)) {
+                return app(\App\Helpers\BRLFormatter::class)((float) $value);
+            }
+
+            if ($field === 'commission_cut' || $field === 'proposed_agency_cut' ) {
+                return $value . '%';
+            }
+
+            return (string) $value;
+        }
+
+        function differenceIndicator(float $difference, bool $monetary): ?HtmlString
         {
             if ($difference === 0.0) {
                 return null;
             }
 
-            $color = 'text-secondary';
+            $arrow = $difference > 0
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up mb-0.5"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down mb-0.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
 
-            $arrow =  $difference > 0
-                ? new Illuminate\Support\HtmlString(
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up mb-0.5"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
-                )
-                : new Illuminate\Support\HtmlString(
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down mb-0.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>'
-                );
+            $value = $monetary
+                ? app(\App\Helpers\BRLFormatter::class)(abs($difference))
+                : number_format(abs($difference), 2);
 
-           return new Illuminate\Support\HtmlString(
-                    '<span class="' . $color . ' text-xs flex items-end gap-1">'
-                        . number_format(abs($difference), 2) .
-                        $arrow .
-                    '</span>'
-                );
+            return new HtmlString(
+                '<span class="text-secondary text-xs flex items-end gap-1">'
+                    . $value .
+                    $arrow .
+                '</span>'
+            );
         }
     @endphp
 
     <div class="space-y-6">
-        @foreach ($logs as $log)
-            <div class="flex gap-4 pb-3">
-                {{-- Avatar --}}
-                <div class="shrink-0">
-                    <img
-                        src="{{ $log->user->avatar_url }}"
-                        class="h-8 w-8 rounded-full"
-                    />
-                </div>
+        @if ($logs->isEmpty())
+            <div class="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mb-3 h-8 w-8" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8 7h8M8 11h8m-6 4h6M5 21h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2Z" />
+                </svg>
 
-                {{-- Content --}}
-                <div class="flex-1 space-y-1 ">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-foreground">
-                            <span class="font-semibold">{{ $log->user->name }}</span>
-                            editou a proposta
-                        </div>
-                        
-                        <div class="text-xs text-muted-foreground">
-                            {{ $log->created_at->translatedFormat('d \\d\\e F \\d\\e Y \\à\\s H:i') }}
-                        </div>
-                    </div>
-
-                    {{-- Proposal Changes --}}
-                    @foreach (($log->changes['proposal'] ?? []) as $field => $change)
-                        @php
-                            $isNumeric = isNumericChange($field, $numericFields);
-
-                            if ($isNumeric) {
-                                $difference = (float) $change['to'] - (float) $change['from'];
-                                $arr = differenceIndicator($difference);
-                            }                                   
-                        @endphp
-
-                        <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span class="capitalize">
-                                {{ __('proposal_fields.' . $field) }}
-                            </span>
-                            <span>{{ $change['from'] ?? '—' }}</span>
-                            <span>→</span>
-                            <span class="text-foreground font-medium">
-                                {{ $change['to'] ?? '—' }}
-                            </span>
-
-                            @if ($isNumeric)
-                                {{ $arr }}
-                            @endif
-                        </div>
-                    @endforeach
-
-                    {{-- Influencer Changes --}}
-            @foreach (($log->changes['influencers'] ?? []) as $infId => $payload)
-                @php
-                    $name = $payload['name'] ?? '—';
-                    $isRemoved = $payload['removed'] ?? false;
-                    $isAdded = $payload['added'] ?? false;
-                    
-                    // Define which array to loop through for fields
-                    // If it's a standard edit, use the 'changes' sub-array
-                    // If it's added/removed, use the 'to' or 'from' arrays respectively
-                    $fieldSource = [];
-                    if ($isRemoved) {
-                        $fieldSource = $payload['from'] ?? [];
-                    } elseif ($isAdded) {
-                        $fieldSource = $payload['to'] ?? [];
-                    } else {
-                        $fieldSource = $payload['changes'] ?? [];
-                    }
-                @endphp
-
-                <div class=" space-y-1 pt-1"> 
-                    <div class="flex items-center gap-2 text-sm font-medium text-foreground">
-                        {{ $name }}
-                        @if ($isRemoved)
-                            <span class="rounded-md bg-danger-500/10 px-2 py-0.5 text-xs font-medium text-danger-600">Removido</span>
-                        @elseif ($isAdded)
-                            <span class="rounded-md bg-success-500/10 px-2 py-0.5 text-xs font-medium text-success-600">Adicionado</span>
-                        @endif
-                    </div>
-
-                    @foreach ($fieldSource as $field => $data)
-                        @php
-                            if (!isNumericChange($field, $numericFields)) continue;
-
-                            $from = null;
-                            $to = null;
-                            $diffIndicator = null;
-
-                            if ($isRemoved) {
-                                $from = $data;
-                            } elseif ($isAdded) {
-                                $to = $data;
-                            } else {
-                                // Standard edit: $data is an array with 'to' and 'from'
-                                $from = $data['from'] ?? '—';
-                                $to = $data['to'] ?? '—';
-                                $diffIndicator = differenceIndicator((float)$to - (float)$from);
-                            }
-                        @endphp
-
-                        <div @class([
-                            "flex items-center gap-2 text-xs",
-                            "text-muted-foreground line-through" => $isRemoved,
-                            "text-success-600" => $isAdded,
-                            "text-muted-foreground" => !$isRemoved && !$isAdded
-                        ])>
-                            <span class="capitalize">{{ __('proposal_fields.' . $field) }}:</span>
-                            
-                            @if(!$isAdded) <span>{{ $from }}</span> @endif
-                            @if(!$isRemoved && !$isAdded) <span>→</span> @endif
-                            @if(!$isRemoved) <span class="text-foreground font-medium">{{ $to }}</span> @endif
-                            
-                            {!! $diffIndicator !!}
-                        </div>
-                    @endforeach
-                </div>
-            @endforeach
-                </div>
+                <p class="text-sm font-medium text-foreground">Nenhuma alteração registrada</p>
+                <p class="text-xs">As edições da proposta aparecerão aqui quando ocorrerem.</p>
             </div>
-            
-            <hr class="bg-border w-[20%] mx-auto">
-        @endforeach
+        @else
+            @foreach ($logs as $log)
+                <div class="flex gap-4 pb-3">
+                    <img src="{{ $log->user->avatar_url }}" class="h-8 w-8 rounded-full" />
+
+                    <div class="flex-1 space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-semibold text-foreground">{{ $log->user->name }}</span>
+                            <span class="text-xs text-muted-foreground">
+                                {{ $log->created_at->translatedFormat('d \\d\\e F \\d\\e Y \\à\\s H:i') }}
+                            </span>
+                        </div>
+
+                        {{-- Approval --}}
+                        @if ($approval = $log->changes['approval'] ?? null)
+                            <div class="text-xs text-muted-foreground">
+                                {{ match ($approval['role']) {
+                                    'company' => 'A empresa',
+                                    'agency' => 'A agência',
+                                    'influencer' => 'O influenciador',
+                                    default => 'O usuário',
+                                } }}
+
+                                <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
+                                    {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
+                                </span>
+                                a proposta
+                            </div>
+                        @endif
+
+                        {{-- Proposal changes --}}
+                        @foreach ($log->changes['proposal'] ?? [] as $field => $change)
+                            @php
+                                if (!isNumericChange($field, $numericFields)) continue;
+
+                                $from = $change['from'] ?? '—';
+                                $to = $change['to'] ?? '—';
+
+                                $monetary = in_array($field, $moneyFields, true);
+                                $diff = differenceIndicator((float)$to - (float)$from, $monetary);
+                            @endphp
+
+                            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{{ __('proposal_fields.' . $field) }}</span>
+                                <span>{{ formatValue($from, $field, $moneyFields) }}</span>
+                                <span>→</span>
+                                <span class="font-medium text-foreground">
+                                    {{ formatValue($to, $field, $moneyFields) }}
+                                </span>
+                                {!! $diff !!}
+                            </div>
+                        @endforeach
+
+                        {{-- Influencer changes --}}
+                        @foreach ($log->changes['influencers'] ?? [] as $payload)
+                            @php
+                                $name = $payload['name'] ?? '—';
+                                $isRemoved = $payload['removed'] ?? false;
+                                $isAdded = $payload['added'] ?? false;
+
+                                $fieldSource = $isRemoved
+                                    ? ($payload['from'] ?? [])
+                                    : ($isAdded
+                                        ? ($payload['to'] ?? [])
+                                        : ($payload['changes'] ?? []));
+                            @endphp
+
+                            <div class="pt-1 space-y-1">
+                                <div class="text-sm font-medium text-foreground flex gap-2">
+                                    {{ $name }}
+                                </div>
+
+                                @foreach ($fieldSource as $field => $data)
+                                    @php
+                                        if (!isNumericChange($field, $numericFields)) continue;
+
+                                        $monetary = in_array($field, $moneyFields, true);
+
+                                        $from = $isRemoved ? $data : ($data['from'] ?? '—');
+                                        $to = $isAdded ? $data : ($data['to'] ?? '—');
+
+                                        $diff = (!$isRemoved && !$isAdded)
+                                            ? differenceIndicator((float)$to - (float)$from, $monetary)
+                                            : null;
+                                    @endphp
+
+                                    <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <span>{{ __('proposal_fields.' . $field) }}:</span>
+
+                                        @if (!$isAdded)
+                                            <span>{{ formatValue($from, $field, $moneyFields) }}</span>
+                                        @endif
+
+                                        @if (!$isRemoved && !$isAdded)
+                                            <span>→</span>
+                                        @endif
+
+                                        @if (!$isRemoved)
+                                            <span class="font-medium text-foreground">
+                                                {{ formatValue($to, $field, $moneyFields) }}
+                                            </span>
+                                        @endif
+
+                                        {!! $diff !!}
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <hr class="w-[20%] mx-auto bg-border h-px">
+            @endforeach
+        @endif
     </div>
 </div>

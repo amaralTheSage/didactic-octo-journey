@@ -3,6 +3,7 @@
 namespace App\Actions\Filament;
 
 use App\Enums\UserRoles;
+use App\Helpers\ProposalChangeDiffFinder;
 use App\Models\Proposal;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -51,11 +52,39 @@ class RejectProposal extends Action
         $this->action(function (Proposal $record) {
             try {
                 if (Auth::user()->role === UserRoles::Company) {
+                    $from = $record->company_approval;
                     $record->update(['company_approval' => 'rejected']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'company',
+                        $from,
+                        'rejected'
+                    );
                 } elseif (Auth::user()->role === UserRoles::Agency) {
+                    $from = $record->agency_approval;
                     $record->update(['agency_approval' => 'rejected']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'agency',
+                        $from,
+                        'rejected'
+                    );
                 } elseif (Auth::user()->role === UserRoles::Influencer) {
+                    $from = DB::table('proposal_user')
+                        ->where('proposal_id', $record->id)
+                        ->where('user_id', Auth::id())
+                        ->value('influencer_approval');
+
                     $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
+
+                    ProposalChangeDiffFinder::logProposalApproval(
+                        $record,
+                        'influencer',
+                        $from,
+                        'rejected'
+                    );
                 }
 
                 Notification::make()
