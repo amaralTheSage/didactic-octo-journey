@@ -15,6 +15,7 @@ class Payment extends Model
         'abacate_id',
         'campaign_id',
         'user_id',
+        'brcode',
         'amount',
         'status',
         'metadata',

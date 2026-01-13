@@ -41,6 +41,17 @@ class PaymentController extends Controller
             'campaign_id' => 'required|exists:App\Models\CampaignAnnouncement,id',
         ]);
 
+        $existingPayment = Payment::whereCampaignId($validated['campaign_id'])
+            ->whereUserId(Auth::id())
+            ->whereStatus(PaymentStatus::PENDING)
+            ->where('expires_at', '>', now())->first();
+
+        if ($existingPayment) {
+            Log::info('Cobrança pendente e não-expirada identificada para essa campanha, redirecionando.');
+
+            return to_route('payments.page', ['payment' => $existingPayment->id, 'brcode' => $existingPayment->brcode]);
+        }
+
         $response = (new AbacatePayService)->createPayment(
             amount: $amount,
             campaignId: $validated['campaign_id']
@@ -50,6 +61,7 @@ class PaymentController extends Controller
             'abacate_id' => $response['id'],
             'campaign_id' => $validated['campaign_id'],
             'user_id' => Auth::id(),
+            'brcode' => $response['brCode'],
             'amount' => $amount * 100,
             'status' => PaymentStatus::PENDING,
             'expires_at' => now()->addMinutes(15),
@@ -58,7 +70,7 @@ class PaymentController extends Controller
             ],
         ]);
 
-        return to_route('payments.page', ['payment' => $payment->id, 'qrcode' => $response['brCodeBase64'], 'brcode' => $response['brCode']]);
+        return to_route('payments.page', ['payment' => $payment->id, 'brcode' => $payment->brcode]);
     }
 
     public function pixwebhook(Request $request)

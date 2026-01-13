@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('campaign_id')->constrained('campaign_announcements')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->integer('amount');
+            $table->text('brcode');
             $table->enum('status', ['PENDING', 'PAID', 'EXPIRED', 'CANCELLED'])->default('PENDING');
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('expires_at')->nullable();

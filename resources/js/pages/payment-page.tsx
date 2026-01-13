@@ -1,13 +1,12 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useEcho } from '@laravel/echo-react';
 import { CheckCircle2, ChevronLeft, Copy } from 'lucide-react';
 import { useState } from 'react';
+import QRCode from 'react-qr-code';
 
-export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
+export default function PaymentPage({ payment, brcode, db_status }) {
     const [paid, setPaid] = useState(db_status === 'PAID');
     const [copied, setCopied] = useState(false);
-
-    console.log(db_status);
 
     useEcho(
         'payments',
@@ -17,6 +16,8 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
             console.log(abacateId, status, campaignId);
         },
     );
+
+    console.log(db_status);
 
     const handleCopyCode = async () => {
         try {
@@ -34,13 +35,13 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
                 <div className="mx-auto max-w-5xl">
-                    <Link
+                    <a
                         href="/dashboard/campaign-announcements"
                         className="inline-flex items-center gap-2 text-lg font-semibold text-blue-600 transition-colors hover:text-blue-700"
                     >
                         <ChevronLeft className="h-6 w-6" />
                         <span>Voltar</span>
-                    </Link>
+                    </a>
 
                     {!paid ? (
                         <div className="space-y-6">
@@ -53,7 +54,7 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
 
                                 <ol className="mb-8 space-y-3 text-slate-600">
                                     <li className="flex items-start gap-3">
-                                        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
                                             1
                                         </span>
                                         <span>
@@ -62,13 +63,13 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
                                         </span>
                                     </li>
                                     <li className="flex items-start gap-3">
-                                        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
                                             2
                                         </span>
                                         <span>Escolha pagar via Pix.</span>
                                     </li>
                                     <li className="flex items-start gap-3">
-                                        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
                                             3
                                         </span>
                                         <span>Escaneie o seguinte código:</span>
@@ -77,11 +78,7 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
 
                                 <div className="mb-6 flex justify-center">
                                     <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-md">
-                                        <img
-                                            src={qrcode}
-                                            alt="PIX QR Code"
-                                            className="h-64 w-64"
-                                        />
+                                        <QRCode value={brcode} />
                                     </div>
                                 </div>
 
@@ -96,7 +93,7 @@ export default function PaymentPage({ payment, qrcode, brcode, db_status }) {
 
                                 <div className="rounded-lg border-l-4 border-secondary bg-blue-50 p-4">
                                     <p className="flex items-start gap-2 text-sm text-blue-800">
-                                        <span className="flex-shrink-0 text-lg">
+                                        <span className="shrink-0 text-lg">
                                             ℹ️
                                         </span>
                                         <span>
