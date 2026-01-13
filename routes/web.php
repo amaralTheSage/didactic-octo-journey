@@ -5,10 +5,23 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect('/dashboard');
+    return Inertia::render('landing');
 })->name('home');
+
+Route::get('/para-agencias', function () {
+    return Inertia::render('landings/para-agencias');
+});
+
+Route::get('/para-empresas', function () {
+    return Inertia::render('landings/para-empresas');
+});
+
+Route::get('/para-influenciadores', function () {
+    return Inertia::render('landings/para-influenciadores');
+});
 
 Route::get('/login', function () {
     return redirect('/dashboard/login');
@@ -38,4 +51,4 @@ Route::middleware('auth')
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

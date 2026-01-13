@@ -10,4 +10,6 @@ return [
     'reels_price' => 'Preço do Reel',
     'stories_price' => 'Preço do Story',
     'carrousel_price' => 'Preço do Carrossel',
+
+    'commission_cut' => 'Comissão do Influenciador',
 ];

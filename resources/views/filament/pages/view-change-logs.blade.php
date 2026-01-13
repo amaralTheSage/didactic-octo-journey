@@ -35,7 +35,7 @@
                 return app(\App\Helpers\BRLFormatter::class)((float) $value);
             }
 
-            if ($field === 'commission_cut' || $field === 'proposed_agency_cut' ) {
+            if ($field === 'commission_cut' || $field === 'proposed_agency_cut') {
                 return $value . '%';
             }
 
@@ -58,8 +58,8 @@
 
             return new HtmlString(
                 '<span class="text-secondary text-xs flex items-end gap-1">'
-                    . $value .
-                    $arrow .
+                . $value .
+                $arrow .
                 '</span>'
             );
         }
@@ -92,31 +92,32 @@
 
                         {{-- Approval --}}
                         @if ($approval = $log->changes['approval'] ?? null)
-                            <div class="text-xs text-muted-foreground">
-                                {{ match ($approval['role']) {
-                                    'company' => 'A empresa',
-                                    'agency' => 'A agência',
-                                    'influencer' => 'O influenciador',
-                                    default => 'O usuário',
-                                } }}
+                                <div class="text-xs text-muted-foreground">
+                                    {{ match ($approval['role']) {
+                                'company' => 'A empresa',
+                                'agency' => 'A agência',
+                                'influencer' => 'O influenciador',
+                                default => 'O usuário',
+                            } }}
 
-                                <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
-                                    {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
-                                </span>
-                                a proposta
-                            </div>
+                                    <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
+                                        {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
+                                    </span>
+                                    a proposta
+                                </div>
                         @endif
 
                         {{-- Proposal changes --}}
                         @foreach ($log->changes['proposal'] ?? [] as $field => $change)
                             @php
-                                if (!isNumericChange($field, $numericFields)) continue;
+                                if (!isNumericChange($field, $numericFields))
+                                    continue;
 
                                 $from = $change['from'] ?? '—';
                                 $to = $change['to'] ?? '—';
 
                                 $monetary = in_array($field, $moneyFields, true);
-                                $diff = differenceIndicator((float)$to - (float)$from, $monetary);
+                                $diff = differenceIndicator((float) $to - (float) $from, $monetary);
                             @endphp
 
                             <div class="flex items-center gap-2 text-xs text-muted-foreground">
@@ -145,13 +146,14 @@
                             @endphp
 
                             <div class="pt-1 space-y-1">
-                                <div class="text-sm font-medium text-foreground flex gap-2">
+                                <div class="text-xs font-medium text-foreground flex gap-2">
                                     {{ $name }}
                                 </div>
 
                                 @foreach ($fieldSource as $field => $data)
                                     @php
-                                        if (!isNumericChange($field, $numericFields)) continue;
+                                        if (!isNumericChange($field, $numericFields))
+                                            continue;
 
                                         $monetary = in_array($field, $moneyFields, true);
 
@@ -159,7 +161,7 @@
                                         $to = $isAdded ? $data : ($data['to'] ?? '—');
 
                                         $diff = (!$isRemoved && !$isAdded)
-                                            ? differenceIndicator((float)$to - (float)$from, $monetary)
+                                            ? differenceIndicator((float) $to - (float) $from, $monetary)
                                             : null;
                                     @endphp
 

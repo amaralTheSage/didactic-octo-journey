@@ -405,6 +405,10 @@ th {
     filter: brightness(1.8);
 }
 
+.landing-logo {
+    filter: brightness(1.8);
+}
+
 .fi-sidebar-header {
     @apply mt-5;
 }
