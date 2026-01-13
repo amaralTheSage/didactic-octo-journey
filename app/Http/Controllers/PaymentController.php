@@ -147,8 +147,10 @@ class PaymentController extends Controller
                     'campaign_id' => $campaignId,
                 ]);
 
-                Payment::where('campaign_id', $campaignId)->where('abacate_id', $abacateId)
-                    ->update(['paid_at' => now()]);
+                $p = Payment::where('campaign_id', $campaignId)->where('abacate_id', $abacateId);
+
+                $p->update(['paid_at' => now()]);
+                CampaignAnnouncement::whereId($campaignId)->update(['validated_at' => $p['paid_at']]); // p/ garantir que é o exato mesmo tempo
             }
 
             Log::info('Webhook pix: Status do pagamento atualizados com sucesso', [

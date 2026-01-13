@@ -205,15 +205,26 @@ body {
     flex-wrap: wrap;
     max-height: 63px; /* Adjust this to fit exactly 2 lines of badges */
     overflow: hidden;
-    transition: max-height 0.8s ease-in-out;
+    transition: max-height 0.3s ease-in-out;
 
+    cursor: pointer;
     @apply relative bottom-2;
 }
 
-/* Expands the height when hovering over the cell */
-.line-clamp-expandable:hover {
+.line-clamp-expandable:hover,
+.line-clamp-expandable:focus,
+.line-clamp-expandable:focus-within {
     max-height: 500px;
     overflow: visible;
+}
+
+/* Optional: remove focus ring if Filament adds one */
+.line-clamp-expandable:focus {
+    outline: none;
+}
+
+.campaign-name-entry .fi-icon {
+    @apply mb-2 stroke-2;
 }
 
 .fi-ta-text-item .fi-icon {

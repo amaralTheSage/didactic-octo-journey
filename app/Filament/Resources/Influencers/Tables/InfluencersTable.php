@@ -39,7 +39,7 @@ class InfluencersTable
 
     public static function configure(Table $table): Table
     {
-        $table->recordAction('viewInfluencerDetails');
+        $table->recordAction(null);
 
         return $table
             ->columns([
@@ -60,12 +60,13 @@ class InfluencersTable
                     // ->limitList(1)
                     // ->expandableLimitedList()
 
-                    ->wrap()
+                    ->wrap()->grow(false)->width('40%')
                     ->state(function (Model $record) {
                         return $record->subcategories->pluck('title')->join(',');
                     })
                     ->extraAttributes([
                         'class' => 'line-clamp-expandable',
+                        'tabindex' => '0',
                     ]),
                 // ->tooltip(
                 //     fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
@@ -113,7 +114,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -150,7 +151,7 @@ class InfluencersTable
                         ->action(function (EloquentCollection $records, array $data) {
                             // Group influencers by agency
                             $influencersByAgency = $records->groupBy(
-                                fn ($influencer) => $influencer->influencer_info->agency_id
+                                fn($influencer) => $influencer->influencer_info->agency_id
                             );
 
                             $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
@@ -172,7 +173,7 @@ class InfluencersTable
                                 User::find($agencyId)->notify(
                                     Notification::make()
                                         ->title('Nova proposta de campanha')
-                                        ->body(Auth::user()->name.' enviou uma proposta para '.$campaign->name)
+                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
                                         ->toDatabase()
                                 );
                             }

@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
+use App\Models\CampaignAnnouncement;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Icons\Heroicon;
 
 class CreateCampaignAnnouncement extends CreateRecord
 {
@@ -35,10 +37,14 @@ class CreateCampaignAnnouncement extends CreateRecord
             ->title('Campanha criada com sucesso')
             ->body('Gostaria de validar esta campanha agora?')
             ->actions([
-                // Action::make('validateNow')
-                //     ->label('Validar')
-                //     ->color('success')
-                //     ->action(fn () => dump('foi')),
+                Action::make('validateNow')
+                    ->label(fn() => $this->record->validated_at ? 'Campanha Validada' : 'Validar')
+                    ->color(fn() => $this->record->validated_at ? 'secondary' : 'success')
+                    ->icon(Heroicon::OutlinedCheckBadge)
+                    ->disabled(fn() => $this->record->validated_at)
+                    ->url(
+                        route('payments.qrcode') . '?campaign_id=' . $this->record->id
+                    ),
             ])
             ->send()
             ->toDatabase();
