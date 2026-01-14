@@ -1,6 +1,7 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
+import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
 import { Briefcase, DollarSign, Users, Zap } from 'lucide-react';
 import LandingsLayout from './landings-layouts';
 
@@ -56,6 +57,39 @@ export default function ParaAgencias() {
         },
     ];
 
+    const statsItems = [
+        {
+            title: 'Gestão de Propostas',
+            description:
+                'Envie e acompanhe múltiplas propostas simultaneamente. Mantenha um histórico completo de todas as negociações em andamento e encerradas.',
+            bullets: [
+                'Versionamento de Propostas',
+                'Status em Tempo Real',
+                'Exportação PDF',
+            ],
+        },
+        {
+            title: 'Performance do Casting',
+            description:
+                'Compare o desempenho dos seus influenciadores lado a lado para identificar quem está entregando o melhor ROI para as marcas.',
+            bullets: [
+                'Rankings Internos',
+                'Histórico de Engajamento',
+                'Taxa de Aprovação',
+            ],
+        },
+        {
+            title: 'Financeiro Automatizado',
+            description:
+                'Simplifique o repasse de cachês. O sistema calcula automaticamente as comissões da agência e gera os valores líquidos para os influenciadores.',
+            bullets: [
+                'Split de Pagamento',
+                'Notas Fiscais',
+                'Extrato Unificado',
+            ],
+        },
+    ];
+
     return (
         <LandingsLayout>
             <Hero
@@ -83,6 +117,13 @@ export default function ParaAgencias() {
                 headingStart="Operação de escala"
                 headingHighlight="simplificada."
                 slides={slides}
+            />
+
+            <StatsAccordion
+                eyebrow="AGENCY OS"
+                headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
+                description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
+                items={statsItems}
             />
         </LandingsLayout>
     );

@@ -1,6 +1,7 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
+import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
 import { Bell, Camera, CreditCard, Star } from 'lucide-react';
 import LandingsLayout from './landings-layouts';
 
@@ -55,6 +56,34 @@ export default function ParaInfluenciadores() {
             tags: ['EXTRATO', 'TRANSPARÊNCIA', 'PREVISIBILIDADE'],
         },
     ];
+    const statsItems = [
+        {
+            title: 'Media Kit Vivo',
+            description:
+                'Seu perfil é atualizado automaticamente com suas métricas mais recentes do Instagram e TikTok. Nunca mais envie um PDF desatualizado.',
+            bullets: [
+                'Sincronização via API',
+                'Link Compartilhável',
+                'Design Premium',
+            ],
+        },
+        {
+            title: 'Negociação Segura',
+            description:
+                'Todas as conversas e acordos ficam registrados na plataforma. Contratos digitais protegem seu trabalho e garantem o recebimento.',
+            bullets: ['Chat Auditável', 'Contrato Digital', 'Suporte Jurídico'],
+        },
+        {
+            title: 'Previsibilidade',
+            description:
+                'Visualize seu fluxo de caixa futuro. Saiba exatamente quanto e quando você vai receber pelos jobs realizados.',
+            bullets: [
+                'Calendário de Recebimentos',
+                'Notificações de Pagamento',
+                'Histórico Financeiro',
+            ],
+        },
+    ];
 
     return (
         <LandingsLayout>
@@ -83,6 +112,12 @@ export default function ParaInfluenciadores() {
                 headingStart="Sua criatividade"
                 headingHighlight="profissionalizada."
                 slides={slides}
+            />{' '}
+            <StatsAccordion
+                eyebrow="CREATOR STUDIO"
+                headlineParts={['Crie.', 'Engaje.', 'Fature.']}
+                description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
+                items={statsItems}
             />
         </LandingsLayout>
     );

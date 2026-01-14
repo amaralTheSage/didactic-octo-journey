@@ -1,6 +1,7 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
+import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
 import {
     FileSearch,
     MessageSquare,
@@ -60,6 +61,38 @@ export default function ParaEmpresas() {
             tags: ['BUSCA AVANÇADA', 'FILTROS REAIS', 'AUDITADO'],
         },
     ];
+    const statsItems = [
+        {
+            title: 'Análise de Mercado',
+            description:
+                'Dashboards abrangentes cobrindo alcance, engajamento e conversão. Analisamos volume e tendências históricas para te dar a vantagem competitiva.',
+            bullets: [
+                'KPIs em Tempo Real',
+                'Análise de Sentimento',
+                'Relatórios Diários',
+            ],
+        },
+        {
+            title: 'Previsão de Custos',
+            description:
+                'Algoritmos inteligentes que estimam o custo ideal por engajamento baseado no histórico de milhares de campanhas no marketplace.',
+            bullets: [
+                'Benchmarking de Preços',
+                'Estimativa de ROI',
+                'Alocação de Budget',
+            ],
+        },
+        {
+            title: 'Auditoria de Entrega',
+            description:
+                'Sistema automatizado que verifica se os stories e reels contratados foram postados e mantidos no ar pelo tempo acordado.',
+            bullets: [
+                'Verificação Automática',
+                'Alertas de Discrepância',
+                'Backup de Conteúdo',
+            ],
+        },
+    ];
 
     return (
         <LandingsLayout>
@@ -87,6 +120,12 @@ export default function ParaEmpresas() {
                 headingStart="Gestão moderna encontra"
                 headingHighlight="dados reais."
                 slides={slides}
+            />{' '}
+            <StatsAccordion
+                eyebrow="ANALYTICS CORE"
+                headlineParts={['Metrifique.', 'Otimize.', 'Escale.']}
+                description="Infraestrutura de dados que adapta suas campanhas em tempo real sem comprometer o budget ou a qualidade da entrega."
+                items={statsItems}
             />
         </LandingsLayout>
     );
