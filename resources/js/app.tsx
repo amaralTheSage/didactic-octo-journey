@@ -1,5 +1,4 @@
 import '../css/app.css';
-import '../css/filament/admin/theme.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { configureEcho } from '@laravel/echo-react';

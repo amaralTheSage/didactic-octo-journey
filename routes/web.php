@@ -12,16 +12,16 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/para-agencias', function () {
-    return Inertia::render('landings/para-agencias');
-});
+    return Inertia::render('dedicated-landings/para-agencias');
+})->name('para_agencias');
 
 Route::get('/para-empresas', function () {
-    return Inertia::render('landings/para-empresas');
-});
+    return Inertia::render('dedicated-landings/para-empresas');
+})->name('para_empresas');
 
 Route::get('/para-influenciadores', function () {
-    return Inertia::render('landings/para-influenciadores');
-});
+    return Inertia::render('dedicated-landings/para-influenciadores');
+})->name('para_influenciadores');
 
 Route::get('/login', function () {
     return redirect('/dashboard/login');
