@@ -31,7 +31,7 @@ export default function Hero({
                                 Plataforma verificada
                             </p>
                             <h3 className="text-2xl leading-tight font-bold">
-                                Hubinflu &copy; 2024
+                                Hubinflu &copy; 2026
                             </h3>
                             <p className="mt-1 text-xs text-white/70">
                                 Conectando o mercado brasileiro.
