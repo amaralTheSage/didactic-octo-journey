@@ -22,6 +22,7 @@ export default function Hero({
                         alt="Hero visual"
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                     />
+
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40"></div>
 
                     {/* Bottom Text/CTA on Image */}
@@ -56,7 +57,7 @@ export default function Hero({
 
                     {/* Description & CTA */}
                     <div className="justify-items mb-12 flex flex-col items-end gap-8 md:flex-row md:justify-between">
-                        <button className="group group relative flex items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium tracking-wider whitespace-nowrap text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-primary">
+                        <button className="group group relative flex cursor-pointer items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium tracking-wider whitespace-nowrap text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-primary">
                             {ctaText}
                             <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75"></span>

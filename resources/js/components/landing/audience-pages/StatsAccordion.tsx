@@ -1,4 +1,4 @@
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface AccordionItem {
@@ -85,11 +85,11 @@ export default function StatsAccordion({
                                     <button
                                         className={`flex h-12 w-12 cursor-pointer items-center justify-center rounded-full transition-all duration-300 ${
                                             isOpen
-                                                ? 'rotate-0 bg-slate-950 text-white'
-                                                : '-rotate-45 border border-cyan-700 text-cyan-700 group-hover:border-slate-600 group-hover:text-slate-600'
+                                                ? 'rotate-0 text-slate-950'
+                                                : '-rotate-90 text-cyan-700'
                                         }`}
                                     >
-                                        <ArrowRight size={20} />
+                                        <ChevronDown size={28} />
                                     </button>
                                 </div>
 

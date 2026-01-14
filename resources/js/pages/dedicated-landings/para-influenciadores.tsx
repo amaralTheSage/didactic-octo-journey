@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
 import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
@@ -103,22 +104,30 @@ export default function ParaInfluenciadores() {
                 floatingCardSubtitle="Seu media kit atualizado automaticamente."
                 ctaText="Sou Criador"
             />
-            <Advantages
-                title="Carreira em Ascensão"
-                subtitle="Tudo o que você precisa para profissionalizar sua jornada e fechar parcerias duradouras."
-                items={advantages}
-            />
-            <FeatureCarousel
-                headingStart="Sua criatividade"
-                headingHighlight="profissionalizada."
-                slides={slides}
-            />{' '}
-            <StatsAccordion
-                eyebrow="CREATOR STUDIO"
-                headlineParts={['Crie.', 'Engaje.', 'Fature.']}
-                description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
-                items={statsItems}
-            />
+            <FadeInEffect>
+                <Advantages
+                    title="Carreira em Ascensão"
+                    subtitle="Tudo o que você precisa para profissionalizar sua jornada e fechar parcerias duradouras."
+                    items={advantages}
+                />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Sua criatividade"
+                    headingHighlight="profissionalizada."
+                    slides={slides}
+                />{' '}
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <StatsAccordion
+                    eyebrow="CREATOR STUDIO"
+                    headlineParts={['Crie.', 'Engaje.', 'Fature.']}
+                    description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
+                    items={statsItems}
+                />
+            </FadeInEffect>
         </LandingsLayout>
     );
 }

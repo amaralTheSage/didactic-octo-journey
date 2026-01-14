@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
 import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
@@ -108,23 +109,30 @@ export default function ParaAgencias() {
                 floatingCardSubtitle="Comissões de R$ 45k validadas este mês."
                 ctaText="Cadastrar Agência"
             />
-            <Advantages
-                title="Potencialize sua Agência"
-                subtitle="Recursos desenvolvidos para escalar sua operação e facilitar a gestão do seu casting."
-                items={advantages}
-            />
-            <FeatureCarousel
-                headingStart="Operação de escala"
-                headingHighlight="simplificada."
-                slides={slides}
-            />
+            <FadeInEffect>
+                <Advantages
+                    title="Potencialize sua Agência"
+                    subtitle="Recursos desenvolvidos para escalar sua operação e facilitar a gestão do seu casting."
+                    items={advantages}
+                />
+            </FadeInEffect>
 
-            <StatsAccordion
-                eyebrow="AGENCY OS"
-                headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
-                description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
-                items={statsItems}
-            />
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Operação de escala"
+                    headingHighlight="simplificada."
+                    slides={slides}
+                />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <StatsAccordion
+                    eyebrow="AGENCY OS"
+                    headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
+                    description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
+                    items={statsItems}
+                />
+            </FadeInEffect>
         </LandingsLayout>
     );
 }

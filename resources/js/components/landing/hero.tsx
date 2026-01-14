@@ -1,4 +1,100 @@
 import { TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+const HeadlineTypewriter = ({
+    prefix,
+    highlight,
+    suffix,
+}: {
+    prefix: string;
+    highlight: string;
+    suffix?: string;
+}) => {
+    const [t1, setT1] = useState('');
+    const [t2, setT2] = useState('');
+    const [t3, setT3] = useState('');
+    const [activeLine, setActiveLine] = useState(1);
+    const [isDone, setIsDone] = useState(false);
+
+    useEffect(() => {
+        let timeoutId: ReturnType<typeof setTimeout>;
+        let charIndex = 0;
+        let currentLine = 1;
+
+        // Reset
+        setT1('');
+        setT2('');
+        setT3('');
+        setActiveLine(1);
+        setIsDone(false);
+
+        const type = () => {
+            if (currentLine === 1) {
+                if (charIndex < prefix.length) {
+                    setT1(prefix.slice(0, charIndex + 1));
+                    charIndex++;
+                    timeoutId = setTimeout(type, 50);
+                } else {
+                    currentLine = 2;
+                    charIndex = 0;
+                    setActiveLine(2);
+                    timeoutId = setTimeout(type, 150);
+                }
+            } else if (currentLine === 2) {
+                if (charIndex < highlight.length) {
+                    setT2(highlight.slice(0, charIndex + 1));
+                    charIndex++;
+                    timeoutId = setTimeout(type, 50);
+                } else {
+                    if (suffix) {
+                        currentLine = 3;
+                        charIndex = 0;
+                        setActiveLine(3);
+                        timeoutId = setTimeout(type, 150);
+                    } else {
+                        setActiveLine(0);
+                        setIsDone(true);
+                    }
+                }
+            } else if (currentLine === 3 && suffix) {
+                if (charIndex < suffix.length) {
+                    setT3(suffix.slice(0, charIndex + 1));
+                    charIndex++;
+                    timeoutId = setTimeout(type, 50);
+                } else {
+                    setActiveLine(0);
+                    setIsDone(true);
+                }
+            }
+        };
+
+        timeoutId = setTimeout(type, 500);
+        return () => clearTimeout(timeoutId);
+    }, [prefix, highlight, suffix]);
+
+    const Cursor = () => (
+        <span className="ml-1 inline-block h-[0.7em] w-[0.06em] animate-pulse bg-slate-950 align-baseline md:h-[0.75em]"></span>
+    );
+
+    return (
+        <h1 className="mb-6 text-6xl leading-[0.95] font-medium tracking-tighter text-slate-950 md:text-8xl">
+            <span className="block">
+                {t1}
+                {activeLine === 1 && <Cursor />}
+            </span>
+            <span className="block text-slate-400">
+                {t2}
+                {(activeLine === 2 || (isDone && !suffix)) && <Cursor />}
+            </span>
+            {suffix && (
+                <span className="block">
+                    {t3}
+                    {(activeLine === 3 || isDone) && <Cursor />}
+                </span>
+            )}
+        </h1>
+    );
+};
 
 export default function Hero() {
     return (
@@ -6,15 +102,12 @@ export default function Hero() {
             <div className="container mx-auto px-6 md:px-12">
                 {/* Text Header */}
                 <div className="mb-12 flex flex-col items-end justify-between gap-8 md:mb-20 md:flex-row">
-                    <div className="max-w-4xl">
-                        <h1 className="mb-6 text-6xl leading-[0.95] font-medium tracking-tighter md:text-8xl">
-                            Orquestrando <br />
-                            <span className="text-gray-400">
-                                a publicidade
-                            </span>{' '}
-                            <br />
-                            no Brasil
-                        </h1>
+                    <div className="h-76 max-w-4xl">
+                        <HeadlineTypewriter
+                            prefix={'Orquestrando'}
+                            highlight={'a publicidade'}
+                            suffix={'no Brasil'}
+                        />
                     </div>
 
                     <div className="mb-2 flex flex-col items-start gap-6 md:items-end">
@@ -24,7 +117,7 @@ export default function Hero() {
                             segurança PIX.
                         </p>
                         <button
-                            className="group flex items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium text-white transition-all hover:scale-105"
+                            className="group flex cursor-pointer items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium text-white transition-all hover:scale-105"
                             onClick={() =>
                                 document
                                     .getElementById('audience-grid')

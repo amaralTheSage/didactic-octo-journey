@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
 import StatsAccordion from '@/components/landing/audience-pages/StatsAccordion';
@@ -111,22 +112,31 @@ export default function ParaEmpresas() {
                 floatingCardSubtitle="Alcance previsto de +2.4M no Q3 baseado em propostas."
                 ctaText="Anunciar Campanha"
             />
-            <Advantages
-                title="A Vantagem Corporativa"
-                subtitle="Ferramentas construídas para garantir segurança, transparência e eficiência em cada campanha."
-                items={advantages}
-            />
-            <FeatureCarousel
-                headingStart="Gestão moderna encontra"
-                headingHighlight="dados reais."
-                slides={slides}
-            />{' '}
-            <StatsAccordion
-                eyebrow="ANALYTICS CORE"
-                headlineParts={['Metrifique.', 'Otimize.', 'Escale.']}
-                description="Infraestrutura de dados que adapta suas campanhas em tempo real sem comprometer o budget ou a qualidade da entrega."
-                items={statsItems}
-            />
+
+            <FadeInEffect>
+                <Advantages
+                    title="A Vantagem Corporativa"
+                    subtitle="Ferramentas construídas para garantir segurança, transparência e eficiência em cada campanha."
+                    items={advantages}
+                />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Gestão moderna encontra"
+                    headingHighlight="dados reais."
+                    slides={slides}
+                />{' '}
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <StatsAccordion
+                    eyebrow="ANALYTICS CORE"
+                    headlineParts={['Metrifique.', 'Otimize.', 'Escale.']}
+                    description="Infraestrutura de dados que adapta suas campanhas em tempo real sem comprometer o budget ou a qualidade da entrega."
+                    items={statsItems}
+                />
+            </FadeInEffect>
         </LandingsLayout>
     );
 }
