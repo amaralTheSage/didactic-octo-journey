@@ -94,7 +94,7 @@ export default function ParaAgencias() {
     return (
         <LandingsLayout>
             <Hero
-                role="AGENCY"
+                role="Agências"
                 headlineTop="GESTÃO DE"
                 headlineBottom="PORTFÓLIO"
                 subPillText="ESCALE"

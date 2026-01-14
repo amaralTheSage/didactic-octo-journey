@@ -47,7 +47,7 @@ export default function Testimonials() {
     const current = testimonials[currentIndex];
 
     return (
-        <section className="relative mt-32 overflow-hidden bg-secondary/30 py-32 text-gray-900 md:mt-44 md:py-48">
+        <section className="relative mt-32 overflow-hidden bg-secondary/30 py-60 text-gray-900 md:mt-44 md:py-48">
             {/* Background Ambience - Subtle Light Blue Glow */}
             <div className="pointer-events-none absolute top-0 left-1/2 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-blue-300/30 mix-blend-multiply blur-[120px]" />
 

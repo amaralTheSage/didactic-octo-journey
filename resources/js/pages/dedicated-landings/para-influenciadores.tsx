@@ -89,7 +89,7 @@ export default function ParaInfluenciadores() {
     return (
         <LandingsLayout>
             <Hero
-                role="INFLUENCER"
+                role="Influenciadores"
                 headlineTop="SUA VOZ"
                 headlineBottom="VALORIZADA"
                 subPillText="MONETIZE"

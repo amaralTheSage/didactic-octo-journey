@@ -23,6 +23,12 @@ export default function Hero({
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                     />
 
+                    <div className="absolute top-6 left-6">
+                        <div className="rounded border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white uppercase backdrop-blur-xs">
+                            {role}
+                        </div>
+                    </div>
+
                     <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40"></div>
 
                     {/* Bottom Text/CTA on Image */}

@@ -98,7 +98,7 @@ export default function ParaEmpresas() {
     return (
         <LandingsLayout>
             <Hero
-                role="COMPANY"
+                role="Empresas"
                 headlineTop="Campanhas"
                 headlineBottom="Eficientes"
                 description="Lance campanhas para o público brasileiro, receba propostas de agências de elite e valide pagamentos via PIX para prioridade máxima no marketplace."
