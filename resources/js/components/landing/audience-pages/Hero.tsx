@@ -13,7 +13,7 @@ export default function Hero({
 }) {
     return (
         <section className="min-h-screen overflow-hidden bg-white px-4 pt-24 pb-12 text-slate-900 md:px-8">
-            <div className="mx-auto grid grid-cols-1 items-center gap-12 lg:grid-cols-5 lg:gap-20">
+            <div className="mx-auto grid grid-cols-1 items-center lg:grid-cols-5 lg:gap-20">
                 {/* Left Column */}
 
                 <div className="group relative col-span-2 h-[600px] w-full overflow-hidden shadow-2xl shadow-slate-200 md:h-[750px]">
@@ -45,9 +45,9 @@ export default function Hero({
                 </div>
 
                 {/* Right Column  */}
-                <div className="z-10 col-span-3 flex flex-col text-end">
+                <div className="relative bottom-7 z-10 col-span-3 flex flex-col text-end lg:bottom-0">
                     <div className="max-w-4xl">
-                        <h1 className="tracking-loose mb-6 text-6xl leading-[0.95] font-medium md:text-8xl">
+                        <h1 className="tracking-loose mb-6 text-7xl leading-[0.95] font-medium md:text-8xl">
                             {headlineTop} <br />
                             <span className="font-semibold text-secondary">
                                 {headlineBottom}
@@ -71,7 +71,7 @@ export default function Hero({
                     </div>
 
                     {/* Stats Row */}
-                    <div className="mb-12 grid grid-cols-3 gap-8">
+                    <div className="wrap mb-12 flex flex-wrap justify-around gap-12">
                         {stats.map((stat, idx) => (
                             <div key={idx} className="flex items-end">
                                 <span className="mr-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">

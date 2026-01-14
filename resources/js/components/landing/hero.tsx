@@ -101,8 +101,8 @@ export default function Hero() {
         <section className="relative w-full overflow-hidden pt-24 pb-32 md:pt-40 md:pb-44">
             <div className="container mx-auto px-6 md:px-12">
                 {/* Text Header */}
-                <div className="mb-12 flex flex-col items-end justify-between gap-8 md:mb-20 md:flex-row">
-                    <div className="h-76 max-w-4xl">
+                <div className="mb-12 flex flex-col justify-between gap-8 md:mb-20 md:flex-row md:items-end">
+                    <div className="max-w-4xl md:h-76">
                         <HeadlineTypewriter
                             prefix={'Orquestrando'}
                             highlight={'a publicidade'}
@@ -130,7 +130,7 @@ export default function Hero() {
                 </div>
 
                 {/* Hero Image */}
-                <div className="group relative aspect-[4/3] w-full overflow-hidden md:aspect-[21/9]">
+                <div className="group relative hidden aspect-[21/9] w-full overflow-hidden md:block">
                     {/* Main Abstract/Artistic Image */}
                     <img
                         src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"

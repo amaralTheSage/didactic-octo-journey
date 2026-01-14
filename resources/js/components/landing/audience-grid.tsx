@@ -27,7 +27,7 @@ const AudienceGrid: React.FC = () => {
                         <img
                             src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                             alt="Agencies"
-                            className="absolute inset-0 h-full w-full object-cover brightness-[0.8] grayscale filter transition-transform duration-700 group-hover:scale-110 group-hover:brightness-100 group-hover:grayscale-0"
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-100 group-hover:grayscale-0 md:brightness-[0.8] md:grayscale md:filter"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
 
@@ -48,7 +48,7 @@ const AudienceGrid: React.FC = () => {
                                 Gestão de <br />
                                 Portfólio
                             </h3>
-                            <p className="max-w-[80%] translate-y-4 transform text-sm text-gray-300 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                            <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
                                 Gerencie múltiplos influenciadores, envie
                                 propostas em massa e negocie comissões em tempo
                                 real.
@@ -59,12 +59,12 @@ const AudienceGrid: React.FC = () => {
                     {/* Companies  */}
                     <Link
                         href="/para-empresas"
-                        className="group relative min-h-[300px] flex-1 cursor-pointer overflow-hidden bg-gray-900"
+                        className="group relative h-[500px] flex-1 cursor-pointer overflow-hidden bg-gray-900 md:h-full"
                     >
                         <img
                             src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
                             alt="Companies"
-                            className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-110 group-hover:opacity-80"
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
                         />
 
                         <div className="absolute top-6 right-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -85,7 +85,7 @@ const AudienceGrid: React.FC = () => {
                                 <br />
                                 Global
                             </h3>
-                            <p className="max-w-[80%] translate-y-4 transform text-sm text-gray-300 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                            <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
                                 Gerencie e anuncie suas campanhas com acesso
                                 direto aos maiores influenciadores e agências do
                                 Brasil.
@@ -101,7 +101,7 @@ const AudienceGrid: React.FC = () => {
                         <img
                             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop"
                             alt="Influencers"
-                            className="absolute inset-0 h-full w-full object-cover grayscale filter transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0"
+                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
 
@@ -122,7 +122,7 @@ const AudienceGrid: React.FC = () => {
                                 Monetize Sua <br />
                                 Audiência
                             </h3>
-                            <p className="max-w-[80%] translate-y-4 transform text-sm text-gray-300 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                            <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
                                 Conecte-se com grandes marcas, defina seus
                                 preços de tabela e receba com segurança.
                             </p>
