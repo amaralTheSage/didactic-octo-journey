@@ -389,7 +389,7 @@ class EditProposalAction extends Action
                     'reels_price' => $formatPrice($influencer->pivot->reels_price ?? $influencer->influencer_info?->reels_price),
                     'stories_price' => $formatPrice($influencer->pivot->stories_price ?? $influencer->influencer_info?->stories_price),
                     'carrousel_price' => $formatPrice($influencer->pivot->carrousel_price ?? $influencer->influencer_info?->carrousel_price),
-                    'commission_cut' => $influencer->pivot->commission_cut ?? $influencer->influencer_info?->commission_cut ?? 0,
+                    'commission_cut' => $influencer->pivot->commission_cut ?? $influencer->influencer_info?->commission_cut,
                 ])
                 ->toArray();
 
@@ -400,6 +400,8 @@ class EditProposalAction extends Action
 
         $this->action(function ($record, array $data) {
             try {
+
+
                 // --- capture "before" ---
                 $beforeProposal = Arr::only($record->attributesToArray(), [
                     'message',
@@ -420,6 +422,7 @@ class EditProposalAction extends Action
                             'commission_cut' => (int) $inf->pivot->commission_cut,
                         ],
                     ])->toArray();
+
 
                 // --- update proposal fields (defensive) ---
                 $record->update(array_filter([
