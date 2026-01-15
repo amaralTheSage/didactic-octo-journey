@@ -3,7 +3,6 @@
         use Illuminate\Support\HtmlString;
 
         $numericFields = [
-            'budget',
             'commission_cut',
             'proposed_agency_cut',
             'n_reels',
@@ -15,6 +14,7 @@
         ];
 
         $moneyFields = [
+            'budget',
             'reels_price',
             'stories_price',
             'carrousel_price',
@@ -25,7 +25,7 @@
             return in_array($field, $numericFields, true);
         }
 
-        function formatValue($value, string $field, array $moneyFields): string
+        function formatValue($value, string $field, array $moneyFields, array $numericFields): string
         {
             if ($value === null || $value === '—') {
                 return '—';
@@ -35,6 +35,10 @@
                 return app(\App\Helpers\BRLFormatter::class)((float) $value);
             }
 
+            if (in_array($field, $numericFields, true) && !in_array($field, $moneyFields, true)) {
+                $value = (int) $value;
+            }
+
             if ($field === 'commission_cut' || $field === 'proposed_agency_cut') {
                 return $value . '%';
             }
@@ -42,8 +46,12 @@
             return (string) $value;
         }
 
-        function differenceIndicator(float $difference, bool $monetary): ?HtmlString
-        {
+        function differenceIndicator(
+            float $difference,
+            string $field,
+            array $moneyFields,
+            array $numericFields
+        ): ?HtmlString {
             if ($difference === 0.0) {
                 return null;
             }
@@ -52,14 +60,17 @@
                 ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up mb-0.5"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>'
                 : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down mb-0.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
 
-            $value = $monetary
-                ? app(\App\Helpers\BRLFormatter::class)(abs($difference))
-                : number_format(abs($difference), 2);
+            $formatted = formatValue(
+                abs($difference),
+                $field,
+                $moneyFields,
+                $numericFields
+            );
 
             return new HtmlString(
                 '<span class="text-secondary text-xs flex items-end gap-1">'
-                . $value .
-                $arrow .
+                . $formatted
+                . $arrow .
                 '</span>'
             );
         }
@@ -92,40 +103,43 @@
 
                         {{-- Approval --}}
                         @if ($approval = $log->changes['approval'] ?? null)
-                                <div class="text-xs text-muted-foreground">
-                                    {{ match ($approval['role']) {
-                                'company' => 'A empresa',
-                                'agency' => 'A agência',
-                                'influencer' => 'O influenciador',
-                                default => 'O usuário',
-                            } }}
+                            <div class="text-xs text-muted-foreground">
+                                {{ match ($approval['role']) {
+                                    'company' => 'A empresa',
+                                    'agency' => 'A agência',
+                                    'influencer' => 'O influenciador',
+                                    default => 'O usuário',
+                                } }}
 
-                                    <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
-                                        {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
-                                    </span>
-                                    a proposta
-                                </div>
+                                <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
+                                    {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
+                                </span>
+                                a proposta
+                            </div>
                         @endif
 
                         {{-- Proposal changes --}}
                         @foreach ($log->changes['proposal'] ?? [] as $field => $change)
                             @php
-                                if (!isNumericChange($field, $numericFields))
-                                    continue;
+                                if (!isNumericChange($field, $numericFields)) continue;
 
                                 $from = $change['from'] ?? '—';
                                 $to = $change['to'] ?? '—';
 
-                                $monetary = in_array($field, $moneyFields, true);
-                                $diff = differenceIndicator((float) $to - (float) $from, $monetary);
+                                $diff = differenceIndicator(
+                                    (float) $to - (float) $from,
+                                    $field,
+                                    $moneyFields,
+                                    $numericFields
+                                );
                             @endphp
 
                             <div class="flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{{ __('proposal_fields.' . $field) }}</span>
-                                <span>{{ formatValue($from, $field, $moneyFields) }}</span>
+                                <span>{{ formatValue($from, $field, $moneyFields, $numericFields) }}</span>
                                 <span>→</span>
                                 <span class="font-medium text-foreground">
-                                    {{ formatValue($to, $field, $moneyFields) }}
+                                    {{ formatValue($to, $field, $moneyFields, $numericFields) }}
                                 </span>
                                 {!! $diff !!}
                             </div>
@@ -152,16 +166,18 @@
 
                                 @foreach ($fieldSource as $field => $data)
                                     @php
-                                        if (!isNumericChange($field, $numericFields))
-                                            continue;
-
-                                        $monetary = in_array($field, $moneyFields, true);
+                                        if (!isNumericChange($field, $numericFields)) continue;
 
                                         $from = $isRemoved ? $data : ($data['from'] ?? '—');
                                         $to = $isAdded ? $data : ($data['to'] ?? '—');
 
                                         $diff = (!$isRemoved && !$isAdded)
-                                            ? differenceIndicator((float) $to - (float) $from, $monetary)
+                                            ? differenceIndicator(
+                                                (float) $to - (float) $from,
+                                                $field,
+                                                $moneyFields,
+                                                $numericFields
+                                            )
                                             : null;
                                     @endphp
 
@@ -169,7 +185,7 @@
                                         <span>{{ __('proposal_fields.' . $field) }}:</span>
 
                                         @if (!$isAdded)
-                                            <span>{{ formatValue($from, $field, $moneyFields) }}</span>
+                                            <span>{{ formatValue($from, $field, $moneyFields, $numericFields) }}</span>
                                         @endif
 
                                         @if (!$isRemoved && !$isAdded)
@@ -178,7 +194,7 @@
 
                                         @if (!$isRemoved)
                                             <span class="font-medium text-foreground">
-                                                {{ formatValue($to, $field, $moneyFields) }}
+                                                {{ formatValue($to, $field, $moneyFields, $numericFields) }}
                                             </span>
                                         @endif
 

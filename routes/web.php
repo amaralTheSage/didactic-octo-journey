@@ -25,7 +25,7 @@ Route::get('/para-influenciadores', function () {
 
 Route::get('/login', function () {
     return redirect('/dashboard/login');
-})->name(`login`);
+})->name('login');
 
 Route::get('/payments/getqrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
@@ -51,4 +51,4 @@ Route::middleware('auth')
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';
