@@ -400,8 +400,6 @@ class EditProposalAction extends Action
 
         $this->action(function ($record, array $data) {
             try {
-
-
                 // --- capture "before" ---
                 $beforeProposal = Arr::only($record->attributesToArray(), [
                     'message',

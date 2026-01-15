@@ -24,11 +24,16 @@ class CancelExpiredPayments extends Command
     {
         Log::alert('Cancelando pagamentos expirados');
 
-        $count = Payment::whereStatus(PaymentStatus::PENDING)
-            ->where('expires_at', '<=', now())
-            ->update([
-                'status' => PaymentStatus::CANCELLED,
-            ]);
+        $pending = Payment::whereStatus(PaymentStatus::PENDING)
+            ->where('expires_at', '<=', now());
+
+        $count = $pending->count();
+
+        $pending->update([
+            'status' => PaymentStatus::CANCELLED,
+        ]);
+
+        Log::alert("{$count} pagamentos foram cancelados.");
 
         $this->info("{$count} pagamentos foram cancelados.");
 

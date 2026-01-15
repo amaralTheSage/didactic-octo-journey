@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::call(function () {
     Artisan::call('payments:cancel-expired');
-})->everyFiveMinutes(); // change to daily
+})->daily(); // change to daily
