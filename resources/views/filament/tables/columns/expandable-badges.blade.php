@@ -1,22 +1,21 @@
-<div>
-    {{ $limit }}
-    <div class="flex flex-wrap gap-1 transition-all duration-300 ease-in-out">
-        @if(is_array($getState()) || is_object($getState()))
-            @foreach ($getState() as $item)
-                @if ($loop->index < $limit)
-                    <x-filament::badge size=" sm">
-                        {{ $item }}
-                    </x-filament::badge>
-                @endif                
-            @endforeach
-        @endif
-    </div>
+<div 
+    x-data="{ 
+        state: @js($getState()?->pluck('title')->toArray() ?? []), 
+        expanded: false, 
+        limit: {{ $getLimit() }} 
+    }"
+    class="flex flex-wrap min-w-80 gap-1 py-2 items-center"
+>
 
-    @if (count($getState()) > $limit)
+    <template x-for="item in (expanded ? state : state.slice(0, limit))" >
+        <x-filament::badge size="sm" x-text="item"></x-filament::badge>
+    </template>
+
+    <div x-show="state.length > limit" class="ml-auto mr-6">
         <button 
-            wire:click="toggleExpand"
-            class="text-xs font-medium text-primary-600 hover:text-primary-500 hover:underline mt-1 focus:outline-none"
-            x-text="expanded ? 'Show less' : 'Show more'">
-        </button>
-    @endif
+            @click.prevent="expanded = !expanded" 
+            class="text-xs font-medium text-secondary hover:underline focus:outline-none"
+            x-text="expanded ? 'Mostrar Menos' : 'Mostrar Mais'"
+        ></button>
+    </div>
 </div>

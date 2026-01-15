@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Influencers\Tables;
 
 use App\Actions\Filament\ViewInfluencerDetails;
 use App\Enums\UserRoles;
+use App\Filament\Tables\Columns\ExpandableBadges;
 use App\Models\CampaignAnnouncement;
 use App\Models\Category;
 use App\Models\Proposal;
@@ -51,26 +52,8 @@ class InfluencersTable
                 TextColumn::make('influencer_info.agency.name')->label('Agência')->default('___')
                     ->searchable(),
 
-                TextColumn::make('subcategories')
-                    ->label('Categorias')
-                    ->placeholder('-')
-                    ->badge()
-                    ->separator(',')
-                    // ->listWithLineBreaks()
-                    // ->limitList(1)
-                    // ->expandableLimitedList()
 
-                    ->wrap()->grow(false)->width('40%')
-                    ->state(function (Model $record) {
-                        return $record->subcategories->pluck('title')->join(',');
-                    })
-                    ->extraAttributes([
-                        'class' => 'line-clamp-expandable',
-                        'tabindex' => '0',
-                    ]),
-                // ->tooltip(
-                //     fn(Model $record) => $record->subcategories->pluck('title')->join(', ')
-                // ),
+                ExpandableBadges::make('subcategories')->label('Subcategorias')->limit(6)->width('40%'),
 
                 TextColumn::make('total_followers')
                     ->label('Seguidores')

@@ -362,9 +362,6 @@ th {
     @apply rounded-b-[1.1rem] border border-border bg-card;
 }
 
-.fi-ta-header-adaptive-actions-position {
-}
-
 .fi-section {
     @apply bg-card;
 }

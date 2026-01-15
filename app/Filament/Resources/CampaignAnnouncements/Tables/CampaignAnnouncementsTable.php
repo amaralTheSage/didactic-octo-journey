@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CampaignAnnouncements\Tables;
 use App\Actions\Filament\EditProposalAction;
 use App\Actions\Filament\ViewProposal;
 use App\Enums\PaymentStatus;
+use App\Filament\Tables\Columns\ExpandableBadges;
 use App\Helpers\ProposedBudgetCalculator;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -102,22 +103,19 @@ class CampaignAnnouncementsTable
                 ImageColumn::make('company.avatar_url')->circular()->label(' ')->toggleable()
                     ->visible(fn($livewire) => Gate::denies('is_company') && self::anTab($livewire)),
 
-                TextColumn::make('subcategories')
-                    ->label('Categorias')
-                    ->placeholder('-')
-                    ->badge()
-                    ->separator(',')
-                    // ->listWithLineBreaks()
-                    // ->limitList(1)
-                    // ->expandableLimitedList()
 
-                    ->wrap()
-                    ->state(function ($record) {
-                        return $record->subcategories->pluck('title')->join(',');
-                    })->visible(fn($livewire) => self::anTab($livewire))
+
+                ExpandableBadges::make('subcategories')
+                    ->label('Subcategorias')
+                    ->limit(5)
+                    ->grow(true)
+                    ->width('120%')
                     ->extraAttributes([
-                        'class' => 'line-clamp-expandable',
-                    ]),
+                        'style' => 'min-width: 400px !important; display: block;',
+                    ])
+                    ->visible(fn($livewire) => self::anTab($livewire)),
+
+
 
                 TextColumn::make('company.name')->label('Empresa')->toggleable()
                     ->searchable()->visible(fn($livewire) => Gate::denies('is_company') && self::anTab($livewire)),
@@ -149,9 +147,6 @@ class CampaignAnnouncementsTable
                     ->formatStateUsing(fn(string $state) => __("campaign_announcement_status.$state.label"))
                     ->toggleable()
                     ->visible(fn($livewire) => self::anTab($livewire)),
-
-                TextColumn::make('subcategories.title')->label('Categoria')->badge()->toggleable(isToggledHiddenByDefault: true)->limitList(2)->listWithLineBreaks()->expandableLimitedList()
-                    ->searchable()->visible(fn($livewire) => self::anTab($livewire)),
 
                 TextColumn::make('created_at')->label('Anunciada em')
                     ->dateTime()

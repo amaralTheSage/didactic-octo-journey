@@ -6,16 +6,18 @@ use Filament\Tables\Columns\Column;
 
 class ExpandableBadges extends Column
 {
-    public bool $isExpanded = false;
+    protected string $view = 'filament.tables.columns.expandable-badges';
 
-    public int $limit = 3;
+    protected int $limit = 3;
 
-    public function toggleExpand()
+    public function limit(int $limit): static
     {
-        $this->isExpanded = ! $this->isExpanded;
-
+        $this->limit = $limit;
         return $this;
     }
 
-    protected string $view = 'filament.tables.columns.expandable-badges';
+    public function getLimit(): int
+    {
+        return $this->limit;
+    }
 }
