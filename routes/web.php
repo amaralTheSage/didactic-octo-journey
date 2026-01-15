@@ -25,7 +25,7 @@ Route::get('/para-influenciadores', function () {
 
 Route::get('/login', function () {
     return redirect('/dashboard/login');
-});
+})->name(`login`);
 
 Route::get('/payments/getqrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 

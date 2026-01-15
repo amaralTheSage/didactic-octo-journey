@@ -11,7 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Throwable;
@@ -21,6 +23,10 @@ class PaymentController extends Controller
     public function page(Request $request)
     {
         Gate::authorize('is_company');
+
+        if (Payment::whereId($request['payment'])->first()->user_id !== Auth::id()) {
+            return to_route('filament.admin.pages.dashboard');
+        }
 
         return Inertia::render('payment-page', [
             'payment' => $request['payment'],
@@ -70,7 +76,11 @@ class PaymentController extends Controller
             ],
         ]);
 
-        return to_route('payments.page', ['payment' => $payment->id, 'brcode' => $payment->brcode]);
+        return URL::temporarySignedRoute(
+            'payments.page',
+            now()->plus(minutes: 15),
+            ['payment' => $payment->id, 'brcode' => $payment->brcode]
+        );
     }
 
     public function pixwebhook(Request $request)
