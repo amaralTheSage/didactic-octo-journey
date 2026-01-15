@@ -47,27 +47,27 @@ class EditProposalAction extends Action
     {
         parent::setUp();
 
-        $this->label(fn() => 'Editar Proposta');
+        $this->label(fn () => 'Editar Proposta');
 
         $this->extraModalFooterActions([
-            ViewChangeLogs::make(),
+            ViewChangeLogs::make()->hidden(),
         ]);
 
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
         $this->groupedIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION_GROUPED) ?? Heroicon::PencilSquare);
 
-        $this->modalHeading(fn() => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
+        $this->modalHeading(fn () => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
 
         $this->modalWidth('3xl');
 
-        $this->visible(fn($livewire) => $livewire->activeTab === 'proposals' && Gate::denies('is_influencer'));
+        $this->visible(fn ($livewire) => $livewire->activeTab === 'proposals' && Gate::denies('is_influencer'));
 
         $this->schema([
             Textarea::make('message')
                 ->label('Mensagem')
                 ->rows(4)
                 ->maxLength(1000)
-                ->visible(fn() => Gate::allows('is_agency')),
+                ->visible(fn () => Gate::allows('is_agency')),
 
             Group::make()->schema([
 
@@ -84,7 +84,7 @@ class EditProposalAction extends Action
                     )->afterStateUpdated(function ($state, callable $set, Get $get) {
                         $borrowedIds = $get('borrowed_influencer_ids') ?? [];
 
-                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+                        $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
                         $borrowedInfluencers = Auth::user()
                             ->agency_loans()
@@ -92,7 +92,7 @@ class EditProposalAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', $borrowedIds)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -108,7 +108,7 @@ class EditProposalAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', (array) $state)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -125,7 +125,7 @@ class EditProposalAction extends Action
                     ->searchable()
                     ->reactive()->columnSpan(3)
 
-                    ->visible(fn() => Gate::allows('is_agency')),
+                    ->visible(fn () => Gate::allows('is_agency')),
 
                 Select::make('borrowed_influencer_ids')
                     ->label('Influenciadores Emprestados')
@@ -139,7 +139,7 @@ class EditProposalAction extends Action
                     )->afterStateUpdated(function ($state, callable $set, Get $get) {
                         $ownIds = $get('influencer_ids') ?? [];
 
-                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+                        $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
                         $borrowedInfluencers = Auth::user()
                             ->agency_loans()
@@ -147,7 +147,7 @@ class EditProposalAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', (array) $state)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -163,7 +163,7 @@ class EditProposalAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', $ownIds)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -181,7 +181,7 @@ class EditProposalAction extends Action
                     ->reactive()
                     ->live()
                     ->columnSpan(2)
-                    ->visible(fn() => Gate::allows('is_agency')),
+                    ->visible(fn () => Gate::allows('is_agency')),
 
             ])->columns(5),
 
@@ -268,7 +268,7 @@ class EditProposalAction extends Action
                     }
 
                     return $influencers
-                        ->map(fn($influencer) => [
+                        ->map(fn ($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
                             'stories_price' => $influencer->influencer_info->stories_price,
@@ -282,7 +282,7 @@ class EditProposalAction extends Action
 
             TextEntry::make('summary')
                 ->hiddenLabel()
-                ->state(fn($record) => new HtmlString("
+                ->state(fn ($record) => new HtmlString("
                     <div style='text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;'>
                         <span><strong>Reels:</strong> {$record->n_reels}</span>
                         <span><strong>Stories:</strong> {$record->n_stories}</span>
@@ -299,7 +299,7 @@ class EditProposalAction extends Action
                 TextInput::make('n_stories')->label('Stories')->numeric()->required()->live(),
                 TextInput::make('n_carrousels')->label('Carrosséis')->numeric()->required()->live(),
             ])->columns(3)
-                ->visible(fn() => Gate::allows('is_company')),
+                ->visible(fn () => Gate::allows('is_company')),
 
             Group::make([
                 TextInput::make('proposed_agency_cut')
@@ -307,9 +307,9 @@ class EditProposalAction extends Action
                     ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                     ->numeric()
                     ->minValue(0)
-                    ->placeholder(fn($record) => "{$record->announcement->agency_cut}")
+                    ->placeholder(fn ($record) => "{$record->announcement->agency_cut}")
                     ->maxValue(100)
-                    ->visible(fn() => Gate::denies('is_influencer')),
+                    ->visible(fn () => Gate::denies('is_influencer')),
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
@@ -329,7 +329,7 @@ class EditProposalAction extends Action
                             $influencers
                         );
 
-                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
+                        return 'R$ '.number_format($range['min'], 2, ',', '.').' - R$ '.number_format($range['max'], 2, ',', '.');
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2),
@@ -378,12 +378,12 @@ class EditProposalAction extends Action
             $data['influencer_ids'] = array_values(array_intersect($allInfluencerIds, $agencyInfluencerIds));
             $data['borrowed_influencer_ids'] = array_values(array_diff($allInfluencerIds, $agencyInfluencerIds));
 
-            $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+            $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
             $data['selected_influencers'] = $record->influencers()
                 ->with('influencer_info')
                 ->get()
-                ->map(fn($influencer) => [
+                ->map(fn ($influencer) => [
                     'user_id' => $influencer->id,
                     'name' => $influencer->name,
                     'reels_price' => $formatPrice($influencer->pivot->reels_price ?? $influencer->influencer_info?->reels_price),
@@ -411,7 +411,7 @@ class EditProposalAction extends Action
 
                 $beforeInfluencers = $record->influencers()
                     ->get()
-                    ->mapWithKeys(fn($inf) => [
+                    ->mapWithKeys(fn ($inf) => [
                         $inf->id => [
                             'name' => $inf->name,
                             'reels_price' => (float) $inf->pivot->reels_price,
@@ -421,7 +421,6 @@ class EditProposalAction extends Action
                         ],
                     ])->toArray();
 
-
                 // --- update proposal fields (defensive) ---
                 $record->update(array_filter([
                     'message' => $data['message'] ?? null,
@@ -429,8 +428,8 @@ class EditProposalAction extends Action
                     'n_reels' => $data['n_reels'] ?? null,
                     'n_stories' => $data['n_stories'] ?? null,
                     'n_carrousels' => $data['n_carrousels'] ?? null,
-                    'commission_cut' => $data['commission_cut'] ?? null
-                ], fn($v) => ! is_null($v)));
+                    'commission_cut' => $data['commission_cut'] ?? null,
+                ], fn ($v) => ! is_null($v)));
 
                 // --- build pivot data and detect price changes for notifications ---
                 $oldPrices = $beforeInfluencers;
@@ -480,12 +479,12 @@ class EditProposalAction extends Action
                     'n_reels',
                     'n_stories',
                     'n_carrousels',
-                    'commission_cut'
+                    'commission_cut',
                 ]);
 
                 $afterInfluencers = $record->influencers()
                     ->get()
-                    ->mapWithKeys(fn($inf) => [
+                    ->mapWithKeys(fn ($inf) => [
                         $inf->id => [
                             'name' => $inf->name,
                             'reels_price' => (float) $inf->pivot->reels_price,
@@ -562,7 +561,7 @@ class EditProposalAction extends Action
                     User::find($userId)?->notify(
                         Notification::make()
                             ->title('Preços atualizados na proposta')
-                            ->body('Os valores da sua participação na campanha ' . $record->announcement->name . ' foram atualizados por ' . Auth::user()->name)
+                            ->body('Os valores da sua participação na campanha '.$record->announcement->name.' foram atualizados por '.Auth::user()->name)
                             ->info()
                             ->toDatabase()
                     );
@@ -572,7 +571,7 @@ class EditProposalAction extends Action
                     $record->agency->notify(
                         Notification::make()
                             ->title('Proposta atualizada pela empresa')
-                            ->body(Auth::user()->name . ' atualizou os valores dos influenciadores na proposta para ' . $record->announcement->name)
+                            ->body(Auth::user()->name.' atualizou os valores dos influenciadores na proposta para '.$record->announcement->name)
                             ->info()
                             ->toDatabase()
                     );
