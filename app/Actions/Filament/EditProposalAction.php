@@ -5,6 +5,7 @@ namespace App\Actions\Filament;
 use App\Enums\UserRoles;
 use App\Helpers\ProposalChangeDiffFinder;
 use App\Helpers\ProposedBudgetCalculator;
+use App\Models\Proposal;
 use App\Models\ProposalChangeLog;
 use App\Models\User;
 use Closure;
@@ -50,7 +51,7 @@ class EditProposalAction extends Action
         $this->label(fn () => 'Editar Proposta');
 
         $this->extraModalFooterActions([
-            ViewChangeLogs::make()->hidden(),
+            ViewChangeLogs::make()->action(fn ($record) => dd($record)), // de alguma forma adicionar esse dd() aqui consertou o erro
         ]);
 
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
