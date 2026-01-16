@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Agencies;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Agencies\Pages\EditAgency;
 use App\Filament\Resources\Agencies\Pages\ListAgencies;
 use App\Filament\Resources\Agencies\Schemas\AgencyForm;
@@ -32,7 +32,7 @@ class AgencyResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', UserRoles::Agency);
+        return parent::getEloquentQuery()->where('role', UserRole::AGENCY);
     }
 
     public static function form(Schema $schema): Schema
@@ -47,7 +47,7 @@ class AgencyResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === UserRoles::Company ?? false;
+        return Auth::user()?->role === UserRole::COMPANY ?? false;
     }
 
     public static function table(Table $table): Table

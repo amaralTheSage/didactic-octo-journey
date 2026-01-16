@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\CampaignAnnouncements;
+namespace App\Filament\Resources\Campaigns;
 
-use App\Filament\Resources\CampaignAnnouncements\Pages\CreateCampaignAnnouncement;
-use App\Filament\Resources\CampaignAnnouncements\Pages\EditCampaignAnnouncement;
-use App\Filament\Resources\CampaignAnnouncements\Pages\ListCampaignAnnouncements;
-use App\Filament\Resources\CampaignAnnouncements\Pages\ViewCampaignAnnouncement;
-use App\Filament\Resources\CampaignAnnouncements\Schemas\CampaignAnnouncementForm;
-use App\Filament\Resources\CampaignAnnouncements\Schemas\CampaignAnnouncementInfolist;
-use App\Filament\Resources\CampaignAnnouncements\Tables\CampaignAnnouncementsTable;
-use App\Models\CampaignAnnouncement;
+use App\Filament\Resources\Campaigns\Pages\CreateCampaign;
+use App\Filament\Resources\Campaigns\Pages\EditCampaign;
+use App\Filament\Resources\Campaigns\Pages\ListCampaigns;
+use App\Filament\Resources\Campaigns\Pages\ViewCampaign;
+use App\Filament\Resources\Campaigns\Schemas\CampaignForm;
+use App\Filament\Resources\Campaigns\Schemas\CampaignInfolist;
+use App\Filament\Resources\Campaigns\Tables\CampaignsTable;
+use App\Models\Campaign;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
-class CampaignAnnouncementResource extends Resource
+class CampaignResource extends Resource
 {
-    protected static ?string $model = CampaignAnnouncement::class;
+    protected static ?string $model = Campaign::class;
 
     protected static ?string $modelLabel = 'Campanhas';
 
@@ -43,17 +43,17 @@ class CampaignAnnouncementResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return CampaignAnnouncementForm::configure($schema);
+        return CampaignForm::configure($schema);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        return CampaignAnnouncementInfolist::configure($schema);
+        return CampaignInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return CampaignAnnouncementsTable::configure($table);
+        return CampaignsTable::configure($table);
     }
 
     public static function getRelations(): array
@@ -82,10 +82,10 @@ class CampaignAnnouncementResource extends Resource
     {
 
         return [
-            'index' => ListCampaignAnnouncements::route('/'),
-            'create' => CreateCampaignAnnouncement::route('/create'),
-            // 'view' => ViewCampaignAnnouncement::route('/{record}'),
-            'edit' => EditCampaignAnnouncement::route('/{record}/edit'),
+            'index' => ListCampaigns::route('/'),
+            'create' => CreateCampaign::route('/create'),
+            // 'view' => ViewCampaign::route('/{record}'),
+            'edit' => EditCampaign::route('/{record}/edit'),
         ];
     }
 }

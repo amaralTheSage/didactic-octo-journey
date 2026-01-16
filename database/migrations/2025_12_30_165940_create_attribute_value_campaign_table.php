@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('attribute_value_campaign_announcement', function (Blueprint $table) {
+        Schema::create('attribute_value_campaign', function (Blueprint $table) {
             $table->id();
             $table->foreignId('attribute_value_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
             $table->string('title')->nullable();
             $table->timestamps();
         });

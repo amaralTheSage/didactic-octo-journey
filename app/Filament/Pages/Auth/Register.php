@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Category;
@@ -23,6 +23,7 @@ use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\CanUseDatabaseTransactions;
@@ -34,11 +35,13 @@ use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Auth\SessionGuard;
@@ -224,32 +227,40 @@ class Register extends SimplePage
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-
-            Select::make('role')
+            ToggleButtons::make('role')
                 ->label('Sou...')
                 ->helperText('Defina como você vai utilizar a plataforma')
                 ->options([
                     'influencer' => 'Influenciador',
                     'company' => 'Empresa',
                     'agency' => 'Agência',
-                    'curator' => 'Curadoria'
+                    'curator' => 'Curadoria',
                 ])
+                ->icons([
+                    'influencer' => 'heroicon-o-user',
+                    'company' =>  Heroicon::OutlinedBuildingOffice2,
+                    'agency' => Heroicon::OutlinedBuildingStorefront,
+                    'curator' => 'lucide-search-check',
+                ])
+                ->grouped()
+                ->extraFieldWrapperAttributes(['class' => 'text-center flex flex-col w-fit mx-auto gap-4'])
+                ->extraAttributes(['class' => 'text-center flex justify-center'])
                 ->required()
-                ->extraFieldWrapperAttributes(fn(Get $get) => !filled($get('role')) ? ['class' => '!mt-8 mb-16'] : [])
-                ->live(),
+                ->live()
+                ->inline(),
 
             Wizard::make(
                 [
-                    Step::make('Informações Básicas')
+                    Step::make('Dados Pessoais')
                         ->schema([
                             $this->getBaseInfoColumn(),
                         ]),
 
-                    Step::make('Informações de Influenciador')->schema([
+                    Step::make('Meu Perfil')->schema([
                         $this->getInfluencerColumn(),
                     ])->visible(fn(Get $get) => $get('role') === 'influencer'),
 
-                    Step::make('Atributos')->schema([
+                    Step::make('Detalhes')->schema([
                         $this->getAttributesRepeater(),
                     ])->visible(fn(Get $get) => $get('role') === 'influencer'),
                 ]
@@ -269,10 +280,11 @@ class Register extends SimplePage
         return Group::make()
             ->schema([
 
-
                 Group::make()->visible(fn(Get $get) => filled($get('role')))
 
                     ->schema([
+
+
                         FileUpload::make('avatar')
                             ->hiddenLabel()
                             ->disk('public')
@@ -289,13 +301,70 @@ class Register extends SimplePage
                             ->placeholder('Sou criador de conteúdo...')
                             ->required(),
 
-
-                        TextInput::make('pix_address')->label('Endereço Pix'),
+                        TextInput::make('pix_address')->label('Chave Pix'),
 
                         $this->getEmailFormComponent(),
+                        Group::make()
+                            ->statePath('location_data')
+                            ->columns(3)
+                            ->visible(fn(Get $get) => $get('role') === 'influencer')
+
+                            ->schema([
+                                Select::make('country')
+                                    ->label('País')
+                                    ->placeholder('')
+
+                                    ->options([
+                                        'BR' => 'Brasil',
+                                        'US' => 'Estados Unidos',
+                                        'AR' => 'Argentina',
+                                        'UY' => 'Uruguai',
+                                        'PY' => 'Paraguai',
+                                    ])
+                                    ->searchable()
+                                    ->reactive()
+                                    ->afterStateUpdated(function (callable $set) {
+                                        $set('state', null);
+                                        $set('city', null);
+                                    }),
+
+                                Select::make('state')
+                                    ->label('Estado')
+                                    ->placeholder('')
+                                    ->options(
+                                        fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
+                                            ->collect()
+                                            ->sortBy('nome')
+                                            ->pluck('nome', 'sigla')
+                                            ->toArray()
+                                    )
+                                    ->searchable()
+                                    ->reactive()
+                                    ->afterStateUpdated(fn(callable $set) => $set('city', null))
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR'),
+
+                                Select::make('city')
+                                    ->label('Cidade')
+                                    ->placeholder('')
+                                    ->options(function (Get $get) {
+                                        if (! $get('state')) {
+                                            return [];
+                                        }
+
+                                        return Http::get(
+                                            "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
+                                        )
+                                            ->collect()
+                                            ->pluck('nome', 'nome')
+                                            ->toArray();
+                                    })
+                                    ->searchable()
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR'),
+                            ]),
+
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),
-                    ])
+                    ]),
             ]);
     }
 
@@ -307,7 +376,7 @@ class Register extends SimplePage
             ->schema([
                 Select::make('subcategories')
                     ->multiple()
-                    ->label('Categorias')
+                    ->label('Público Alvo')
                     ->options(
                         Category::with('subcategories')->get()
                             ->mapWithKeys(fn($category) => [
@@ -323,7 +392,7 @@ class Register extends SimplePage
                     ->searchable()
                     ->preload()
                     ->getSearchResultsUsing(
-                        fn(string $search): array => User::where('role', UserRoles::Agency)
+                        fn(string $search): array => User::where('role', UserRole::AGENCY)
                             ->where('name', 'ilike', "%{$search}%")
                             ->limit(50)
                             ->pluck('name', 'id')
@@ -333,60 +402,7 @@ class Register extends SimplePage
                         fn($value) => User::find($value)?->name
                     ),
 
-                Group::make()
-                    ->statePath('location_data')->columns(2)
-                    ->schema([
-                        Select::make('country')
-                            ->label('País')
-                            ->placeholder('Selecione um país')
-                            ->options([
-                                'BR' => 'Brasil',
-                                'US' => 'Estados Unidos',
-                                'AR' => 'Argentina',
-                                'UY' => 'Uruguai',
-                                'PY' => 'Paraguai',
-                            ])->columnSpan(2)
-                            ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(function (callable $set) {
-                                $set('state', null);
-                                $set('city', null);
-                            }),
 
-                        Select::make('state')
-                            ->label('Estado')
-                            ->placeholder('Selecione um estado')
-                            ->options(
-                                fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-                                    ->collect()
-                                    ->sortBy('nome')
-                                    ->pluck('nome', 'sigla')
-                                    ->toArray()
-                            )
-                            ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(fn(callable $set) => $set('city', null))
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR'),
-
-
-                        Select::make('city')
-                            ->label('Cidade')
-                            ->placeholder('Selecione uma cidade')
-                            ->options(function (Get $get) {
-                                if (! $get('state')) {
-                                    return [];
-                                }
-
-                                return Http::get(
-                                    "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
-                                )
-                                    ->collect()
-                                    ->pluck('nome', 'nome')
-                                    ->toArray();
-                            })
-                            ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR'),
-                    ]),
 
                 Section::make('Redes Sociais')->collapsed()->collapsible()
                     ->schema([
@@ -409,6 +425,8 @@ class Register extends SimplePage
                     ]),
 
                 Section::make('Tabela de Preços')
+
+
                     ->schema([
                         Money::make('reels_price')
                             ->label('Reels')
@@ -423,12 +441,14 @@ class Register extends SimplePage
                             ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         TextInput::make('commission_cut')
-                            ->label('Comissão')
+                            ->label('Comissão da Agência')
                             ->suffix('%')
                             ->extraInputAttributes(['style' => 'text-align: right;'])
                             ->mask('999')
                             ->minValue(0)
                             ->maxValue(100),
+
+                        Text::make('Valor tabelado para ser cobrado da empresa')->columnSpan(4),
                     ])->columns(4),
             ])
             ->visible(fn(Get $get) => $get('role') === 'influencer');
@@ -506,7 +526,7 @@ class Register extends SimplePage
 
     public function getMaxContentWidth(): Width|string|null
     {
-        return Width::FourExtraLarge;
+        return Width::TwoExtraLarge;
     }
 
     protected function getNameFormComponent(): Component
@@ -602,6 +622,7 @@ class Register extends SimplePage
     {
         return Action::make('register')
             ->label(__('filament-panels::auth/pages/register.form.actions.register.label'))
+            ->visible(fn(Get $get) => filled($get('role')))
             ->submit('register');
     }
 

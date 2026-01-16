@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Products;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
@@ -43,7 +43,7 @@ class ProductResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === UserRoles::Company ?? false;
+        return Auth::user()?->role === UserRole::COMPANY ?? false;
     }
 
     public static function getPages(): array

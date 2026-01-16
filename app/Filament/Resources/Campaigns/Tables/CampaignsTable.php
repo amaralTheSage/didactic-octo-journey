@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CampaignAnnouncements\Tables;
+namespace App\Filament\Resources\Campaigns\Tables;
 
 use App\Actions\Filament\EditProposalAction;
 use App\Actions\Filament\ViewProposal;
@@ -27,11 +27,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\HtmlString;
 
-class CampaignAnnouncementsTable
+class CampaignsTable
 {
     public static function anTab($livewire): bool
     {
-        return $livewire->activeTab === 'announcements';
+        return $livewire->activeTab === 'campaigns';
     }
 
     public static function prTab($livewire): bool
@@ -84,7 +84,7 @@ class CampaignAnnouncementsTable
                 : null)->groupingDirectionSettingHidden()
             ->columns([
 
-                // ANNOUNCEMENTS TAB
+                // CAMPAIGNS TAB
                 TextColumn::make('name')->label('Campanha')
                     ->searchable()->visible(fn($livewire) => self::anTab($livewire))->description(function ($record) {
                         $count = $record->proposals->count();
@@ -132,7 +132,7 @@ class CampaignAnnouncementsTable
                     TextColumn::make('n_carrousels')->label('Carrosseis')->alignCenter()->visible(fn($livewire) => self::anTab($livewire)),
                 ]),
 
-                TextColumn::make('announcement_status')
+                TextColumn::make('campaign_status')
                     ->label('Status')
                     ->badge()
                     ->color(fn(string $state) => match ($state) {
@@ -140,7 +140,7 @@ class CampaignAnnouncementsTable
                         'paused' => 'gray',
                         'finished' => 'info',
                     })
-                    ->formatStateUsing(fn(string $state) => __("campaign_announcement_status.$state.label"))
+                    ->formatStateUsing(fn(string $state) => __("campaign_status.$state.label"))
                     ->toggleable()
                     ->visible(fn($livewire) => self::anTab($livewire)),
 
@@ -156,23 +156,23 @@ class CampaignAnnouncementsTable
 
                 // --------------------------
                 // PROPOSALS TAB
-                TextColumn::make('announcement.name')->label('Campanha')
+                TextColumn::make('campaign.name')->label('Campanha')
                     ->searchable()
-                    ->icon(fn($record) => $record->announcement->validated_at
+                    ->icon(fn($record) => $record->campaign->validated_at
                         ? 'heroicon-o-check-badge'
                         : null)
                     ->iconPosition('after')
-                    ->tooltip(fn($record) => $record->announcement->validated_at
+                    ->tooltip(fn($record) => $record->campaign->validated_at
                         ? 'Campanha Verificada'
                         : null)
                     ->iconColor('success')
-                    ->visible(fn($livewire) => self::prTab($livewire))->description(fn($record) => 'Produto: ' . $record->announcement->product->name),
+                    ->visible(fn($livewire) => self::prTab($livewire))->description(fn($record) => 'Produto: ' . $record->campaign->product->name),
 
-                // TextColumn::make('announcement.product.name')->label('Produto')
+                // TextColumn::make('campaign.product.name')->label('Produto')
                 //     ->searchable()
                 //     ->visible(fn($livewire) => self::prTab($livewire)),
 
-                TextColumn::make('announcement.subcategories.title')->label('Categoria')
+                TextColumn::make('campaign.subcategories.title')->label('Categoria')
                     ->badge()
                     ->searchable()
                     ->visible(fn($livewire) => self::prTab($livewire) && Gate::denies('is_company')),
@@ -204,14 +204,14 @@ class CampaignAnnouncementsTable
                     ->label('% da Agência Proposta')
                     ->numeric()->placeholder('-')->suffix('%')
                     ->description(function ($record) {
-                        $announcementCut = $record->announcement?->agency_cut;
+                        $campaignCut = $record->campaign?->agency_cut;
                         $proposedCut = $record->proposed_agency_cut;
 
-                        if (! $announcementCut || ! $proposedCut) {
+                        if (! $campaignCut || ! $proposedCut) {
                             return null;
                         }
 
-                        $difference = $proposedCut - $announcementCut;
+                        $difference = $proposedCut - $campaignCut;
 
                         if ($difference === 0) {
                             return 'Sem variação';
@@ -327,10 +327,10 @@ class CampaignAnnouncementsTable
                 //     ->action(function ($record) {
                 //         $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
 
-                //         $record->announcement->company->notify(
+                //         $record->campaign->company->notify(
                 //             Notification::make()
                 //                 ->title('Influenciador aprovou proposta')
-                //                 ->body(Auth::user()->name . ' aprovou a proposta para ' . $record->announcement->name)
+                //                 ->body(Auth::user()->name . ' aprovou a proposta para ' . $record->campaign->name)
                 //                 ->success()
                 //                 ->toDatabase()
                 //         );
@@ -338,7 +338,7 @@ class CampaignAnnouncementsTable
                 //         $record->agency->notify(
                 //             Notification::make()
                 //                 ->title('Influenciador aprovou proposta')
-                //                 ->body(Auth::user()->name . ' aprovou sua proposta para ' . $record->announcement->name)
+                //                 ->body(Auth::user()->name . ' aprovou sua proposta para ' . $record->campaign->name)
                 //                 ->success()
                 //                 ->toDatabase()
                 //         );
@@ -358,10 +358,10 @@ class CampaignAnnouncementsTable
                 //     ->action(function ($record) {
                 //         $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
 
-                //         $record->announcement->company->notify(
+                //         $record->campaign->company->notify(
                 //             Notification::make()
                 //                 ->title('Influenciador rejeitou proposta')
-                //                 ->body(Auth::user()->name . ' rejeitou a proposta para ' . $record->announcement->name)
+                //                 ->body(Auth::user()->name . ' rejeitou a proposta para ' . $record->campaign->name)
                 //                 ->danger()
                 //                 ->toDatabase()
                 //         );
@@ -369,7 +369,7 @@ class CampaignAnnouncementsTable
                 //         $record->agency->notify(
                 //             Notification::make()
                 //                 ->title('Influenciador rejeitou proposta')
-                //                 ->body(Auth::user()->name . ' rejeitou sua proposta para ' . $record->announcement->name)
+                //                 ->body(Auth::user()->name . ' rejeitou sua proposta para ' . $record->campaign->name)
                 //                 ->danger()
                 //                 ->toDatabase()
                 //         );

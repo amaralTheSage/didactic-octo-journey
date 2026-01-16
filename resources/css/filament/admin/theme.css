@@ -6,7 +6,7 @@
 @source '../../../../resources/views/**/*';
 
 :root {
-    --background: oklch(1 0 0);
+    --background: oklch(0.967 0.0029 264.5419);
     --foreground: oklch(0.2101 0.0318 264.6645);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.2101 0.0318 264.6645);
@@ -30,7 +30,7 @@
     --chart-3: oklch(0.8721 0.0864 68.5474);
     --chart-4: oklch(0.6268 0 0);
     --chart-5: oklch(0.683 0 0);
-    --sidebar: oklch(0.967 0.0029 264.5419);
+    --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.2101 0.0318 264.6645);
     --sidebar-primary: oklch(0.3979 0.0632 231.2552);
     --sidebar-primary-foreground: oklch(1 0 0);
@@ -352,6 +352,11 @@ td {
 
 .fi-ta-table {
     @apply rounded-2xl;
+}
+
+/* Botões de Role no Register */
+
+.fi-color.fi-color-primary.fi-bg-color-400.hover\:fi-bg-color-300.dark\:fi-bg-color-600.dark\:hover\:fi-bg-color-700.fi-text-color-950.hover\:fi-text-color-900.dark\:fi-text-color-0.dark\:hover\:fi-text-color-0.fi-btn.fi-size-md {
 }
 
 th {

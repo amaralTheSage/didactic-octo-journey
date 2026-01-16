@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\CampaignAnnouncements\Pages;
+namespace App\Filament\Resources\Campaigns\Pages;
 
-use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
+use App\Filament\Resources\Campaigns\CampaignResource;
 use App\Models\Proposal;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 
-class ListCampaignAnnouncements extends ListRecords
+class ListCampaigns extends ListRecords
 {
-    protected static string $resource = CampaignAnnouncementResource::class;
+    protected static string $resource = CampaignResource::class;
 
     #[Url]
     public ?string $activeTab = null;
@@ -23,7 +23,7 @@ class ListCampaignAnnouncements extends ListRecords
     public function getTabs(): array
     {
         return [
-            'announcements' => Tab::make('Campanhas')
+            'campaigns' => Tab::make('Campanhas')
                 ->modifyQueryUsing(
                     fn (Builder $query) => $query->when(
                         Gate::allows('is_company'),
@@ -32,16 +32,16 @@ class ListCampaignAnnouncements extends ListRecords
                 ),
             'proposals' => Tab::make(fn () => Gate::allows('is_company') ? 'Propostas' : 'Nossas Propostas')
                 ->badge(fn () => ($count = Proposal::query()
-                    ->whereHas('announcement', fn ($q) => $q->where('company_id', Auth::id()))
+                    ->whereHas('campaign', fn ($q) => $q->where('company_id', Auth::id()))
                     ->where('company_approval', 'pending')
                     ->count()
                 ) > 0 ? $count : null)->badgeTooltip('Propostas não avaliadas')
 
                 ->modifyQueryUsing(
                     fn () => Proposal::query()
-                        ->with(['agency', 'announcement'])
+                        ->with(['agency', 'campaign'])
                         ->where(function ($query) {
-                            $query->whereHas('announcement', fn ($q) => $q->where('company_id', Auth::id()))
+                            $query->whereHas('campaign', fn ($q) => $q->where('company_id', Auth::id()))
                                 ->orWhere('agency_id', Auth::id())
                                 ->orWhereHas(
                                     'influencers',

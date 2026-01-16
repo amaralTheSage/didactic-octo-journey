@@ -15,17 +15,17 @@ class AttributeValue extends Model
         return $this->belongsTo(Attribute::class);
     }
 
-    public function campaign_announcements(): BelongsToMany
+    public function campaigns(): BelongsToMany
     {
         return $this->belongsToMany(
-            CampaignAnnouncement::class,
-            'attribute_value_campaign_announcement',
+            Campaign::class,
+            'attribute_value_campaign',
             'attribute_value_id',
-            'campaign_announcement_id'
+            'campaign_id'
         )->withTimestamps();
     }
 
-    # quase certo q não utilizamos mais
+    // quase certo q não utilizamos mais
     public function influencer_infos(): BelongsToMany
     {
         return $this->belongsToMany(

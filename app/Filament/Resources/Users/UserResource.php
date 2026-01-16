@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -43,7 +43,7 @@ class UserResource extends Resource
 
     public static function canAccess(): bool
     {
-        return Auth::user()->role === UserRoles::Admin;
+        return Auth::user()->role === UserRole::ADMIN;
     }
 
     public static function getPages(): array

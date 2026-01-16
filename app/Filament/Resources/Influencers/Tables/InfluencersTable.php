@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Influencers\Tables;
 
 use App\Actions\Filament\ViewInfluencerDetails;
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Tables\Columns\ExpandableBadges;
-use App\Models\CampaignAnnouncement;
+use App\Models\Campaign;
 use App\Models\Proposal;
 use App\Models\Subcategory;
 use App\Models\User;
@@ -29,7 +29,7 @@ class InfluencersTable
     public static function getEloquentQuery(): Builder
     {
         $query = User::query()
-            ->where('role', UserRoles::Influencer)
+            ->where('role', UserRole::INFLUENCER)
             ->whereHas('influencer_info', function (Builder $query) {
                 $query->where('agency_id', Auth::id());
             });
@@ -100,10 +100,10 @@ class InfluencersTable
                         ->label('Atribuir à Campanha Existente')
                         ->icon('heroicon-o-plus-circle')
                         ->schema([
-                            Select::make('campaign_announcement_id')
+                            Select::make('campaign_id')
                                 ->label('Campanha')
                                 ->options(
-                                    CampaignAnnouncement::query()
+                                    Campaign::query()
                                         ->where('company_id', Auth::id())
                                         ->pluck('name', 'id')
                                 )
@@ -121,12 +121,12 @@ class InfluencersTable
                                 fn($influencer) => $influencer->influencer_info->agency_id
                             );
 
-                            $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
+                            $campaign = Campaign::find($data['campaign_id']);
 
                             // Create one proposal per agency
                             foreach ($influencersByAgency as $agencyId => $influencers) {
                                 $proposal = Proposal::create([
-                                    'campaign_announcement_id' => $campaign->id,
+                                    'campaign_id' => $campaign->id,
                                     'agency_id' => $agencyId,
                                     'message' => $data['message'] ?? null,
                                     'proposed_agency_cut' => $campaign->agency_cut,
@@ -163,7 +163,7 @@ class InfluencersTable
                             session(['selected_influencers' => $influencerIds]);
 
                             // Redirect to create page
-                            return redirect()->route('filament.admin.resources.campaign-announcements.create');
+                            return redirect()->route('filament.admin.resources.campaigns.create');
                         })
                         ->deselectRecordsAfterCompletion(),
                 ]),

@@ -2,7 +2,7 @@
 
 namespace App\Actions\Filament;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Helpers\ProposalChangeDiffFinder;
 use App\Helpers\ProposedBudgetCalculator;
 use App\Models\Proposal;
@@ -57,7 +57,7 @@ class EditProposalAction extends Action
         $this->tableIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION) ?? Heroicon::PencilSquare);
         $this->groupedIcon(FilamentIcon::resolve(ActionsIconAlias::EDIT_ACTION_GROUPED) ?? Heroicon::PencilSquare);
 
-        $this->modalHeading(fn () => Auth::user()->role === UserRoles::Agency ? 'Editar Proposta' : 'Editar Aprovação');
+        $this->modalHeading(fn () => Auth::user()->role === UserRole::AGENCY ? 'Editar Proposta' : 'Editar Aprovação');
 
         $this->modalWidth('3xl');
 
@@ -308,7 +308,7 @@ class EditProposalAction extends Action
                     ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                     ->numeric()
                     ->minValue(0)
-                    ->placeholder(fn ($record) => "{$record->announcement->agency_cut}")
+                    ->placeholder(fn ($record) => "{$record->campaign->agency_cut}")
                     ->maxValue(100)
                     ->visible(fn () => Gate::denies('is_influencer')),
 
@@ -562,17 +562,17 @@ class EditProposalAction extends Action
                     User::find($userId)?->notify(
                         Notification::make()
                             ->title('Preços atualizados na proposta')
-                            ->body('Os valores da sua participação na campanha '.$record->announcement->name.' foram atualizados por '.Auth::user()->name)
+                            ->body('Os valores da sua participação na campanha '.$record->campaign->name.' foram atualizados por '.Auth::user()->name)
                             ->info()
                             ->toDatabase()
                     );
                 }
 
-                if (Auth::user()->role === UserRoles::Company && ! empty($priceChanges)) {
+                if (Auth::user()->role === UserRole::COMPANY && ! empty($priceChanges)) {
                     $record->agency->notify(
                         Notification::make()
                             ->title('Proposta atualizada pela empresa')
-                            ->body(Auth::user()->name.' atualizou os valores dos influenciadores na proposta para '.$record->announcement->name)
+                            ->body(Auth::user()->name.' atualizou os valores dos influenciadores na proposta para '.$record->campaign->name)
                             ->info()
                             ->toDatabase()
                     );

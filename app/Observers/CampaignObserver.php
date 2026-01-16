@@ -2,14 +2,14 @@
 
 namespace App\Observers;
 
-use App\Models\CampaignAnnouncement;
+use App\Models\Campaign;
 use App\Models\Proposal;
 use App\Models\User;
 use Filament\Notifications\Notification;
 
-class CampaignAnnouncementObserver
+class CampaignObserver
 {
-    public function created(CampaignAnnouncement $campaign): void
+    public function created(Campaign $campaign): void
     {
         $influencerIds = $campaign->temp_influencer_ids;
 
@@ -32,7 +32,7 @@ class CampaignAnnouncementObserver
             }
 
             $proposal = Proposal::create([
-                'campaign_announcement_id' => $campaign->id,
+                'campaign_id' => $campaign->id,
                 'agency_id' => $agencyId,
                 'proposed_agency_cut' => $campaign->agency_cut,
             ]);

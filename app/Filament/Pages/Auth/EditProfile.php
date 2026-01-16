@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Category;
@@ -118,7 +118,7 @@ class EditProfile extends BaseEditProfile
             throw new LogicException('The authenticated user object must be an Eloquent model to allow the profile page to update it.');
         }
 
-        if ($user->role === UserRoles::Influencer) {
+        if ($user->role === UserRole::INFLUENCER) {
             return $user->load(['influencer_info', 'subcategories']);
         }
 
@@ -167,7 +167,7 @@ class EditProfile extends BaseEditProfile
     {
         $user = $this->getUser();
 
-        if ($user->role === UserRoles::Influencer && $user->influencer_info) {
+        if ($user->role === UserRole::INFLUENCER && $user->influencer_info) {
             $data['influencer_data'] = $user->influencer_info->toArray();
             $data['influencer_data']['subcategories'] = $user->subcategories->pluck('id')->toArray();
         }
@@ -525,7 +525,7 @@ class EditProfile extends BaseEditProfile
                     ->searchable()
                     ->preload()
                     ->getSearchResultsUsing(
-                        fn (string $search): array => User::where('role', UserRoles::Agency)
+                        fn (string $search): array => User::where('role', UserRole::AGENCY)
                             ->where('name', 'ilike', "%{$search}%")
                             ->limit(50)
                             ->pluck('name', 'id')

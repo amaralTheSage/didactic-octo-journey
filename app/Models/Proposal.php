@@ -10,7 +10,7 @@ class Proposal extends Model
 {
     protected $fillable = [
         'agency_id',
-        'campaign_announcement_id',
+        'campaign_id',
         'message',
 
         'proposed_agency_cut',
@@ -37,9 +37,9 @@ class Proposal extends Model
         return $this->belongsTo(User::class, 'agency_id');
     }
 
-    public function announcement(): BelongsTo
+    public function campaign(): BelongsTo
     {
-        return $this->belongsTo(CampaignAnnouncement::class, 'campaign_announcement_id');
+        return $this->belongsTo(Campaign::class, 'campaign_id');
     }
 
     public function influencers(): BelongsToMany

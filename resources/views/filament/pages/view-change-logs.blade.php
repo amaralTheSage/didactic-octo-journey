@@ -1,7 +1,7 @@
 <div class="space-y-6">
     @php
         use Illuminate\Support\HtmlString;
-        use App\Enums\UserRoles;
+        use App\Enums\UserRole;
 
         $numericFields = [
             'commission_cut',
@@ -41,8 +41,8 @@
             }
 
             if ($field === 'commission_cut' || $field === 'proposed_agency_cut') {
-                    return $value . '%';
-            
+                return $value . '%';
+
 
             }
 
@@ -94,43 +94,43 @@
         @else
             @foreach ($logs as $log)
 
-@php
-        $isCompany = Auth::user()->role === UserRoles::Company;
+                @php
+                    $isCompany = Auth::user()->role === UserRole::COMPANY;
 
-        // 1. Filtramos as mudanças da proposta (remove comissão se for empresa)
-        $proposalChanges = collect($log->changes['proposal'] ?? [])
-            ->filter(fn($val, $key) => !($isCompany && $key === 'commission_cut'))
-            ->toArray();
+                    // 1. Filtramos as mudanças da proposta (remove comissão se for empresa)
+                    $proposalChanges = collect($log->changes['proposal'] ?? [])
+                        ->filter(fn($val, $key) => !($isCompany && $key === 'commission_cut'))
+                        ->toArray();
 
-        // 2. Filtramos as mudanças dos influenciadores
-        $influencerChanges = collect($log->changes['influencers'] ?? [])
-            ->map(function ($payload) use ($isCompany) {
-                // Removemos a comissão de dentro dos campos do influenciador
-                if (isset($payload['changes'])) {
-                    $payload['changes'] = array_diff_key($payload['changes'], $isCompany ? ['commission_cut' => 1] : []);
-                }
-                if (isset($payload['from']) && is_array($payload['from'])) {
-                    $payload['from'] = array_diff_key($payload['from'], $isCompany ? ['commission_cut' => 1] : []);
-                }
-                if (isset($payload['to']) && is_array($payload['to'])) {
-                    $payload['to'] = array_diff_key($payload['to'], $isCompany ? ['commission_cut' => 1] : []);
-                }
-                return $payload;
-            })
-            ->filter(function($p) {
-                // Remove o influenciador da lista se não sobrou nenhum campo alterado para mostrar
-                $source = $p['changes'] ?? $p['from'] ?? $p['to'] ?? [];
-                return !empty($source);
-            })
-            ->toArray();
+                    // 2. Filtramos as mudanças dos influenciadores
+                    $influencerChanges = collect($log->changes['influencers'] ?? [])
+                        ->map(function ($payload) use ($isCompany) {
+                            // Removemos a comissão de dentro dos campos do influenciador
+                            if (isset($payload['changes'])) {
+                                $payload['changes'] = array_diff_key($payload['changes'], $isCompany ? ['commission_cut' => 1] : []);
+                            }
+                            if (isset($payload['from']) && is_array($payload['from'])) {
+                                $payload['from'] = array_diff_key($payload['from'], $isCompany ? ['commission_cut' => 1] : []);
+                            }
+                            if (isset($payload['to']) && is_array($payload['to'])) {
+                                $payload['to'] = array_diff_key($payload['to'], $isCompany ? ['commission_cut' => 1] : []);
+                            }
+                            return $payload;
+                        })
+                        ->filter(function ($p) {
+                            // Remove o influenciador da lista se não sobrou nenhum campo alterado para mostrar
+                            $source = $p['changes'] ?? $p['from'] ?? $p['to'] ?? [];
+                            return !empty($source);
+                        })
+                        ->toArray();
 
-        $hasApproval = isset($log->changes['approval']);
+                    $hasApproval = isset($log->changes['approval']);
 
-        // SE NÃO SOBROU NADA, PULA O LOG INTEIRO (Avatar, Nome, etc)
-        if (empty($proposalChanges) && empty($influencerChanges) && !$hasApproval) {
-            continue;
-        }
-    @endphp
+                    // SE NÃO SOBROU NADA, PULA O LOG INTEIRO (Avatar, Nome, etc)
+                    if (empty($proposalChanges) && empty($influencerChanges) && !$hasApproval) {
+                        continue;
+                    }
+                @endphp
 
                 <div class="flex gap-4 pb-3">
                     <img src="{{ $log->user->avatar_url }}" class="h-8 w-8 rounded-full" />
@@ -145,27 +145,29 @@
 
                         {{-- Approval --}}
                         @if ($approval = $log->changes['approval'] ?? null)
-                            <div class="text-xs text-muted-foreground">
-                                {{ match ($approval['role']) {
-                                    'company' => 'A empresa',
-                                    'agency' => 'A agência',
-                                    'influencer' => 'O influenciador',
-                                    default => 'O usuário',
-                                } }}
+                                <div class="text-xs text-muted-foreground">
+                                    {{ match ($approval['role']) {
+                                'company' => 'A empresa',
+                                'agency' => 'A agência',
+                                'influencer' => 'O influenciador',
+                                default => 'O usuário',
+                            } }}
 
-                                <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
-                                    {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
-                                </span>
-                                a proposta
-                            </div>
+                                    <span class="{{ $approval['to'] === 'approved' ? 'text-green-500' : 'text-red-400' }}">
+                                        {{ $approval['to'] === 'approved' ? 'aprovou' : 'rejeitou' }}
+                                    </span>
+                                    a proposta
+                                </div>
                         @endif
 
                         {{-- Proposal changes --}}
                         @foreach ($log->changes['proposal'] ?? [] as $field => $change)
                             @php
 
-                            if ($field === 'commission_cut' && Auth::user()->role === UserRoles::Company) continue;
-                                if (!isNumericChange($field, $numericFields)) continue;
+                                if ($field === 'commission_cut' && Auth::user()->role === UserRole::COMPANY)
+                                    continue;
+                                if (!isNumericChange($field, $numericFields))
+                                    continue;
 
                                 $from = $change['from'] ?? '—';
                                 $to = $change['to'] ?? '—';
@@ -212,9 +214,11 @@
                                 @foreach ($fieldSource as $field => $data)
                                     @php
 
-                                        if ($field === 'commission_cut' && Auth::user()->role === UserRoles::Company) continue;
+                                        if ($field === 'commission_cut' && Auth::user()->role === UserRole::COMPANY)
+                                            continue;
 
-                                        if (!isNumericChange($field, $numericFields)) continue;
+                                        if (!isNumericChange($field, $numericFields))
+                                            continue;
 
                                         $from = $isRemoved ? $data : ($data['from'] ?? '—');
                                         $to = $isAdded ? $data : ($data['to'] ?? '—');

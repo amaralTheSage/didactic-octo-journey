@@ -48,9 +48,9 @@ declare module 'ziggy-js' {
         'filament.admin.pages.dashboard': [];
         'filament.admin.resources.agencies.index': [];
         'filament.admin.resources.agency-campaigns.index': [];
-        'filament.admin.resources.campaign-announcements.index': [];
-        'filament.admin.resources.campaign-announcements.create': [];
-        'filament.admin.resources.campaign-announcements.edit': [
+        'filament.admin.resources.campaigns.index': [];
+        'filament.admin.resources.campaigns.create': [];
+        'filament.admin.resources.campaigns.edit': [
             {
                 name: 'record';
                 required: true;

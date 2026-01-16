@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class CampaignAnnouncement extends Model
+class Campaign extends Model
 {
     public ?array $temp_influencer_ids = null;
 
@@ -17,7 +17,7 @@ class CampaignAnnouncement extends Model
         'company_id',
         'budget',
         'agency_cut',
-        'announcement_status',
+        'campaign_status',
         'n_reels',
         'n_carrousels',
         'n_stories',
@@ -34,8 +34,8 @@ class CampaignAnnouncement extends Model
     {
         return $this->belongsToMany(
             AttributeValue::class,
-            'attribute_value_campaign_announcement',
-            'campaign_announcement_id',
+            'attribute_value_campaign',
+            'campaign_id',
             'attribute_value_id'
         )->withPivot('title');
     }
@@ -43,7 +43,7 @@ class CampaignAnnouncement extends Model
     protected function influencerIds(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn() => $this->temp_influencer_ids,
+            get: fn () => $this->temp_influencer_ids,
             set: function ($value) {
                 // Save to the public property for the Observer to use
                 $this->temp_influencer_ids = $value;
@@ -65,11 +65,9 @@ class CampaignAnnouncement extends Model
         return $this->hasMany(Proposal::class);
     }
 
-
-
     public function subcategories(): BelongsToMany
     {
-        return $this->belongsToMany(Subcategory::class, 'campaign_announcement_subcategory');
+        return $this->belongsToMany(Subcategory::class, 'campaign_subcategory');
     }
 
     public function product(): BelongsTo

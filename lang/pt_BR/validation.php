@@ -160,7 +160,7 @@ return [
         'affiliate_url' => 'URL de afiliado',
         'age' => 'idade',
         'amount' => 'motante',
-        'announcement' => 'anúncio',
+        'campaign' => 'anúncio',
         'area' => 'área',
         'audience_prize' => 'prêmio do público',
         'audience_winner' => 'vencedor do público',

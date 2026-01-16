@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
@@ -12,5 +12,5 @@ Broadcast::channel('messages', function ($chat, $user) {
 });
 
 Broadcast::channel('payments', function ($user) {
-    return $user->role === UserRoles::Company;
+    return $user->role === UserRole::COMPANY;
 });

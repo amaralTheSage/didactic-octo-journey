@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Companies;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Companies\Pages\CreateCompany;
 use App\Filament\Resources\Companies\Pages\EditCompany;
 use App\Filament\Resources\Companies\Pages\ListCompanies;
@@ -31,7 +31,7 @@ class CompanyResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', UserRoles::Company);
+        return parent::getEloquentQuery()->where('role', UserRole::COMPANY);
     }
 
     public static function form(Schema $schema): Schema

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\PaymentStatus;
 use App\Events\PaymentReceived;
-use App\Models\CampaignAnnouncement;
+use App\Models\Campaign;
 use App\Models\Payment;
 use App\Services\AbacatePayService;
 use Illuminate\Http\Request;
@@ -43,7 +43,7 @@ class PaymentController extends Controller
         Gate::authorize('is_company');
 
         $validated = $request->validate([
-            'campaign_id' => 'required|exists:App\Models\CampaignAnnouncement,id',
+            'campaign_id' => 'required|exists:App\Models\Campaign,id',
         ]);
 
         $existingPayment = Payment::whereCampaignId($validated['campaign_id'])
@@ -132,7 +132,7 @@ class PaymentController extends Controller
                 'data.pixQrCode.status' => ['required', 'string', Rule::enum(PaymentStatus::class)],
 
                 'data.pixQrCode.metadata' => 'required|array',
-                'data.pixQrCode.metadata.campaign_id' => 'required|integer|exists:campaign_announcements,id',
+                'data.pixQrCode.metadata.campaign_id' => 'required|integer|exists:campaigns,id',
             ]);
         } catch (ValidationException $e) {
             Log::error('Webhook pix: Webhook falhou durante validação', [
@@ -161,11 +161,11 @@ class PaymentController extends Controller
                 $p = Payment::where('campaign_id', $campaignId)->where('abacate_id', $abacateId);
 
                 $p->update(['paid_at' => now()]);
-                CampaignAnnouncement::whereId($campaignId)->update(['validated_at' => $p['paid_at']]); // p/ garantir que é o exato mesmo tempo
+                Campaign::whereId($campaignId)->update(['validated_at' => $p['paid_at']]); // p/ garantir que é o exato mesmo tempo
             }
 
             Log::info('Webhook pix: Status do pagamento atualizados com sucesso', [
-                'campanha' => CampaignAnnouncement::whereId($campaignId)->first(),
+                'campanha' => Campaign::whereId($campaignId)->first(),
                 'status' => $paymentStatus,
             ]);
         } catch (Throwable $e) {

@@ -2,7 +2,7 @@
 
 namespace App\Actions\Filament;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Helpers\ProposalChangeDiffFinder;
 use App\Models\Proposal;
 use Filament\Actions\Action;
@@ -25,11 +25,11 @@ class RejectProposal extends Action
         $this->visible(function ($record) {
             $user = Auth::user();
 
-            if ($user->role === UserRoles::Agency) {
+            if ($user->role === UserRole::AGENCY) {
                 return $record->agency_approval !== 'rejected';
-            } elseif ($user->role === UserRoles::Company) {
+            } elseif ($user->role === UserRole::COMPANY) {
                 return $record->company_approval !== 'rejected';
-            } elseif ($user->role === UserRoles::Influencer) {
+            } elseif ($user->role === UserRole::INFLUENCER) {
                 $approved = DB::table('proposal_user')
                     ->where('proposal_id', $record->id)
                     ->where('user_id', $user->id)
@@ -42,7 +42,7 @@ class RejectProposal extends Action
         });
 
         $this->label(function ($record) {
-            return Auth::user()->role === UserRoles::Influencer ? 'Não Vou Participar' : 'Rejeitar Proposta';
+            return Auth::user()->role === UserRole::INFLUENCER ? 'Não Vou Participar' : 'Rejeitar Proposta';
         });
         $this->color('danger');
         $this->icon('heroicon-o-x-circle');
@@ -51,7 +51,7 @@ class RejectProposal extends Action
 
         $this->action(function (Proposal $record) {
             try {
-                if (Auth::user()->role === UserRoles::Company) {
+                if (Auth::user()->role === UserRole::COMPANY) {
                     $from = $record->company_approval;
                     $record->update(['company_approval' => 'rejected']);
 
@@ -61,7 +61,7 @@ class RejectProposal extends Action
                         $from,
                         'rejected'
                     );
-                } elseif (Auth::user()->role === UserRoles::Agency) {
+                } elseif (Auth::user()->role === UserRole::AGENCY) {
                     $from = $record->agency_approval;
                     $record->update(['agency_approval' => 'rejected']);
 
@@ -71,7 +71,7 @@ class RejectProposal extends Action
                         $from,
                         'rejected'
                     );
-                } elseif (Auth::user()->role === UserRoles::Influencer) {
+                } elseif (Auth::user()->role === UserRole::INFLUENCER) {
                     $from = DB::table('proposal_user')
                         ->where('proposal_id', $record->id)
                         ->where('user_id', Auth::id())
@@ -94,7 +94,7 @@ class RejectProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao rejeitar proposta: ' . $e->getMessage());
+                Log::error('Erro ao rejeitar proposta: '.$e->getMessage());
                 Notification::make()
                     ->title('Erro ao rejeitarr Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -103,13 +103,13 @@ class RejectProposal extends Action
             } finally {
                 $role = Auth::user()->role;
                 $userName = Auth::user()->name;
-                $campaignName = $record->announcement->name;
+                $campaignName = $record->campaign->name;
 
                 $roleLabel = match ($role) {
-                    UserRoles::Company => 'Empresa',
-                    UserRoles::Agency => 'Agência',
-                    UserRoles::Influencer => 'Influenciador',
-                    UserRoles::Curator => 'Curadoria',
+                    UserRole::COMPANY => 'Empresa',
+                    UserRole::AGENCY => 'Agência',
+                    UserRole::INFLUENCER => 'Influenciador',
+                    UserRole::CURATOR => 'Curadoria',
                 };
 
                 $notification = Notification::make()
@@ -119,13 +119,13 @@ class RejectProposal extends Action
                     ->toDatabase();
 
                 $notifyRecipients = function ($recipients) use ($notification) {
-                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
+                    collect($recipients)->each(fn ($recipient) => $recipient->notify($notification));
                 };
 
                 match ($role) {
-                    UserRoles::Company => $notifyRecipients([$record->agency, ...$record->influencers]),
-                    UserRoles::Agency => $notifyRecipients([$record->announcement->company, ...$record->influencers]),
-                    UserRoles::Influencer => $notifyRecipients([$record->announcement->company, $record->agency]),
+                    UserRole::COMPANY => $notifyRecipients([$record->agency, ...$record->influencers]),
+                    UserRole::AGENCY => $notifyRecipients([$record->campaign->company, ...$record->influencers]),
+                    UserRole::INFLUENCER => $notifyRecipients([$record->campaign->company, $record->agency]),
                 };
             }
         });

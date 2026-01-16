@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Influencers;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Influencers\Pages\CreateInfluencer;
 use App\Filament\Resources\Influencers\Pages\EditInfluencer;
 use App\Filament\Resources\Influencers\Pages\ListInfluencers;
@@ -33,12 +33,12 @@ class InfluencerResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        if (Auth::user()->role === UserRoles::Agency) {
-            return parent::getEloquentQuery()->where('role', UserRoles::Influencer)->whereHas('influencer_info', function (Builder $query) {
+        if (Auth::user()->role === UserRole::AGENCY) {
+            return parent::getEloquentQuery()->where('role', UserRole::INFLUENCER)->whereHas('influencer_info', function (Builder $query) {
                 $query->where('agency_id', Auth::id());
             });
         } else {
-            return parent::getEloquentQuery()->where('role', UserRoles::Influencer);
+            return parent::getEloquentQuery()->where('role', UserRole::INFLUENCER);
         }
     }
 
@@ -46,7 +46,7 @@ class InfluencerResource extends Resource
     {
         $role = Auth::user()?->role;
 
-        return $role === UserRoles::Company || $role === UserRoles::Agency;
+        return $role === UserRole::COMPANY || $role === UserRole::AGENCY;
     }
 
     public static function form(Schema $schema): Schema
@@ -68,12 +68,12 @@ class InfluencerResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->role === UserRoles::Agency;
+        return Auth::user()?->role === UserRole::AGENCY;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->role === UserRoles::Agency && $record->agency_id === Auth::user()->id;
+        return Auth::user()?->role === UserRole::AGENCY && $record->agency_id === Auth::user()->id;
     }
 
     public static function canDelete(Model $record): bool

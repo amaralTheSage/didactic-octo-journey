@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Models\Chat;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -64,9 +64,9 @@ class ChatService
 
         foreach ($selectedUsers as $user) {
             $result = match ($currentUser->role) {
-                UserRoles::Company => self::handleCompanyChat($currentUser, $user, $finalUserIds),
-                UserRoles::Agency => self::handleAgencyChat($currentUser, $user, $finalUserIds),
-                UserRoles::Influencer => self::handleInfluencerChat($currentUser, $user, $finalUserIds),
+                UserRole::COMPANY => self::handleCompanyChat($currentUser, $user, $finalUserIds),
+                UserRole::AGENCY => self::handleAgencyChat($currentUser, $user, $finalUserIds),
+                UserRole::INFLUENCER => self::handleInfluencerChat($currentUser, $user, $finalUserIds),
                 default => $finalUserIds,
             };
 
@@ -82,13 +82,13 @@ class ChatService
 
     protected static function handleCompanyChat(User $company, User $targetUser, array $currentParticipants): array
     {
-        if ($targetUser->role === UserRoles::Agency) {
+        if ($targetUser->role === UserRole::AGENCY) {
             $currentParticipants[] = $targetUser->id;
 
             return $currentParticipants;
         }
 
-        if ($targetUser->role === UserRoles::Influencer) {
+        if ($targetUser->role === UserRole::INFLUENCER) {
             $currentParticipants[] = $targetUser->id;
 
             $agencyId = $targetUser->influencer_info['agency_id'] ?? null;
@@ -100,7 +100,7 @@ class ChatService
             return $currentParticipants;
         }
 
-        if ($targetUser->role === UserRoles::Company) {
+        if ($targetUser->role === UserRole::COMPANY) {
             return ['error' => 'Companies cannot start chats with other companies.'];
         }
 
@@ -109,13 +109,13 @@ class ChatService
 
     protected static function handleAgencyChat(User $agency, User $targetUser, array $currentParticipants): array
     {
-        if ($targetUser->role === UserRoles::Company) {
+        if ($targetUser->role === UserRole::COMPANY) {
             $currentParticipants[] = $targetUser->id;
 
             return $currentParticipants;
         }
 
-        if ($targetUser->role === UserRoles::Influencer) {
+        if ($targetUser->role === UserRole::INFLUENCER) {
             $influencerAgencyId = $targetUser->influencer_info['agency_id'] ?? null;
 
             if ($influencerAgencyId !== $agency->id) {
@@ -127,7 +127,7 @@ class ChatService
             return $currentParticipants;
         }
 
-        if ($targetUser->role === UserRoles::Agency) {
+        if ($targetUser->role === UserRole::AGENCY) {
             $currentParticipants[] = $targetUser->id;
 
             return $currentParticipants;
@@ -138,7 +138,7 @@ class ChatService
 
     protected static function handleInfluencerChat(User $influencer, User $targetUser, array $currentParticipants): array
     {
-        if (in_array($targetUser->role, [UserRoles::Company, UserRoles::Agency, UserRoles::Influencer])) {
+        if (in_array($targetUser->role, [UserRole::COMPANY, UserRole::AGENCY, UserRole::INFLUENCER])) {
             $currentParticipants[] = $targetUser->id;
         }
 
@@ -151,21 +151,21 @@ class ChatService
             return ['allowed' => false, 'message' => 'You cannot chat with yourself.'];
         }
 
-        if ($targetUser->role === UserRoles::Admin) {
+        if ($targetUser->role === UserRole::ADMIN) {
             return ['allowed' => false, 'message' => 'Cannot chat with administrators.'];
         }
 
         return match ($currentUser->role) {
-            UserRoles::Company => self::validateCompanyPermission($targetUser),
-            UserRoles::Agency => self::validateAgencyPermission($currentUser, $targetUser),
-            UserRoles::Influencer => self::validateInfluencerPermission($targetUser),
+            UserRole::COMPANY => self::validateCompanyPermission($targetUser),
+            UserRole::AGENCY => self::validateAgencyPermission($currentUser, $targetUser),
+            UserRole::INFLUENCER => self::validateInfluencerPermission($targetUser),
             default => ['allowed' => false],
         };
     }
 
     protected static function validateCompanyPermission(User $targetUser): array
     {
-        if (in_array($targetUser->role, [UserRoles::Agency, UserRoles::Influencer])) {
+        if (in_array($targetUser->role, [UserRole::AGENCY, UserRole::INFLUENCER])) {
             return ['allowed' => true];
         }
 
@@ -174,14 +174,14 @@ class ChatService
 
     protected static function validateAgencyPermission(User $agency, User $targetUser): array
     {
-        if ($targetUser->role === UserRoles::Influencer) {
+        if ($targetUser->role === UserRole::INFLUENCER) {
             $influencerAgencyId = $targetUser->influencer_info['agency_id'] ?? null;
             if ($influencerAgencyId !== $agency->id) {
                 return ['allowed' => false, 'message' => 'You can only chat with your own influencers.'];
             }
         }
 
-        if (in_array($targetUser->role, [UserRoles::Company, UserRoles::Agency, UserRoles::Influencer])) {
+        if (in_array($targetUser->role, [UserRole::COMPANY, UserRole::AGENCY, UserRole::INFLUENCER])) {
             return ['allowed' => true];
         }
 
@@ -190,7 +190,7 @@ class ChatService
 
     protected static function validateInfluencerPermission(User $targetUser): array
     {
-        if (in_array($targetUser->role, [UserRoles::Company, UserRoles::Agency])) {
+        if (in_array($targetUser->role, [UserRole::COMPANY, UserRole::AGENCY])) {
             return ['allowed' => true];
         }
 

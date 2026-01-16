@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
@@ -54,6 +54,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->hasOne(InfluencerInfo::class);
     }
 
+    public function campaigns()
+    {
+        return $this->hasMany(Campaign::class, 'company_id', 'id');
+    }
+
     // if agency
     public function agency_loans()
     {
@@ -98,11 +103,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->belongsToMany(Subcategory::class);
     }
 
-    public function campaign_announcements()
-    {
-        return $this->hasMany(CampaignAnnouncement::class, 'company_id', 'id');
-    }
-
     public function influencers()
     {
         return $this->hasManyThrough(
@@ -139,8 +139,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+            ? asset('storage/'.$this->avatar)
+            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -149,7 +149,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             return null;
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**
@@ -171,7 +171,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected function casts(): array
     {
         return [
-            'role' => UserRoles::class,
+            'role' => UserRole::class,
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',

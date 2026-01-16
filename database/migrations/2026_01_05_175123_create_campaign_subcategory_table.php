@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('campaign_announcements', function (Blueprint $table) {
-            $table->timestamp('validated_at')->nullable();
+        Schema::create('campaign_subcategory', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('campaign_announcements', function (Blueprint $table) {
-            $table->dropColumn('validated_at');
-        });
+        Schema::dropIfExists('campaign_subcategory');
     }
 };

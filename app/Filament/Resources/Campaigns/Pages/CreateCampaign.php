@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\CampaignAnnouncements\Pages;
+namespace App\Filament\Resources\Campaigns\Pages;
 
-use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
+use App\Filament\Resources\Campaigns\CampaignResource;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Icons\Heroicon;
 
-class CreateCampaignAnnouncement extends CreateRecord
+class CreateCampaign extends CreateRecord
 {
     protected function afterCreate(): void
     {
@@ -66,5 +66,5 @@ class CreateCampaignAnnouncement extends CreateRecord
         return $data;
     }
 
-    protected static string $resource = CampaignAnnouncementResource::class;
+    protected static string $resource = CampaignResource::class;
 }
