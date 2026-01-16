@@ -350,8 +350,7 @@ class Register extends SimplePage
                             ->afterStateUpdated(function (callable $set) {
                                 $set('state', null);
                                 $set('city', null);
-                            })
-                            ->required(),
+                            }),
 
                         Select::make('state')
                             ->label('Estado')
@@ -366,8 +365,8 @@ class Register extends SimplePage
                             ->searchable()
                             ->reactive()
                             ->afterStateUpdated(fn(callable $set) => $set('city', null))
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR'),
+
 
                         Select::make('city')
                             ->label('Cidade')
@@ -385,8 +384,7 @@ class Register extends SimplePage
                                     ->toArray();
                             })
                             ->searchable()
-                            ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
+                            ->disabled(fn(Get $get) => $get('country') !== 'BR'),
                     ]),
 
                 Section::make('Redes Sociais')->collapsed()->collapsible()

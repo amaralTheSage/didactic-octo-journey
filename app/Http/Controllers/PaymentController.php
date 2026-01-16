@@ -75,11 +75,13 @@ class PaymentController extends Controller
             ],
         ]);
 
-        return URL::temporarySignedRoute(
+        $signedUrl = URL::temporarySignedRoute(
             'payments.page',
-            now()->plus(minutes: 15),
+            now()->addMinutes(15),
             ['payment' => $payment->id, 'brcode' => $payment->brcode]
         );
+
+        return redirect()->to($signedUrl);
     }
 
     public function pixwebhook(Request $request)

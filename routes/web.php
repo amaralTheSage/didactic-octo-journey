@@ -51,4 +51,4 @@ Route::middleware('auth')
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
