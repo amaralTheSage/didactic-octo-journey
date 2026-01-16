@@ -94,7 +94,7 @@ class RejectProposal extends Action
                     ->send();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Erro ao rejeitar proposta: '.$e->getMessage());
+                Log::error('Erro ao rejeitar proposta: ' . $e->getMessage());
                 Notification::make()
                     ->title('Erro ao rejeitarr Proposta')
                     ->body('Ocorreu um erro ao iniciar a campanha. Tente novamente.')
@@ -109,6 +109,7 @@ class RejectProposal extends Action
                     UserRoles::Company => 'Empresa',
                     UserRoles::Agency => 'Agência',
                     UserRoles::Influencer => 'Influenciador',
+                    UserRoles::Curator => 'Curadoria',
                 };
 
                 $notification = Notification::make()
@@ -118,7 +119,7 @@ class RejectProposal extends Action
                     ->toDatabase();
 
                 $notifyRecipients = function ($recipients) use ($notification) {
-                    collect($recipients)->each(fn ($recipient) => $recipient->notify($notification));
+                    collect($recipients)->each(fn($recipient) => $recipient->notify($notification));
                 };
 
                 match ($role) {

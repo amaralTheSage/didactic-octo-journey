@@ -80,9 +80,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->belongsToMany(
             AttributeValue::class,
-            // 'attribute_value_user',
-            // 'user_id',
-            // 'attribute_value_id'
         )->withPivot('title')->withTimestamps();
     }
 
@@ -144,8 +141,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/'.$this->avatar)
-            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
+            ? asset('storage/' . $this->avatar)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -154,7 +151,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             return null;
         }
 
-        return asset('storage/'.$this->avatar);
+        return asset('storage/' . $this->avatar);
     }
 
     /**

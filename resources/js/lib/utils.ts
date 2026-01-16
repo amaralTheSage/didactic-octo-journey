@@ -44,6 +44,10 @@ export function getTranslatedRole(role: string): string {
             translated = 'Agência';
             break;
 
+        case 'curator':
+            translated = 'Curadoria';
+            break;
+
         default:
             translated = 'erro';
             break;

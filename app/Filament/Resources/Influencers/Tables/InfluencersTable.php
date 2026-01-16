@@ -51,7 +51,7 @@ class InfluencersTable
                 TextColumn::make('influencer_info.agency.name')->label('Agência')->default('___')
                     ->searchable(),
 
-                ExpandableBadges::make('subcategories')->label('Subcategorias')->limit(6)->width('40%'),
+                ExpandableBadges::make('subcategories')->label('Categorias')->limit(6)->width('40%'),
 
                 TextColumn::make('total_followers')
                     ->label('Seguidores')
@@ -81,7 +81,7 @@ class InfluencersTable
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -118,7 +118,7 @@ class InfluencersTable
                         ->action(function (EloquentCollection $records, array $data) {
                             // Group influencers by agency
                             $influencersByAgency = $records->groupBy(
-                                fn ($influencer) => $influencer->influencer_info->agency_id
+                                fn($influencer) => $influencer->influencer_info->agency_id
                             );
 
                             $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
@@ -140,7 +140,7 @@ class InfluencersTable
                                 User::find($agencyId)->notify(
                                     Notification::make()
                                         ->title('Nova proposta de campanha')
-                                        ->body(Auth::user()->name.' enviou uma proposta para '.$campaign->name)
+                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
                                         ->toDatabase()
                                 );
                             }

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('pix_address')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'influencer', 'company', 'agency']);
+            $table->enum('role', ['admin', 'influencer', 'company', 'agency', 'curator']);
             $table->rememberToken();
             $table->timestamps();
         });

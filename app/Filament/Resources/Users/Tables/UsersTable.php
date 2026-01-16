@@ -20,9 +20,11 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('name')
             ->columns([
                 TextColumn::make('role')
                     ->badge()
+                    ->formatStateUsing(fn($state) => __('roles.' . $state->value))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')

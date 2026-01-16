@@ -25,6 +25,7 @@ class AttributeValue extends Model
         )->withTimestamps();
     }
 
+    # quase certo q não utilizamos mais
     public function influencer_infos(): BelongsToMany
     {
         return $this->belongsToMany(

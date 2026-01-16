@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\UserRoles;
+use App\Models\AttributeValue;
 use App\Models\CampaignAnnouncement;
 use App\Models\Category;
 use App\Models\InfluencerInfo;
@@ -21,13 +22,18 @@ class DatabaseSeeder extends Seeder
         Storage::disk('public')->makeDirectory('avatars');
 
         $createAvatar = function () {
-            $filename = Str::random(10).'.jpg';
-            $url = 'https://picsum.photos/300/300?random='.Str::random(10);
+            $filename = Str::random(10) . '.jpg';
+            $url = 'https://picsum.photos/300/300?random=' . Str::random(10);
             $imageData = file_get_contents($url);
             Storage::disk('public')->put("avatars/{$filename}", $imageData);
 
             return "avatars/{$filename}";
         };
+
+        $this->call([
+            // ChatSeeder::class,
+            AttributeSeeder::class,
+        ]);
 
         // -------------------------------------------------------
         // ADMIN
@@ -55,6 +61,24 @@ class DatabaseSeeder extends Seeder
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
                     'role' => UserRoles::Company,
+                    'email_verified_at' => now(),
+                ])
+            );
+        }
+
+        // -------------------------------------------------------
+        // CURATORS
+        // -------------------------------------------------------
+        $curators = collect();
+        foreach (range(1, 5) as $i) {
+            $curators->push(
+                User::create([
+                    'name' => fake()->company(),
+                    'email' => "curator{$i}@gmail.com",
+                    'bio' => fake()->paragraph(),
+                    'avatar' => $createAvatar(),
+                    'password' => Hash::make('senha123'),
+                    'role' => UserRoles::Curator,
                     'email_verified_at' => now(),
                 ])
             );
@@ -162,6 +186,13 @@ class DatabaseSeeder extends Seeder
                 $allSubcategories->random(rand(1, 3))->pluck('id')
             );
 
+            $attributeValues = AttributeValue::all();
+
+            $user->attribute_values()->attach(
+                $attributeValues->random(rand(3, 6))->pluck('id')
+                    ->toArray()
+            );
+
             // influencer info
             InfluencerInfo::create([
                 'user_id' => $user->id,
@@ -188,7 +219,7 @@ class DatabaseSeeder extends Seeder
         $companies->each(function ($company) use ($categories) {
             foreach (range(1, 3) as $i) {
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Description for product {$i} from {$company->name}.",
                     'price' => rand(10, 500),
                     'category_id' => $categories->random()->id,
@@ -201,7 +232,7 @@ class DatabaseSeeder extends Seeder
         // MANUAL TEST USERS
         // -------------------------------------------------------
         $testCompany = User::create([
-            'name' => '1 Empresa',
+            'name' => 'Aa Empresa',
             'email' => 'empresa@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -210,8 +241,18 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        $curadoria = User::create([
+            'name' => 'Aa Curadoria',
+            'email' => 'curadoria@gmail.com',
+            'avatar' => $createAvatar(),
+            'bio' => fake()->paragraph(),
+            'password' => Hash::make('senha123'),
+            'role' => UserRoles::Curator,
+            'email_verified_at' => now(),
+        ]);
+
         $agenciaA = User::create([
-            'name' => '1 Agência',
+            'name' => 'Aa Agência',
             'email' => 'agencia@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -230,16 +271,27 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        $attributeValues = AttributeValue::all();
+
+        $gabriel->attribute_values()->attach(
+            $attributeValues->random(rand(5, 10))->pluck('id')
+                ->toArray()
+        );
+
+        $gabriel->subcategories()->attach(
+            Subcategory::all()->random(rand(1, 3))->pluck('id')
+        );
+
         InfluencerInfo::create([
             'user_id' => $gabriel->id,
             'agency_id' => $agenciaA->id,
             'association_status' => 'approved',
             'location' => 'BR|RS|Pelotas',
-            'instagram' => fake()->word().'_ig',
-            'twitter' => fake()->word().'_tw',
-            'facebook' => fake()->word().'_fb',
-            'youtube' => fake()->word().'_yt',
-            'tiktok' => fake()->word().'_tt',
+            'instagram' => fake()->word() . '_ig',
+            'twitter' => fake()->word() . '_tw',
+            'facebook' => fake()->word() . '_fb',
+            'youtube' => fake()->word() . '_yt',
+            'tiktok' => fake()->word() . '_tt',
             'instagram_followers' => rand(5000, 50000),
             'twitter_followers' => rand(5000, 50000),
             'facebook_followers' => rand(5000, 50000),
@@ -253,7 +305,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $influencerA1 = User::create([
-            'name' => '1 Influenciador',
+            'name' => 'Aa Influenciador',
             'email' => 'influencer@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -261,6 +313,11 @@ class DatabaseSeeder extends Seeder
             'role' => UserRoles::Influencer,
             'email_verified_at' => now(),
         ]);
+
+        $influencerA1->subcategories()->attach(
+            Subcategory::all()->random(rand(1, 3))->pluck('id')
+        );
+
         InfluencerInfo::create([
             'user_id' => $influencerA1->id,
             'agency_id' => $agenciaA->id,
@@ -274,7 +331,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $influencerA2 = User::create([
-            'name' => '2 Influenciador',
+            'name' => 'Ab Influenciador',
             'email' => 'influencera2@gmail.com',
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
@@ -282,6 +339,11 @@ class DatabaseSeeder extends Seeder
             'role' => UserRoles::Influencer,
             'email_verified_at' => now(),
         ]);
+
+        $influencerA2->subcategories()->attach(
+            Subcategory::all()->random(rand(1, 3))->pluck('id')
+        );
+
         InfluencerInfo::create([
             'user_id' => $influencerA2->id,
             'agency_id' => $agenciaA->id,
@@ -300,7 +362,7 @@ class DatabaseSeeder extends Seeder
         foreach (range(1, 5) as $i) {
             $testProducts->push(
                 Product::create([
-                    'name' => fake()->colorName().' '.fake()->streetName,
+                    'name' => fake()->colorName() . ' ' . fake()->streetName,
                     'description' => "Test product {$i} from 1 Empresa.",
                     'price' => rand(50, 1000),
                     'company_id' => $testCompany->id,
@@ -324,7 +386,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($campaignNames as $index => $campaignName) {
-            CampaignAnnouncement::create([
+            $campaign = CampaignAnnouncement::create([
                 'name' => $campaignName,
                 'description' => fake()->paragraph(3),
                 'agency_cut' => rand(10, 30),
@@ -336,6 +398,18 @@ class DatabaseSeeder extends Seeder
                 'n_stories' => rand(1, 5),
                 'n_carrousels' => rand(1, 5),
             ]);
+
+            $attributeValues = AttributeValue::all();
+
+            $campaign->attribute_values()->attach(
+                $attributeValues->random(rand(3, 8))->pluck('id')
+                    ->toArray()
+            );
+
+
+            $campaign->subcategories()->attach(
+                Subcategory::all()->random(rand(1, 3))->pluck('id')
+            );
         }
 
         // -------------------------------------------------------
@@ -383,5 +457,10 @@ class DatabaseSeeder extends Seeder
                 }
             });
         });
+
+        $this->call([
+            // ChatSeeder::class,
+            AttributeSeeder::class,
+        ]);
     }
 }
