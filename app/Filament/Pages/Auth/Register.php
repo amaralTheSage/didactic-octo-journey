@@ -253,7 +253,8 @@ class Register extends SimplePage
                         $this->getAttributesRepeater(),
                     ])->visible(fn(Get $get) => $get('role') === 'influencer'),
                 ]
-            )->visible(fn(Get $get) => filled($get('role'))),
+            )
+                ->visible(fn(Get $get) => filled($get('role'))),
         ]);
     }
 

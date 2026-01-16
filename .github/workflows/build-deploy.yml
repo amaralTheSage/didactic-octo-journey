@@ -1,9 +1,9 @@
-name: Build and Deploy
+name: Build and Deploy to Test URL
 
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   build-deploy:
@@ -11,75 +11,75 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
 
-    - name: Setup Node
-      uses: actions/setup-node@v6
-      with:
-        node-version: '22.19.0'
-        cache: 'npm'
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.19.0'
+          cache: 'npm'
 
-    - name: Setup php
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.4'
-        extensions: ctype, curl, dom, fileinfo, filter, hash, openssl, pcre, PDO, session, tokenizer, xml
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, curl, dom, fileinfo, filter, hash, openssl, pcre, PDO, session, tokenizer, xml
 
-    - name: Cache Composer dependencies
-      uses: actions/cache@v4
-      with:
-        path: vendor
-        key: composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          composer-
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-
 
-    - name: "Install project depedencies"
-      run: |
-        composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-        npm ci
+      - name: 'Install project depedencies'
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          npm ci
 
-    - name: "Build front-end"
-      env:
-        VITE_APP_NAME: HubInflu
-        VITE_REVERB_APP_KEY: ${{ secrets.REVERB_APP_KEY }}
-        VITE_REVERB_HOST: ${{ secrets.REVERB_HOST }}
-        VITE_REVERB_SCHEME: ${{ secrets.REVERB_SCHEME }}
-      run: npm run build
+      - name: 'Build front-end'
+        env:
+          VITE_APP_NAME: HubInflu
+          VITE_REVERB_APP_KEY: ${{ secrets.REVERB_APP_KEY }}
+          VITE_REVERB_HOST: ${{ secrets.REVERB_HOST }}
+          VITE_REVERB_SCHEME: ${{ secrets.REVERB_SCHEME }}
+        run: npm run build
 
-    - name: "run pre deploy script"
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: "cd /srv/hubinflu/ && bash ./.github/scripts/pre-deploy.sh"
-    - name: "deploy files in ec2"
-      uses: burnett01/rsync-deployments@5.2
-      with:
-        switches: -avzr --delete --exclude='.git' --exclude='tests' --exclude='node_modules' --exclude='.env' --exclude="storage/" --exclude='bootstrap/cache/'
-        remote_path: "/srv/hubinflu/."
-        remote_host: ${{ secrets.SSH_HOST }}
-        remote_port: ${{ secrets.SSH_PORT }}
-        remote_user: ${{ secrets.SSH_USER }}
-        remote_key: ${{ secrets.SSH_KEY }}
-    - name: "run post deploy script"
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: "cd /srv/hubinflu && bash ./.github/scripts/post-deploy.sh"
-    - name: "Deploy failed, bring site back up"
-      if: failure()
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd /srv/hubinflu
-          php artisan up
+      - name: 'run pre deploy script'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: 'cd /srv/hubinflu/ && bash ./.github/scripts/pre-deploy.sh'
+      - name: 'deploy files in ec2'
+        uses: burnett01/rsync-deployments@5.2
+        with:
+          switches: -avzr --delete --exclude='.git' --exclude='tests' --exclude='node_modules' --exclude='.env' --exclude="storage/" --exclude='bootstrap/cache/'
+          remote_path: '/srv/hubinflu/.'
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_port: ${{ secrets.SSH_PORT }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+      - name: 'run post deploy script'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: 'cd /srv/hubinflu && bash ./.github/scripts/post-deploy.sh'
+      - name: 'Deploy failed, bring site back up'
+        if: failure()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /srv/hubinflu
+            php artisan up
