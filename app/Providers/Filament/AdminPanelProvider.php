@@ -66,12 +66,11 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
 
             ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
-                fn (): string => Blade::render(<<<'BLADE'
+                fn(): string => Blade::render(<<<'BLADE'
                     <div x-data="{ role: @entangle('data.role') }">
                         <div x-show="role === 'influencer'">
                             <x-filament-socialite::buttons />

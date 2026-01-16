@@ -98,11 +98,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->belongsToMany(Subcategory::class);
     }
 
-    public function campaigns()
+    public function campaign_announcements()
     {
-        return OngoingCampaign::where('agency_id', $this->id)
-            ->orWhere('company_id', $this->id)
-            ->orWhere('influencer_id', $this->id);
+        return $this->hasMany(CampaignAnnouncement::class, 'company_id', 'id');
     }
 
     public function influencers()

@@ -394,6 +394,14 @@ th {
     @apply bg-primary/0 text-foreground;
 }
 
+.fi-wi-stats-overview-stat {
+    @apply bg-card;
+}
+
+.fi-sc.fi-sc-has-gap.fi-grid.\@xl\:fi-grid-cols.\!\@lg\:fi-grid-cols.fi-section-content {
+    @apply bg-background;
+}
+
 .fi-sidebar-item-btn {
     @apply hover:bg-foreground/10;
 }
