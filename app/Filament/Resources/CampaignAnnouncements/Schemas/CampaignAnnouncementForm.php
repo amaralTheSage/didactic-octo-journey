@@ -255,9 +255,7 @@ class CampaignAnnouncementForm
                             ->afterStateUpdated(function (callable $set) {
                                 $set('city', null);
                             })
-                            ->disabled(fn (Get $get) => $get('country') !== 'BR')
-                            ->required(fn (Get $get) => $get('country') === 'BR'),
-
+                            ->disabled(fn (Get $get) => $get('country') !== 'BR'),
                         Select::make('city')->columnSpan(1)
                             ->label('Cidade')
                             ->placeholder('Selecione uma cidade')
@@ -274,7 +272,6 @@ class CampaignAnnouncementForm
                             })
                             ->searchable()
                             ->disabled(fn (Get $get) => $get('country') !== 'BR')
-                            ->required(fn (Get $get) => $get('country') === 'BR' && $get('state'))
                             ->disabled(fn (Get $get) => ! $get('state')),
                     ])->compact()
                     ->columnSpan(2),

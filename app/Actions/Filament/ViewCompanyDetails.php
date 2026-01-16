@@ -19,7 +19,7 @@ class ViewCompanyDetails
             ->slideOver()
             ->modalWidth('xl')
             ->schema([
-                Section::make('Detalhes da Agência')
+                Section::make('Detalhes da Empresa')
                     ->schema([
                         Group::make()->columns(2)->schema([
                             ImageEntry::make('avatar_url')
@@ -33,10 +33,13 @@ class ViewCompanyDetails
                         TextEntry::make('role')->hiddenLabel()
                             ->badge()->alignRight()
                             ->color('success'),
+
                         TextEntry::make('email')
                             ->label('Email')
                             ->copyable()
+                            ->visible(false)
                             ->icon('heroicon-o-envelope'),
+
                         TextEntry::make('bio')
                             ->label('Bio')
                             ->columnSpanFull()

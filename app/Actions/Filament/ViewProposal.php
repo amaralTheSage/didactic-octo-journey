@@ -33,14 +33,14 @@ class ViewProposal
                 ViewChangeLogs::make(),
             ])
             ->modalWidth('xl')
-            ->schema(fn($record) => [
+            ->schema(fn ($record) => [
                 Section::make('Campanha')
                     ->schema([
-                        TextEntry::make('announcement.name')->icon(fn($record) => $record->announcement->validated_at
+                        TextEntry::make('announcement.name')->icon(fn ($record) => $record->announcement->validated_at
                             ? 'heroicon-o-check-badge'
                             : null)
                             ->iconPosition('after')
-                            ->tooltip(fn($record) => $record->announcement->validated_at
+                            ->tooltip(fn ($record) => $record->announcement->validated_at
                                 ? 'Campanha Verificada'
                                 : null)
                             ->iconColor('success')
@@ -79,13 +79,13 @@ class ViewProposal
 
                             TextEntry::make('agency.name')->weight(FontWeight::Bold)
                                 ->hiddenLabel()->columnSpan(2)->alignStart(),
-                            TextEntry::make('agency.role')->formatStateUsing(fn(UserRoles $state): string => __("roles.$state->value"))
+                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRoles $state): string => __("roles.$state->value"))
                                 ->hiddenLabel()->badge()->alignStart(),
 
                         ])->columns(5)->columnSpan(2),
 
                         TextEntry::make('message')
-                            ->label('Mensagem')->visible(fn($record) => isset($record->message))
+                            ->label('Mensagem')->visible(fn ($record) => isset($record->message))
                             ->columnSpanFull(),
 
                         TextEntry::make('proposed_agency_cut')
@@ -129,7 +129,7 @@ class ViewProposal
                             ->state(function ($record) {
                                 $influencers = $record->influencers()
                                     ->get()
-                                    ->map(fn($inf) => [
+                                    ->map(fn ($inf) => [
                                         'reels_price' => $inf->pivot->reels_price ?? 0,
                                         'stories_price' => $inf->pivot->stories_price ?? 0,
                                         'carrousel_price' => $inf->pivot->carrousel_price ?? 0,
@@ -148,8 +148,8 @@ class ViewProposal
                                 );
 
                                 return new HtmlString('
-                                        <span class="text-gray-600 dark:text-gray-400 text-sm">de R$ ' . number_format($range['min'], 2, ',', '.') . '
-                                        à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">de R$ '.number_format($range['min'], 2, ',', '.').'
+                                        à R$ '.number_format($range['max'], 2, ',', '.').'</span>
                                 ');
                             }),
 
@@ -161,14 +161,14 @@ class ViewProposal
                             ->label('Conversar')
                             ->icon(Heroicon::OutlinedChatBubbleLeftEllipsis)
                             ->color('secondary')
-                            ->visible(fn($record) => Gate::allows('is_company'))
+                            ->visible(fn ($record) => Gate::allows('is_company'))
                             ->action(function ($record) {
 
                                 $proposalId = $record->id;
 
                                 $chat = \App\Models\Chat::query()
                                     ->where('proposal_id', $proposalId)
-                                    ->whereHas('users', fn($q) => $q->where('users.id', Auth::id()))
+                                    ->whereHas('users', fn ($q) => $q->where('users.id', Auth::id()))
                                     ->first();
 
                                 if (! $chat) {
@@ -204,9 +204,9 @@ class ViewProposal
                             RepeatableEntry::make('influencers')
                                 ->hiddenLabel()
                                 ->state(
-                                    fn($record) => $record->influencers()
+                                    fn ($record) => $record->influencers()
                                         ->get()
-                                        ->sortByDesc(fn($user) => $user->id === Auth::id())
+                                        ->sortByDesc(fn ($user) => $user->id === Auth::id())
                                         ->values()
                                 )
                                 ->schema([
@@ -223,7 +223,7 @@ class ViewProposal
 
                                             TextEntry::make('role')
                                                 ->formatStateUsing(
-                                                    fn(UserRoles $state): string => __("roles.$state->value")
+                                                    fn (UserRoles $state): string => __("roles.$state->value")
                                                 )
                                                 ->hiddenLabel()
                                                 ->badge(),
@@ -240,8 +240,8 @@ class ViewProposal
 
                                             return $approval ?? 'pending';
                                         })
-                                        ->formatStateUsing(fn($state) => __("approval_status.{$state}"))
-                                        ->color(fn($state) => match ($state) {
+                                        ->formatStateUsing(fn ($state) => __("approval_status.{$state}"))
+                                        ->color(fn ($state) => match ($state) {
                                             'approved' => 'success',
                                             'rejected' => 'danger',
                                             'pending' => 'warning',
@@ -252,7 +252,7 @@ class ViewProposal
                                         ->hiddenLabel()->columnSpan(5),
 
                                     // ── Prices
-                                    Group::make()->visible(fn($record) => $record->id === Auth::id() || Gate::denies('is_influencer'))
+                                    Group::make()->visible(fn ($record) => $record->id === Auth::id() || Gate::denies('is_influencer'))
                                         ->schema([
                                             TextEntry::make('pivot_reels_price')
                                                 ->label('Reels')
@@ -303,7 +303,7 @@ class ViewProposal
                                                         ->value('commission_cut');
                                                 }),
                                         ])
-                                        ->columns(fn() => Gate::denies('is_company') ? 4 : 3)
+                                        ->columns(fn () => Gate::denies('is_company') ? 4 : 3)
                                         ->columnSpanFull(),
 
                                     Section::make('Redes Sociais')
@@ -331,11 +331,11 @@ class ViewProposal
                                                     return $info && ($info->instagram || $info->youtube || $info->tiktok || $info->twitter || $info->facebook);
                                                 }),
 
-                                            TextEntry::make('placeholder')->hiddenLabel()->visible(fn($record) => ! ($record->influencer_info?->instagram || $record->influencer_info?->youtube || $record->influencer_info?->tiktok || $record->influencer_info?->twitter || $record->influencer_info?->facebook))
+                                            TextEntry::make('placeholder')->hiddenLabel()->visible(fn ($record) => ! ($record->influencer_info?->instagram || $record->influencer_info?->youtube || $record->influencer_info?->tiktok || $record->influencer_info?->twitter || $record->influencer_info?->facebook))
                                                 ->state('Nenhuma rede social cadastrada.'),
 
                                             Group::make()
-                                                ->visible(fn($record) => $record->influencer_info?->instagram)
+                                                ->visible(fn ($record) => $record->influencer_info?->instagram)
                                                 ->columns(3)->schema([
                                                     TextEntry::make('instagram_label')->hiddenLabel()->state('Instagram'),
                                                     TextEntry::make('influencer_info.instagram')->hiddenLabel()
@@ -347,7 +347,7 @@ class ViewProposal
                                                         ->placeholder('-'),
                                                 ]),
 
-                                            Group::make()->visible(fn($record) => $record->influencer_info?->youtube)->columns(3)->schema([
+                                            Group::make()->visible(fn ($record) => $record->influencer_info?->youtube)->columns(3)->schema([
                                                 TextEntry::make('youtube_label')->hiddenLabel()->state('YouTube'),
                                                 TextEntry::make('influencer_info.youtube')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -358,7 +358,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->tiktok)->schema([
+                                            Group::make()->columns(3)->visible(fn ($record) => $record->influencer_info?->tiktok)->schema([
                                                 TextEntry::make('tiktok_label')->hiddenLabel()->state('TikTok'),
                                                 TextEntry::make('influencer_info.tiktok')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -369,7 +369,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->twitter)->schema([
+                                            Group::make()->columns(3)->visible(fn ($record) => $record->influencer_info?->twitter)->schema([
                                                 TextEntry::make('twitter_label')->hiddenLabel()->state('Twitter'),
                                                 TextEntry::make('influencer_info.twitter')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -380,7 +380,7 @@ class ViewProposal
                                                     ->placeholder('-'),
                                             ]),
 
-                                            Group::make()->columns(3)->visible(fn($record) => $record->influencer_info?->facebook)->schema([
+                                            Group::make()->columns(3)->visible(fn ($record) => $record->influencer_info?->facebook)->schema([
                                                 TextEntry::make('facebook_label')->hiddenLabel()->state('Facebook'),
                                                 TextEntry::make('influencer_info.facebook')->hiddenLabel()
                                                     ->prefix('@')->badge()->copyable()
@@ -408,12 +408,12 @@ class ViewProposal
 
                     Action::make('remove_proposal')->icon(Heroicon::Trash)->hiddenLabel()->requiresConfirmation()->modalHeading('Remover Proposta')
                         ->color('gray')->visible(
-                            fn($record, $livewire) => Gate::allows('is_agency')
+                            fn ($record, $livewire) => Gate::allows('is_agency')
                                 && $record
-                                ->exists()
+                                    ->exists()
                         )
                         ->action(
-                            fn($record) => $record->delete()
+                            fn ($record) => $record->delete()
                         ),
                 ]),
 

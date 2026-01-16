@@ -10,8 +10,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class EditCampaignAnnouncement extends EditRecord
 {
@@ -92,12 +90,12 @@ class EditCampaignAnnouncement extends EditRecord
     {
         return [
             Action::make('validateNow')
-                ->label(fn(CampaignAnnouncement $record) => $record->validated_at ? 'Campanha Validada' : 'Validar Campanha')
-                ->color(fn(CampaignAnnouncement $record) => $record->validated_at ? 'secondary' : 'success')
+                ->label(fn (CampaignAnnouncement $record) => $record->validated_at ? 'Campanha Validada' : 'Validar Campanha')
+                ->color(fn (CampaignAnnouncement $record) => $record->validated_at ? 'secondary' : 'success')
                 ->icon(Heroicon::OutlinedCheckBadge)
-                ->disabled(fn(CampaignAnnouncement $record) => $record->validated_at)
+                ->disabled(fn (CampaignAnnouncement $record) => $record->validated_at)
                 ->action(function ($record) {
-                    return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
+                    return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
                 }),
             ViewAction::make(),
             DeleteAction::make(),

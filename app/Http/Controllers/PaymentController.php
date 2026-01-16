@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Throwable;

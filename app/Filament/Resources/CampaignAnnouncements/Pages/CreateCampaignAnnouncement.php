@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\CampaignAnnouncements\Pages;
 
 use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
-use App\Models\CampaignAnnouncement;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
@@ -38,12 +37,12 @@ class CreateCampaignAnnouncement extends CreateRecord
             ->body('Gostaria de validar esta campanha agora?')
             ->actions([
                 Action::make('validateNow')
-                    ->label(fn() => $this->record->validated_at ? 'Campanha Validada' : 'Validar')
-                    ->color(fn() => $this->record->validated_at ? 'secondary' : 'success')
+                    ->label(fn () => $this->record->validated_at ? 'Campanha Validada' : 'Validar')
+                    ->color(fn () => $this->record->validated_at ? 'secondary' : 'success')
                     ->icon(Heroicon::OutlinedCheckBadge)
-                    ->disabled(fn() => $this->record->validated_at)
+                    ->disabled(fn () => $this->record->validated_at)
                     ->url(
-                        route('payments.qrcode') . '?campaign_id=' . $this->record->id
+                        route('payments.qrcode').'?campaign_id='.$this->record->id
                     ),
             ])
             ->send()

@@ -6,8 +6,8 @@ use App\Actions\Filament\ViewInfluencerDetails;
 use App\Enums\UserRoles;
 use App\Filament\Tables\Columns\ExpandableBadges;
 use App\Models\CampaignAnnouncement;
-use App\Models\Category;
 use App\Models\Proposal;
+use App\Models\Subcategory;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -22,7 +22,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class InfluencersTable
@@ -52,7 +51,6 @@ class InfluencersTable
                 TextColumn::make('influencer_info.agency.name')->label('Agência')->default('___')
                     ->searchable(),
 
-
                 ExpandableBadges::make('subcategories')->label('Subcategorias')->limit(6)->width('40%'),
 
                 TextColumn::make('total_followers')
@@ -73,31 +71,17 @@ class InfluencersTable
                     })
                     ->numeric(),
 
-                // TextColumn::make('influencer_info.city')
-                //     ->label('Cidade / UF')
-                //     ->placeholder('-')
-                //     ->searchable()->description(fn($record) => $record->influencer_info->state),
-
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('subcategory.0.category')->label('Categoria')
+                SelectFilter::make('subcategories.[0]')->label('Categoria')
                     ->options(
-                        Category::query()->pluck('title', 'id')->toArray(),
+                        Subcategory::query()->pluck('title', 'id')->toArray(),
                     ),
             ])
             ->recordActions([
                 Action::make('Aprovar Vínculo')
                     ->label('Aprovar')
-                    ->visible(fn($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
+                    ->visible(fn ($livewire): bool => $livewire->activeTab === 'Pedidos de Vínculo')
                     ->action(function ($record) {
                         $record->influencer_info->update(['association_status' => 'approved']);
                     })
@@ -134,7 +118,7 @@ class InfluencersTable
                         ->action(function (EloquentCollection $records, array $data) {
                             // Group influencers by agency
                             $influencersByAgency = $records->groupBy(
-                                fn($influencer) => $influencer->influencer_info->agency_id
+                                fn ($influencer) => $influencer->influencer_info->agency_id
                             );
 
                             $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
@@ -156,7 +140,7 @@ class InfluencersTable
                                 User::find($agencyId)->notify(
                                     Notification::make()
                                         ->title('Nova proposta de campanha')
-                                        ->body(Auth::user()->name . ' enviou uma proposta para ' . $campaign->name)
+                                        ->body(Auth::user()->name.' enviou uma proposta para '.$campaign->name)
                                         ->toDatabase()
                                 );
                             }

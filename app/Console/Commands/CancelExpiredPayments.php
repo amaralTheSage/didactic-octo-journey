@@ -15,6 +15,7 @@ class CancelExpiredPayments extends Command
      * @var string
      */
     protected $signature = 'payments:cancel-expired';
+
     protected $description = 'Cancel expired pending payments';
 
     /**

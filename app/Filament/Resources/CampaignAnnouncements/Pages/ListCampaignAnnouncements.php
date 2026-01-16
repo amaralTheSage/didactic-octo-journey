@@ -23,7 +23,7 @@ class ListCampaignAnnouncements extends ListRecords
     public function getTabs(): array
     {
         return [
-            'announcements' => Tab::make('Anúncios')
+            'announcements' => Tab::make('Campanhas')
                 ->modifyQueryUsing(
                     fn (Builder $query) => $query->when(
                         Gate::allows('is_company'),

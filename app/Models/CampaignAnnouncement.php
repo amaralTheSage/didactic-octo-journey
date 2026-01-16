@@ -33,7 +33,7 @@ class CampaignAnnouncement extends Model
     protected function influencerIds(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn() => $this->temp_influencer_ids,
+            get: fn () => $this->temp_influencer_ids,
             set: function ($value) {
                 // Save to the public property for the Observer to use
                 $this->temp_influencer_ids = $value;

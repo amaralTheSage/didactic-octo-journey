@@ -38,16 +38,16 @@ class ProposeAction extends Action
         $this->button();
 
         $this->visible(
-            fn($record) => Gate::allows('is_agency')
+            fn ($record) => Gate::allows('is_agency')
                 && ! $record->proposals()
                     ->where('agency_id', Auth::id())
                     ->exists()
         );
 
         $this->modalHeading('Enviar Proposta');
-        $this->modalDescription(fn($record) => "Envie sua proposta para a campanha: {$record->name}");
+        $this->modalDescription(fn ($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
-        $this->modalWidth('3xl');
+        $this->modalWidth('4xl');
 
         $this->schema([
             Textarea::make('message')
@@ -56,9 +56,9 @@ class ProposeAction extends Action
                 ->rows(4)
                 ->maxLength(1000),
 
-            Hidden::make('n_reels')->default(fn($record) => $record->n_reels),
-            Hidden::make('n_stories')->default(fn($record) => $record->n_stories),
-            Hidden::make('n_carrousels')->default(fn($record) => $record->n_carrousels),
+            Hidden::make('n_reels')->default(fn ($record) => $record->n_reels),
+            Hidden::make('n_stories')->default(fn ($record) => $record->n_stories),
+            Hidden::make('n_carrousels')->default(fn ($record) => $record->n_carrousels),
 
             Group::make()->schema([
 
@@ -75,7 +75,7 @@ class ProposeAction extends Action
                     )->afterStateUpdated(function ($state, callable $set, Get $get) {
                         $borrowedIds = $get('borrowed_influencer_ids') ?? [];
 
-                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+                        $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
                         $borrowedInfluencers = Auth::user()
                             ->agency_loans()
@@ -83,7 +83,7 @@ class ProposeAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', $borrowedIds)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -99,7 +99,7 @@ class ProposeAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', (array) $state)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -114,9 +114,9 @@ class ProposeAction extends Action
                         $set('selected_influencers', $influencers);
                     })
                     ->searchable()
-                    ->reactive()->columnSpan(3)
-
-                    ->visible(fn() => Gate::allows('is_agency')),
+                    ->live()
+                    ->columnSpan(3)
+                    ->visible(fn () => Gate::allows('is_agency')),
 
                 Select::make('borrowed_influencer_ids')
                     ->label('Influenciadores Emprestados')
@@ -130,7 +130,7 @@ class ProposeAction extends Action
                     )->afterStateUpdated(function ($state, callable $set, Get $get) {
                         $ownIds = $get('influencer_ids') ?? [];
 
-                        $formatPrice = fn($value) => number_format((float) ($value ?? 0), 2, ',', '.');
+                        $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
                         $borrowedInfluencers = Auth::user()
                             ->agency_loans()
@@ -138,7 +138,7 @@ class ProposeAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', (array) $state)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -154,7 +154,7 @@ class ProposeAction extends Action
                             ->select('users.id', 'users.name')
                             ->whereIn('users.id', $ownIds)
                             ->get()
-                            ->map(fn($influencer) => [
+                            ->map(fn ($influencer) => [
                                 'user_id' => $influencer->id,
                                 'name' => $influencer->name,
                                 'stories_price' => $formatPrice($influencer->influencer_info?->stories_price),
@@ -172,7 +172,7 @@ class ProposeAction extends Action
                     ->reactive()
                     ->live()
                     ->columnSpan(2)
-                    ->visible(fn() => Gate::allows('is_agency')),
+                    ->visible(fn () => Gate::allows('is_agency')),
 
             ])->columns(5),
 
@@ -186,7 +186,7 @@ class ProposeAction extends Action
                     TableColumn::make('Reels'),
                     TableColumn::make('Stories'),
                     TableColumn::make('Carrossel'),
-                    TableColumn::make('Comissão'),
+                    TableColumn::make('Comissão para a Agência')->hiddenHeaderLabel(Gate::denies('is_agency')),
                 ])
                 ->schema([
                     Hidden::make('user_id'),
@@ -197,23 +197,27 @@ class ProposeAction extends Action
                     TextInput::make('reels_price')
                         ->label('Reels')
                         ->required()
+                        ->live(onBlur: true)
                         ->moneyBRL(),
 
                     TextInput::make('stories_price')
                         ->label('Stories')
                         ->required()
+                        ->live(onBlur: true)
                         ->moneyBRL(),
 
                     TextInput::make('carrousel_price')
                         ->label('Carrossel')
                         ->required()
+                        ->live(onBlur: true)
                         ->moneyBRL(),
 
                     TextInput::make('commission_cut')
-                        ->label('Comissão')
-                        ->mask('999')
+                        ->label('Comissão para a Agência')
+                        ->mask('99')
                         ->suffix('%')
                         ->required()
+                        ->hidden(Gate::denies('is_agency'))
                         ->extraInputAttributes([
                             'style' => 'font-weight: bold; color: #07c9de; text-align: right; border: none; border-radius: 0;',
                         ])
@@ -259,7 +263,7 @@ class ProposeAction extends Action
                     }
 
                     return $influencers
-                        ->map(fn($influencer) => [
+                        ->map(fn ($influencer) => [
                             'user_id' => $influencer->id,
                             'name' => $influencer->name,
                             'stories_price' => $influencer->influencer_info->stories_price,
@@ -273,7 +277,7 @@ class ProposeAction extends Action
 
             TextEntry::make('summary')
                 ->hiddenLabel()
-                ->state(fn($record) => new HtmlString("
+                ->state(fn ($record) => new HtmlString("
                 <div  style=' display: flex; justify-content: space-between; flex-wrap:wrap; gap: 0.5rem;'>
                     <div style=' display: flex; gap: 0.5rem;'>
                     <span><strong>Reels:</strong> {$record->n_reels}</span>
@@ -294,14 +298,15 @@ class ProposeAction extends Action
                     ->label('Proposta de Comissão da Campanha')
                     ->prefix('%')
                     ->numeric()
-                    ->minValue(0)->placeholder(fn($record) => "{$record->agency_cut}")
+                    ->minValue(0)->placeholder(fn ($record) => "{$record->agency_cut}")
                     ->maxValue(100)
-                    ->default(fn($record) => $record->agency_cut)
-                    ->helperText(fn($record) => "Comissão original: {$record->agency_cut}%"),
+                    ->default(fn ($record) => $record->agency_cut)
+                    ->helperText(fn ($record) => "Comissão original: {$record->agency_cut}%"),
 
                 TextInput::make('proposed_budget')
                     ->label('Orçamento Proposto')
                     ->disabled()->reactive()
+                    ->dehydrated(false)
                     ->placeholder(function (Get $get, $record) {
                         $influencers = $get('selected_influencers') ?? [];
 
@@ -309,14 +314,23 @@ class ProposeAction extends Action
                             return 'Selecione influenciadores';
                         }
 
+                        $parseMoney = fn ($value) => (float) str_replace(['.', ','], ['', '.'], (string) $value);
+
+                        // Limpamos os dados antes de enviar para o Calculator
+                        $sanitizedInfluencers = collect($influencers)->map(fn ($inf) => [
+                            'reels_price' => $parseMoney($inf['reels_price'] ?? 0),
+                            'stories_price' => $parseMoney($inf['stories_price'] ?? 0),
+                            'carrousel_price' => $parseMoney($inf['carrousel_price'] ?? 0),
+                        ])->toArray();
+
                         $range = ProposedBudgetCalculator::calculateInfluencerBudgetRange(
                             $record->n_reels,
                             $record->n_stories,
                             $record->n_carrousels,
-                            $influencers
+                            $sanitizedInfluencers
                         );
 
-                        return 'R$ ' . number_format($range['min'], 2, ',', '.') . ' - R$ ' . number_format($range['max'], 2, ',', '.');
+                        return 'R$ '.number_format($range['min'], 2, ',', '.').' - R$ '.number_format($range['max'], 2, ',', '.');
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2),
@@ -353,8 +367,8 @@ class ProposeAction extends Action
 
                 $record->company->notify(
                     Notification::make()
-                        ->title('Proposta recebida para a campanha ' . $record->name)
-                        ->body('A agência ' . Auth::user()->name . ' demonstrou interesse em sua campanha')
+                        ->title('Proposta recebida para a campanha '.$record->name)
+                        ->body('A agência '.Auth::user()->name.' demonstrou interesse em sua campanha')
                         ->actions([
                             Action::make('view')
                                 ->label('Ver proposta')
@@ -371,7 +385,7 @@ class ProposeAction extends Action
                     User::find($influencerId)?->notify(
                         Notification::make()
                             ->title('Você foi incluído em uma proposta')
-                            ->body($proposal->agency->name . ' incluiu você na proposta para a campanha: ' . $record->name)
+                            ->body($proposal->agency->name.' incluiu você na proposta para a campanha: '.$record->name)
                             ->info()
                             ->toDatabase()
                     );
@@ -383,7 +397,7 @@ class ProposeAction extends Action
                     ->success()
                     ->send();
             } catch (\Exception $e) {
-                Log::error('Erro ao enviar proposta: ' . $e->getMessage());
+                Log::error('Erro ao enviar proposta: '.$e->getMessage());
 
                 Notification::make()
                     ->title('Erro ao enviar Proposta')

@@ -13,6 +13,7 @@ class ExpandableBadges extends Column
     public function limit(int $limit): static
     {
         $this->limit = $limit;
+
         return $this;
     }
 

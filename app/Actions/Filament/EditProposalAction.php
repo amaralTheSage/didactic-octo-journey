@@ -76,18 +76,20 @@ class EditProposalAction extends Action
                     ->label('Selecionar Influenciadores')
                     ->multiple()
                     ->options(
-                        function () {
-                            return Auth::user()
-                                ->influencers()
+                        function (Proposal $record) {
+                            $user = Gate::allows('is_agency') ? Auth::user() : $record->agency;
+
+                            return $user->influencers()
                                 ->where('association_status', 'approved')
                                 ->pluck('name', 'users.id');
                         }
-                    )->afterStateUpdated(function ($state, callable $set, Get $get) {
+
+                    )->afterStateUpdated(function ($state, callable $set, Get $get, $record) {
                         $borrowedIds = $get('borrowed_influencer_ids') ?? [];
 
                         $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
-                        $borrowedInfluencers = Auth::user()
+                        $borrowedInfluencers = $record->agency
                             ->agency_loans()
                             ->with('influencer_info')
                             ->select('users.id', 'users.name')
@@ -103,7 +105,7 @@ class EditProposalAction extends Action
                             ])
                             ->toArray();
 
-                        $ownInfluencers = Auth::user()
+                        $ownInfluencers = $record->agency
                             ->influencers()
                             ->with('influencer_info')
                             ->select('users.id', 'users.name')
@@ -124,25 +126,24 @@ class EditProposalAction extends Action
                         $set('selected_influencers', $influencers);
                     })
                     ->searchable()
-                    ->reactive()->columnSpan(3)
-
-                    ->visible(fn () => Gate::allows('is_agency')),
+                    ->reactive()->columnSpan(3),
 
                 Select::make('borrowed_influencer_ids')
                     ->label('Influenciadores Emprestados')
                     ->multiple()
                     ->options(
-                        function () {
-                            return Auth::user()
-                                ->borrowed_influencers()
+                        function ($record) {
+                            $user = Gate::allows('is_agency') ? Auth::user() : $record->agency;
+
+                            return $user->borrowed_influencers()
                                 ->pluck('name', 'users.id');
                         }
-                    )->afterStateUpdated(function ($state, callable $set, Get $get) {
+                    )->afterStateUpdated(function ($state, callable $set, Get $get, $record) {
                         $ownIds = $get('influencer_ids') ?? [];
 
                         $formatPrice = fn ($value) => number_format((float) ($value ?? 0), 2, ',', '.');
 
-                        $borrowedInfluencers = Auth::user()
+                        $borrowedInfluencers = $record->agency
                             ->agency_loans()
                             ->with('influencer_info')
                             ->select('users.id', 'users.name')
@@ -158,7 +159,7 @@ class EditProposalAction extends Action
                             ])
                             ->toArray();
 
-                        $ownInfluencers = Auth::user()
+                        $ownInfluencers = $record->agency
                             ->influencers()
                             ->with('influencer_info')
                             ->select('users.id', 'users.name')
@@ -181,9 +182,7 @@ class EditProposalAction extends Action
                     ->searchable()
                     ->reactive()
                     ->live()
-                    ->columnSpan(2)
-                    ->visible(fn () => Gate::allows('is_agency')),
-
+                    ->columnSpan(2),
             ])->columns(5),
 
             Repeater::make('selected_influencers')
@@ -191,13 +190,13 @@ class EditProposalAction extends Action
                 ->addable(false)
                 ->deletable(false)
                 ->reorderable(false)
-                ->table([
+                ->table(array_filter([
                     TableColumn::make('Nome'),
                     TableColumn::make('Reels'),
                     TableColumn::make('Stories'),
                     TableColumn::make('Carrossel'),
-                    TableColumn::make('Comissão'),
-                ])
+                    Gate::allows('is_agency') ? TableColumn::make('Comissão') : null,
+                ]))
                 ->schema([
                     Hidden::make('user_id'),
 
@@ -224,6 +223,7 @@ class EditProposalAction extends Action
                         ->mask('99')
                         ->suffix('%')
                         ->required()
+                        ->hidden(Gate::denies('is_agency'))
                         ->extraInputAttributes([
                             'style' => 'font-weight: bold; color: #07c9de; text-align: right; border: none; border-radius: 0;',
                         ])
@@ -374,7 +374,7 @@ class EditProposalAction extends Action
 
             $allInfluencerIds = $record->influencers()->pluck('users.id')->toArray();
 
-            $agencyInfluencerIds = Auth::user()->influencers()->pluck('users.id')->toArray();
+            $agencyInfluencerIds = $record->agency->influencers()->pluck('users.id')->toArray();
 
             $data['influencer_ids'] = array_values(array_intersect($allInfluencerIds, $agencyInfluencerIds));
             $data['borrowed_influencer_ids'] = array_values(array_diff($allInfluencerIds, $agencyInfluencerIds));
@@ -443,7 +443,7 @@ class EditProposalAction extends Action
                         'reels_price' => (float) $influencer['reels_price'],
                         'stories_price' => (float) $influencer['stories_price'],
                         'carrousel_price' => (float) $influencer['carrousel_price'],
-                        'commission_cut' => (int) $influencer['commission_cut'],
+                        'commission_cut' => (int) ($influencer['commission_cut'] ?? $beforeInfluencers[$userId]['commission_cut'] ?? 0),
                     ];
 
                     $pivotData[$userId] = $newPrices;
