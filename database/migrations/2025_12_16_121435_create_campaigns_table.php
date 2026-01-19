@@ -25,15 +25,20 @@ return new class extends Migration
 
             $table->string('location')->nullable();
 
-            $table->integer('n_reels')->default(0);
-            $table->integer('n_stories')->default(0);
-            $table->integer('n_carrousels')->default(0);
+            $table->integer('n_reels')->nullable();
+            $table->integer('n_stories')->nullable();
+            $table->integer('n_carrousels')->nullable();
+
+            $table->integer('n_influencers')->nullable();
+            $table->integer('duration')->nullable();
 
             $table->enum('campaign_status', ['open', 'paused', 'finished'])->default('open');
 
             $table->timestamps();
         });
     }
+
+
 
     /**
      * Reverse the migrations.

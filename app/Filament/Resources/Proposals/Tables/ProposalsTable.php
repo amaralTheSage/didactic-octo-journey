@@ -49,7 +49,11 @@ class ProposalsTable
                                 break;
 
                             case UserRole::CURATOR:
-                                $subQuery->orWhereHas('campaign.company', fn($q) => $q->where('curator_id', $user->id));
+                                $subQuery->whereHas(
+                                    'campaign.company.company_info',
+                                    fn($q) =>
+                                    $q->where('curator_id', $user->id)
+                                );
                                 break;
 
                             case UserRole::AGENCY:

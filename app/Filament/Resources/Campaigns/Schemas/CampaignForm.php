@@ -58,23 +58,11 @@ class CampaignForm
                             fn($action) => $action->modalHeading('Criar Produto')
                         ),
 
-                    Select::make('subcategory_ids')
-                        ->relationship('subcategories', 'title')
-                        ->label('Categorias')
-                        ->multiple()
-                        ->options(
-                            Category::with('subcategories')->get()
-                                ->mapWithKeys(fn($category) => [
-                                    $category->title => $category->subcategories
-                                        ->pluck('title', 'id')
-                                        ->toArray(),
-                                ])
-                                ->toArray()
-                        )
-                        ->searchable()
-                        ->preload()
-                        ->required(),
+
                 ]),
+
+
+
 
                 Hidden::make('company_id')
                     ->default(Auth::id()),
@@ -98,6 +86,30 @@ class CampaignForm
                         })
                         ->helperText('Selecione os influenciadores para criar propostas automaticamente'),
                 ]),
+
+                Group::make([
+
+                    Select::make('subcategory_ids')
+                        ->relationship('subcategories', 'title')
+                        ->label('Categorias')
+                        ->multiple()
+                        ->options(
+                            Category::with('subcategories')->get()
+                                ->mapWithKeys(fn($category) => [
+                                    $category->title => $category->subcategories
+                                        ->pluck('title', 'id')
+                                        ->toArray(),
+                                ])
+                                ->toArray()
+                        )
+                        ->searchable()
+                        ->preload()
+                        ->required()->columnSpan(2),
+
+                    TextInput::make('n_influencers')->label('Número de Influenciadores')->numeric()->minValue(0)->nullable(),
+
+                    TextInput::make('duration')->label('Duração da Campanha (dias)')->numeric()->minValue(0)->nullable(),
+                ])->columns(4)->columnSpan(2),
 
                 Group::make([
                     Money::make('budget')

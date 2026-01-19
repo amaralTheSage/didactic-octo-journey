@@ -301,8 +301,6 @@ class Register extends SimplePage
                 Group::make()->visible(fn(Get $get) => filled($get('role')))
 
                     ->schema([
-
-
                         FileUpload::make('avatar')
                             ->hiddenLabel()
                             ->disk('public')

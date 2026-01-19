@@ -53,12 +53,12 @@ class CompanyResource extends Resource
 
     public static function canAccess(): bool
     {
-        return Gate::allows('is_agency');
+        return Gate::allows('is_agency') || Gate::allows('is_curator');
     }
 
     public static function canCreate(): bool
     {
-        return false;
+        return Gate::allows('is_curator');
     }
 
     public static function canDelete(Model $record): bool

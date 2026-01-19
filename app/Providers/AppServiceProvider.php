@@ -39,8 +39,8 @@ class AppServiceProvider extends ServiceProvider
                 ->mask(RawJs::make(<<<'JS'
                 $money($input, ',', '.', 2)
             JS))
-                ->formatStateUsing(fn ($state) => is_numeric($state) ? number_format((float) $state, 2, ',', '.') : $state)
-                ->dehydrateStateUsing(fn ($state) => (float) str_replace(['.', ','], ['', '.'], $state));
+                ->formatStateUsing(fn($state) => is_numeric($state) ? number_format((float) $state, 2, ',', '.') : $state)
+                ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state));
         });
 
         Campaign::observe(CampaignObserver::class);
@@ -55,6 +55,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('is_company', function (User $user) {
             return $user->role === UserRole::COMPANY;
+        });
+
+        Gate::define('is_curator', function (User $user) {
+            return $user->role === UserRole::CURATOR;
         });
 
         Gate::define('is_influencer', function (User $user) {

@@ -9,6 +9,9 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
+use Illuminate\Support\Facades\Gate;
 
 class ViewCompanyDetails
 {
@@ -37,7 +40,8 @@ class ViewCompanyDetails
                         TextEntry::make('email')
                             ->label('Email')
                             ->copyable()
-                            ->visible(false)
+                            ->visible(fn($record) => Gate::allows('is_curator') &&
+                                FacadesAuth::user()->curator_companies()->where('company_id', $record->id)->exists())
                             ->icon('heroicon-o-envelope'),
 
                         TextEntry::make('bio')

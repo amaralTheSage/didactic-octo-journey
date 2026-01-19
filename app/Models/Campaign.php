@@ -18,9 +18,14 @@ class Campaign extends Model
         'budget',
         'agency_cut',
         'campaign_status',
+
         'n_reels',
         'n_carrousels',
         'n_stories',
+
+        'n_influencers',
+        'duration',
+
         'location',
 
         'validated_at',

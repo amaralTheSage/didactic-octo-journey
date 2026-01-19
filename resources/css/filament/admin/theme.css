@@ -267,7 +267,7 @@ body {
 }
 
 .fi-ac-link-action .fi-icon {
-    @apply !bg-none;
+    @apply !bg-inherit;
 }
 
 .fi-ac-grouped-action {

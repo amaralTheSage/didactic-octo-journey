@@ -57,12 +57,24 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function company_info(): HasOne
     {
-        return $this->hasOne(CompanyInfo::class);
+        return $this->hasOne(CompanyInfo::class, 'company_id');
     }
 
     public function campaigns()
     {
         return $this->hasMany(Campaign::class, 'company_id', 'id');
+    }
+
+    public function proposals(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            \App\Models\Proposal::class,
+            \App\Models\Campaign::class,
+            'company_id', // Chave estrangeira em campaigns
+            'campaign_id', // Chave estrangeira em proposals
+            'id',          // Chave local em users
+            'id'           // Chave local em campaigns
+        );
     }
 
     // if agency

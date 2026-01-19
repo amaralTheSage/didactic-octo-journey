@@ -49,7 +49,6 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->sort(3),
             ])
-
             ->profile(EditProfile::class)
             ->registration(Register::class)
             ->login()
