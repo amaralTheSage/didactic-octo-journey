@@ -47,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Chat')
                     ->url('/chats')
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
-                    ->sort(2),
+                    ->sort(3),
             ])
 
             ->profile(EditProfile::class)

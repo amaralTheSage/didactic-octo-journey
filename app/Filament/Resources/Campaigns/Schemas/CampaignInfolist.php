@@ -99,9 +99,8 @@ class CampaignInfolist
                                 ->url(
                                     function (Campaign $record) {
 
-                                        return route('filament.admin.resources.campaigns.index', [
+                                        return route('filament.admin.resources.proposals.index', [
                                             'search' => $record->name,
-                                            'activeTab' => 'proposals',
                                         ]);
                                     }
                                 ),

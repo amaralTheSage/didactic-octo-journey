@@ -25,6 +25,9 @@ class ProposalResource extends Resource
 
     protected static ?string $modelLabel = 'Proposta';
 
+    protected static ?int $navigationSort = 2;
+
+
     public static function form(Schema $schema): Schema
     {
         return ProposalForm::configure($schema);

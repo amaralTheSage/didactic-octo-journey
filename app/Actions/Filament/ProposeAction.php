@@ -372,8 +372,7 @@ class ProposeAction extends Action
                         ->actions([
                             Action::make('view')
                                 ->label('Ver proposta')
-                                ->url(route('filament.admin.resources.campaigns.index', [
-                                    'activeTab' => 'proposals',
+                                ->url(route('filament.admin.resources.proposals.index', [
                                     'tableAction' => 'viewProposal',
                                     'tableActionRecord' => $proposal->getKey(),
                                 ])),
