@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Model;
 
 class InfluencerInfo extends Model
@@ -36,6 +36,6 @@ class InfluencerInfo extends Model
 
     public function agency()
     {
-        return $this->belongsTo(User::class, 'agency_id')->where('role', UserRoles::Agency);
+        return $this->belongsTo(User::class, 'agency_id')->where('role', UserRole::AGENCY);
     }
 }

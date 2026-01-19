@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Filament\Resources\CampaignAnnouncements\Pages;
+namespace App\Filament\Resources\Campaigns\Pages;
 
-use App\Filament\Resources\CampaignAnnouncements\CampaignAnnouncementResource;
+use App\Filament\Resources\Campaigns\CampaignResource;
 use App\Models\Attribute;
-use App\Models\CampaignAnnouncement;
+use App\Models\Campaign;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 
-class EditCampaignAnnouncement extends EditRecord
+class EditCampaign extends EditRecord
 {
-    protected static string $resource = CampaignAnnouncementResource::class;
+    protected static string $resource = CampaignResource::class;
 
     protected function afterSave(): void
     {
@@ -40,7 +40,7 @@ class EditCampaignAnnouncement extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        /** @var \App\Models\CampaignAnnouncement $record */
+        /** @var \App\Models\Campaign $record */
         $record = $this->record;
 
         // Group selected values by attribute_id
@@ -90,10 +90,10 @@ class EditCampaignAnnouncement extends EditRecord
     {
         return [
             Action::make('validateNow')
-                ->label(fn (CampaignAnnouncement $record) => $record->validated_at ? 'Campanha Validada' : 'Validar Campanha')
-                ->color(fn (CampaignAnnouncement $record) => $record->validated_at ? 'secondary' : 'success')
+                ->label(fn (Campaign $record) => $record->validated_at ? 'Campanha Validada' : 'Validar Campanha')
+                ->color(fn (Campaign $record) => $record->validated_at ? 'secondary' : 'success')
                 ->icon(Heroicon::OutlinedCheckBadge)
-                ->disabled(fn (CampaignAnnouncement $record) => $record->validated_at)
+                ->disabled(fn (Campaign $record) => $record->validated_at)
                 ->action(function ($record) {
                     return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
                 }),

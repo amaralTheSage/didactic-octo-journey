@@ -2,7 +2,7 @@
 
 namespace App\Actions\Filament;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Helpers\ProposedBudgetCalculator;
 use App\Services\ChatService;
 use Filament\Actions\Action;
@@ -36,32 +36,32 @@ class ViewProposal
             ->schema(fn ($record) => [
                 Section::make('Campanha')
                     ->schema([
-                        TextEntry::make('announcement.name')->icon(fn ($record) => $record->announcement->validated_at
+                        TextEntry::make('campaign.name')->icon(fn ($record) => $record->campaign->validated_at
                             ? 'heroicon-o-check-badge'
                             : null)
                             ->iconPosition('after')
-                            ->tooltip(fn ($record) => $record->announcement->validated_at
+                            ->tooltip(fn ($record) => $record->campaign->validated_at
                                 ? 'Campanha Verificada'
                                 : null)
                             ->iconColor('success')
                             ->label('Campanha')
                             ->weight(FontWeight::Bold),
 
-                        TextEntry::make('announcement.company.name')->icon('heroicon-o-building-office-2')
+                        TextEntry::make('campaign.company.name')->icon('heroicon-o-building-office-2')
                             ->url(route('filament.admin.resources.companies.index', [
-                                'search' => $record->announcement->company->name,
+                                'search' => $record->campaign->company->name,
                                 'tableAction' => 'viewCompanyDetails',
-                                'tableActionRecord' => $record->announcement->company_id,
+                                'tableActionRecord' => $record->campaign->company_id,
                             ]))
                             ->label('Empresa'),
 
-                        TextEntry::make('announcement.product.name')
+                        TextEntry::make('campaign.product.name')
                             ->label('Produto'),
-                        TextEntry::make('announcement.budget')
+                        TextEntry::make('campaign.budget')
                             ->label('Orçamento')
                             ->money('BRL')
                             ->visible(Gate::denies('is_influencer')),
-                        TextEntry::make('announcement.subcategories.title')
+                        TextEntry::make('campaign.subcategories.title')
                             ->placeholder('-')
                             ->label('Categoria')
                             ->badge(),
@@ -79,7 +79,7 @@ class ViewProposal
 
                             TextEntry::make('agency.name')->weight(FontWeight::Bold)
                                 ->hiddenLabel()->columnSpan(2)->alignStart(),
-                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRoles $state): string => __("roles.$state->value"))
+                            TextEntry::make('agency.role')->formatStateUsing(fn (UserRole $state): string => __("roles.$state->value"))
                                 ->hiddenLabel()->badge()->alignStart(),
 
                         ])->columns(5)->columnSpan(2),
@@ -94,13 +94,13 @@ class ViewProposal
                             ->helperText('Lucro destinado à agência e aos influenciadores')
                             ->weight(FontWeight::Bold)
                             ->formatStateUsing(function ($state, $record) {
-                                $announcementCut = $record->announcement?->agency_cut;
+                                $campaignCut = $record->campaign?->agency_cut;
 
-                                if (! $state || ! $announcementCut) {
+                                if (! $state || ! $campaignCut) {
                                     return $state;
                                 }
 
-                                $difference = $state - $announcementCut;
+                                $difference = $state - $campaignCut;
 
                                 if ($difference === 0) {
                                     return new HtmlString("{$state}% <span class='text-xs text-gray-500'> (sem variação)</span>");
@@ -223,7 +223,7 @@ class ViewProposal
 
                                             TextEntry::make('role')
                                                 ->formatStateUsing(
-                                                    fn (UserRoles $state): string => __("roles.$state->value")
+                                                    fn (UserRole $state): string => __("roles.$state->value")
                                                 )
                                                 ->hiddenLabel()
                                                 ->badge(),

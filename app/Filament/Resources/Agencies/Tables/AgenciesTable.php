@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Agencies\Tables;
 
 use App\Actions\Filament\ChatAction;
 use App\Actions\Filament\ViewAgencyDetails;
-use App\Enums\UserRoles;
-use App\Models\CampaignAnnouncement;
+use App\Enums\UserRole;
+use App\Models\Campaign;
 use App\Models\Proposal;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -143,7 +143,7 @@ class AgenciesTable
                                 ->label('Agências')
                                 ->multiple()
                                 ->options(
-                                    User::where('role', UserRoles::Agency)->pluck('name', 'id')
+                                    User::where('role', UserRole::AGENCY)->pluck('name', 'id')
                                 )
                                 ->required()
                                 ->searchable()
@@ -159,7 +159,7 @@ class AgenciesTable
                                         return [];
                                     }
 
-                                    return User::where('role', \App\Enums\UserRoles::Influencer)
+                                    return User::where('role', \App\Enums\UserRole::INFLUENCER)
                                         ->whereHas('influencer_info', function ($query) use ($agencyId) {
                                             $query->whereIn('agency_id', $agencyId)
                                                 ->where('association_status', 'approved');
@@ -171,10 +171,10 @@ class AgenciesTable
                                 ->disabled(fn (callable $get) => ! $get('agency_id'))
                                 ->helperText('Selecione uma agência primeiro'),
 
-                            Select::make('campaign_announcement_id')
+                            Select::make('campaign_id')
                                 ->label('Campanha')
                                 ->options(
-                                    CampaignAnnouncement::query()
+                                    Campaign::query()
                                         ->where('company_id', Auth::id())
                                         ->pluck('name', 'id')
                                 )
@@ -187,7 +187,7 @@ class AgenciesTable
                             //     ->rows(3),
                         ])
                         ->action(function (array $data) {
-                            $campaign = CampaignAnnouncement::find($data['campaign_announcement_id']);
+                            $campaign = Campaign::find($data['campaign_id']);
                             $agencyIds = (array) $data['agency_id']; // Ensure it is an array
                             $selectedInfluencerIds = collect($data['influencer_ids']);
 
@@ -203,7 +203,7 @@ class AgenciesTable
                                 }
 
                                 // Check for existing proposal for THIS agency
-                                $proposal = Proposal::where('campaign_announcement_id', $campaign->id)
+                                $proposal = Proposal::where('campaign_id', $campaign->id)
                                     ->where('agency_id', $agencyId)
                                     ->first();
 
@@ -211,7 +211,7 @@ class AgenciesTable
                                     $proposal->influencers()->syncWithoutDetaching($agencyInfluencerIds);
                                 } else {
                                     $proposal = Proposal::create([
-                                        'campaign_announcement_id' => $campaign->id,
+                                        'campaign_id' => $campaign->id,
                                         'agency_id' => $agencyId,
                                         'message' => $data['message'] ?? null,
                                         'proposed_agency_cut' => $campaign->agency_cut,

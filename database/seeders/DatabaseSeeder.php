@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Models\AttributeValue;
-use App\Models\CampaignAnnouncement;
+use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\InfluencerInfo;
 use App\Models\Product;
@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'bio' => 'admin role during development',
             'avatar' => $createAvatar(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Admin,
+            'role' => UserRole::ADMIN,
             'email_verified_at' => now(),
         ]);
 
@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
                     'bio' => fake()->paragraph(),
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
-                    'role' => UserRoles::Company,
+                    'role' => UserRole::COMPANY,
                     'email_verified_at' => now(),
                 ])
             );
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
                     'bio' => fake()->paragraph(),
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
-                    'role' => UserRoles::Curator,
+                    'role' => UserRole::CURATOR,
                     'email_verified_at' => now(),
                 ])
             );
@@ -96,7 +96,7 @@ class DatabaseSeeder extends Seeder
                     'bio' => fake()->paragraph(),
                     'avatar' => $createAvatar(),
                     'password' => Hash::make('senha123'),
-                    'role' => UserRoles::Agency,
+                    'role' => UserRole::AGENCY,
                     'email_verified_at' => now(),
                 ])
             );
@@ -177,7 +177,7 @@ class DatabaseSeeder extends Seeder
                 'bio' => fake()->paragraph(),
                 'avatar' => $createAvatar(),
                 'password' => Hash::make('senha123'),
-                'role' => UserRoles::Influencer,
+                'role' => UserRole::INFLUENCER,
                 'email_verified_at' => now(),
             ]);
 
@@ -237,7 +237,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Company,
+            'role' => UserRole::COMPANY,
             'email_verified_at' => now(),
         ]);
 
@@ -247,7 +247,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Curator,
+            'role' => UserRole::CURATOR,
             'email_verified_at' => now(),
         ]);
 
@@ -257,7 +257,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Agency,
+            'role' => UserRole::AGENCY,
             'email_verified_at' => now(),
         ]);
 
@@ -267,7 +267,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Influencer,
+            'role' => UserRole::INFLUENCER,
             'email_verified_at' => now(),
         ]);
 
@@ -310,7 +310,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Influencer,
+            'role' => UserRole::INFLUENCER,
             'email_verified_at' => now(),
         ]);
 
@@ -336,7 +336,7 @@ class DatabaseSeeder extends Seeder
             'avatar' => $createAvatar(),
             'bio' => fake()->paragraph(),
             'password' => Hash::make('senha123'),
-            'role' => UserRoles::Influencer,
+            'role' => UserRole::INFLUENCER,
             'email_verified_at' => now(),
         ]);
 
@@ -372,7 +372,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // -------------------------------------------------------
-        // Campaign Announcements for Test Company
+        // Campaigns for Test Company
         // -------------------------------------------------------
         $campaignNames = [
             'Campanha de Verão 2024',
@@ -386,7 +386,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($campaignNames as $index => $campaignName) {
-            $campaign = CampaignAnnouncement::create([
+            $campaign = Campaign::create([
                 'name' => $campaignName,
                 'description' => fake()->paragraph(3),
                 'agency_cut' => rand(10, 30),
@@ -406,7 +406,6 @@ class DatabaseSeeder extends Seeder
                     ->toArray()
             );
 
-
             $campaign->subcategories()->attach(
                 Subcategory::all()->random(rand(1, 3))->pluck('id')
             );
@@ -415,13 +414,13 @@ class DatabaseSeeder extends Seeder
         // -------------------------------------------------------
         // Proposals
         // -------------------------------------------------------
-        $campaignAnnouncements = CampaignAnnouncement::all();
+        $campaigns = Campaign::all();
 
-        $campaignAnnouncements->each(function ($announcement) use ($agencies, $influencers) {
+        $campaigns->each(function ($campaign) use ($agencies, $influencers) {
             $numberOfProposals = rand(2, 2);
             $selectedAgencies = $agencies->random(min($numberOfProposals, $agencies->count()));
 
-            $selectedAgencies->each(function ($agency) use ($announcement, $influencers) {
+            $selectedAgencies->each(function ($agency) use ($campaign, $influencers) {
                 $agencyInfluencers = $influencers->filter(function ($influencer) use ($agency) {
                     return $influencer->influencer_info->agency_id === $agency->id
                         && $influencer->influencer_info->association_status === 'approved';
@@ -430,7 +429,7 @@ class DatabaseSeeder extends Seeder
                 $proposal = \App\Models\Proposal::create([
                     'message' => fake()->paragraph(2),
                     'proposed_agency_cut' => rand(5, 30),
-                    'campaign_announcement_id' => $announcement->id,
+                    'campaign_id' => $campaign->id,
                     'agency_id' => $agency->id,
                     'agency_approval' => collect(['pending', 'approved', 'rejected'])->random(),
                     'company_approval' => collect(['pending', 'approved', 'rejected'])->random(),
@@ -457,10 +456,5 @@ class DatabaseSeeder extends Seeder
                 }
             });
         });
-
-        $this->call([
-            // ChatSeeder::class,
-            AttributeSeeder::class,
-        ]);
     }
 }

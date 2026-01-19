@@ -1,6 +1,15 @@
 <?php
 
 return [
+    'open' => [
+        'label' => 'Em aberto',
+        'description' => 'add desc',
+    ],
+
+    'paused' => [
+        'label' => 'Pausada',
+        'description' => 'add desc',
+    ],
 
     'approved' => [
         'label' => 'Aprovado',

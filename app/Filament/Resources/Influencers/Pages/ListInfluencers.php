@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Influencers\Pages;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Filament\Resources\Influencers\InfluencerResource;
 use App\Models\InfluencerLoan;
 use Filament\Actions\CreateAction;
@@ -24,7 +24,7 @@ class ListInfluencers extends ListRecords
 
     public function getTabs(): array
     {
-        if (Auth::user()->role !== UserRoles::Agency) {
+        if (Auth::user()->role !== UserRole::AGENCY) {
             return [];
         }
 

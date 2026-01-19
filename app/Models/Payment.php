@@ -33,7 +33,7 @@ class Payment extends Model
 
     public function campaign(): BelongsTo
     {
-        return $this->belongsTo(CampaignAnnouncement::class);
+        return $this->belongsTo(Campaign::class);
     }
 
     public function user(): BelongsTo

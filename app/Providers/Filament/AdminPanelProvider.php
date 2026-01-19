@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Register;
+use App\Filament\Widgets\CampaignMatchesWidget;
+use App\Filament\Widgets\ProposalsWidget;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
 use DutchCodingCompany\FilamentSocialite\Provider;
 use Filament\Http\Middleware\Authenticate;
@@ -16,7 +18,6 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -46,9 +47,8 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make('Chat')
                     ->url('/chats')
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
-                    ->sort(2),
+                    ->sort(3),
             ])
-
             ->profile(EditProfile::class)
             ->registration(Register::class)
             ->login()
@@ -66,12 +66,11 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
 
             ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
-                fn (): string => Blade::render(<<<'BLADE'
+                fn(): string => Blade::render(<<<'BLADE'
                     <div x-data="{ role: @entangle('data.role') }">
                         <div x-show="role === 'influencer'">
                             <x-filament-socialite::buttons />

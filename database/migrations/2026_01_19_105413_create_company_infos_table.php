@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('campaign_announcement_subcategory', function (Blueprint $table) {
+        Schema::create('company_info', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subcategory_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('curator_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('campaign_announcement_subcategory');
+        Schema::dropIfExists('company_info');
     }
 };

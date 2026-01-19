@@ -4,11 +4,12 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -52,6 +53,28 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function influencer_info(): HasOne
     {
         return $this->hasOne(InfluencerInfo::class);
+    }
+
+    public function company_info(): HasOne
+    {
+        return $this->hasOne(CompanyInfo::class, 'company_id');
+    }
+
+    public function campaigns()
+    {
+        return $this->hasMany(Campaign::class, 'company_id', 'id');
+    }
+
+    public function proposals(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            \App\Models\Proposal::class,
+            \App\Models\Campaign::class,
+            'company_id', // Chave estrangeira em campaigns
+            'campaign_id', // Chave estrangeira em proposals
+            'id',          // Chave local em users
+            'id'           // Chave local em campaigns
+        );
     }
 
     // if agency
@@ -98,13 +121,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->belongsToMany(Subcategory::class);
     }
 
-    public function campaigns()
-    {
-        return OngoingCampaign::where('agency_id', $this->id)
-            ->orWhere('company_id', $this->id)
-            ->orWhere('influencer_id', $this->id);
-    }
-
     public function influencers()
     {
         return $this->hasManyThrough(
@@ -114,6 +130,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             'id',
             'id',
             'user_id'
+        );
+    }
+
+    public function curator_companies()
+    {
+        return $this->hasManyThrough(
+            User::class,
+            CompanyInfo::class,
+            'curator_id',
+            'id',
+            'id',
+            'company_id'
         );
     }
 
@@ -173,7 +201,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     protected function casts(): array
     {
         return [
-            'role' => UserRoles::class,
+            'role' => UserRole::class,
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',

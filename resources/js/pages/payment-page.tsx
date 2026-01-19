@@ -36,7 +36,7 @@ export default function PaymentPage({ payment, brcode, db_status }) {
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
                 <div className="mx-auto max-w-5xl">
                     <a
-                        href="/dashboard/campaign-announcements"
+                        href="/dashboard/campaigns"
                         className="inline-flex items-center gap-2 text-lg font-semibold text-blue-600 transition-colors hover:text-blue-700"
                     >
                         <ChevronLeft className="h-6 w-6" />

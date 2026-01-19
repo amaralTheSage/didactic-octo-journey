@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class CampaignAnnouncement extends Model
+class Campaign extends Model
 {
     public ?array $temp_influencer_ids = null;
 
@@ -17,10 +17,15 @@ class CampaignAnnouncement extends Model
         'company_id',
         'budget',
         'agency_cut',
-        'announcement_status',
+        'campaign_status',
+
         'n_reels',
         'n_carrousels',
         'n_stories',
+
+        'n_influencers',
+        'duration',
+
         'location',
 
         'validated_at',
@@ -34,8 +39,8 @@ class CampaignAnnouncement extends Model
     {
         return $this->belongsToMany(
             AttributeValue::class,
-            'attribute_value_campaign_announcement',
-            'campaign_announcement_id',
+            'attribute_value_campaign',
+            'campaign_id',
             'attribute_value_id'
         )->withPivot('title');
     }
@@ -65,11 +70,9 @@ class CampaignAnnouncement extends Model
         return $this->hasMany(Proposal::class);
     }
 
-
-
     public function subcategories(): BelongsToMany
     {
-        return $this->belongsToMany(Subcategory::class, 'campaign_announcement_subcategory');
+        return $this->belongsToMany(Subcategory::class, 'campaign_subcategory');
     }
 
     public function product(): BelongsTo
@@ -80,5 +83,25 @@ class CampaignAnnouncement extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(User::class, 'company_id');
+    }
+
+    public function scopeWhereMatchesUser($query, User $user, int $minPercent, int $maxPercent = 100)
+    {
+        $min = $minPercent / 100;
+        $max = $maxPercent / 100;
+
+        return $query->whereIn('id', function ($sub) use ($user, $min, $max) {
+            $sub->select('c.id')
+                ->from('campaigns as c')
+                ->join('attribute_value_campaign as avc', 'c.id', '=', 'avc.campaign_id')
+                ->join('attribute_value_user as avu', function ($join) use ($user) {
+                    $join->on('avc.attribute_value_id', '=', 'avu.attribute_value_id')
+                        ->where('avu.user_id', $user->id)
+                        // Match de Title 
+                        ->whereRaw('COALESCE(avc.title, \'\') = COALESCE(avu.title, \'\')');
+                })
+                ->groupBy('c.id')
+                ->havingRaw('CAST(COUNT(avu.id) AS FLOAT) / NULLIF((SELECT count(*) FROM attribute_value_campaign WHERE campaign_id = c.id), 0) >= ?', [$min]);;
+        });
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -57,7 +57,7 @@ class UsersTable
                         ->sortable(),
                     TextColumn::make('influencer_info.association_status')->label('Associação')
                         ->formatStateUsing(function ($state, $record): string {
-                            if ($record?->role !== UserRoles::Influencer) {
+                            if ($record?->role !== UserRole::INFLUENCER) {
                                 return '-';
                             }
 
@@ -83,7 +83,7 @@ class UsersTable
             ->recordActions([
                 ActionGroup::make([
                     Impersonate::make(),
-                    EditAction::make(),
+                    EditAction::make()->defaultColor('gray'),
                     DeleteAction::make(),
                 ]),
             ], RecordActionsPosition::BeforeColumns)

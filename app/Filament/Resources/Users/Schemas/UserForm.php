@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -30,7 +30,7 @@ class UserForm
                     ->columnSpanFull(),
                 DateTimePicker::make('two_factor_confirmed_at'),
                 Select::make('role')
-                    ->options(UserRoles::class)
+                    ->options(UserRole::class)
                     ->default('influencer')
                     ->required(),
                 TextInput::make('agency_id')

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\ApprovalStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,29 +14,37 @@ return new class extends Migration
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->text('description')->nullable();
+            $table->integer('agency_cut')->after('name');
 
             $table->decimal('budget', 14, 2);
-            $table->integer('agency_cut');
 
             $table->foreignId('product_id')->constrained();
-            $table->foreignId('influencer_id')->nullable()->constrained('users');
             $table->foreignId('company_id')->constrained('users');
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('agency_id')->nullable()->constrained('users');
 
-            $table->enum('status_agency', [ApprovalStatus::PENDING, ApprovalStatus::APPROVED, ApprovalStatus::REJECTED])->default('pending_approval');
+            $table->string('location')->nullable();
 
-            $table->enum('status_influencer', ['pending_approval', 'approved', 'finished', 'rejected'])->default('pending_approval');
+            $table->integer('n_reels')->nullable();
+            $table->integer('n_stories')->nullable();
+            $table->integer('n_carrousels')->nullable();
+
+            $table->integer('n_influencers')->nullable();
+            $table->integer('duration')->nullable();
+
+            $table->enum('campaign_status', ['open', 'paused', 'finished'])->default('open');
 
             $table->timestamps();
         });
     }
+
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('campaigns');
+        Schema::dropIfExists('campaign');
     }
 };

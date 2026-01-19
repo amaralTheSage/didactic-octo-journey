@@ -91,56 +91,6 @@ class AttributeSeeder extends Seeder
             ]);
         }
 
-        /*
-        |--------------------------------------------------
-        | Quantidade de influenciadores
-        |--------------------------------------------------
-        */
-        $quantidade = Attribute::create([
-            'title' => 'Quantidade de influenciadores',
-            'multiple_values' => false,
-        ]);
-
-        foreach (
-            [
-                '30',
-                '50',
-                '100',
-                '200',
-                'Outro',
-            ] as $item
-        ) {
-            AttributeValue::create([
-                'attribute_id' => $quantidade->id,
-                'title' => $item,
-                'editable' => false,
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------
-        | Duração da campanha
-        |--------------------------------------------------
-        */
-        $duracao = Attribute::create([
-            'title' => 'Duração da campanha',
-            'multiple_values' => false,
-        ]);
-
-        foreach (
-            [
-                '7 dias',
-                '15 dias',
-                '30 dias',
-                'Outro',
-            ] as $item
-        ) {
-            AttributeValue::create([
-                'attribute_id' => $duracao->id,
-                'title' => $item,
-                'editable' => $item === 'Outro',
-            ]);
-        }
 
         /*
         |--------------------------------------------------

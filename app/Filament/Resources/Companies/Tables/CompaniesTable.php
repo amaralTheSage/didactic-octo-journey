@@ -8,6 +8,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class CompaniesTable
 {
@@ -18,6 +20,10 @@ class CompaniesTable
         $table->recordActions([ViewCompanyDetails::make()]);
 
         return $table
+            ->modifyQueryUsing(
+                fn(Builder $query) =>
+                $query->withCount('proposals')->orderBy('proposals_count', 'desc')
+            )
             ->columns([
                 ImageColumn::make('avatar_url')
                     ->label('')->circular(),
@@ -25,10 +31,14 @@ class CompaniesTable
                 TextColumn::make('name')->label('Nome')
                     ->searchable(),
 
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('campaigns_count')
+                    ->label('Campanhas')
+                    ->counts('campaigns'),
+
+                TextColumn::make('proposals_count')
+                    ->label('Propostas')
+                    ->counts('proposals'),
+
             ])
             ->filters([
                 //

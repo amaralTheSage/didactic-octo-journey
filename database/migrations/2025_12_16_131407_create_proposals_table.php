@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('message')->nullable();
             $table->integer('proposed_agency_cut')->nullable()->default('0');
 
-            $table->foreignId('campaign_announcement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('campaign_id')->constrained()->cascadeOnDelete();
             $table->foreignId('agency_id')->constrained('users')->cascadeOnDelete();
 
             $table->enum('agency_approval', ['pending', 'approved', 'rejected'])->default('pending');

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRoles;
+use App\Enums\UserRole;
 use App\Models\Chat;
 use App\Models\User;
 use App\Services\ChatService;
@@ -112,25 +112,25 @@ class ChatController extends Controller
         $query = User::query()
             ->whereNotIn('id', $existingUserIds) // Exclude existing members
             ->where('id', '!=', $currentUser->id) // Exclude current user
-            ->where('role', '!=', UserRoles::Admin->value); // Exclude admins
+            ->where('role', '!=', UserRole::ADMIN->value); // Exclude admins
 
         // Apply role-based filtering
         switch ($currentUser->role) {
-            case UserRoles::Company:
+            case UserRole::COMPANY:
                 $query->whereIn('role', [
-                    UserRoles::Agency->value,
-                    UserRoles::Influencer->value,
+                    UserRole::AGENCY->value,
+                    UserRole::INFLUENCER->value,
                 ]);
                 break;
 
-            case UserRoles::Agency:
+            case UserRole::AGENCY:
                 $query->where(function ($q) use ($currentUser) {
                     $q->whereIn('role', [
-                        UserRoles::Company->value,
-                        UserRoles::Agency->value,
+                        UserRole::COMPANY->value,
+                        UserRole::AGENCY->value,
                     ])
                         ->orWhere(function ($subQ) use ($currentUser) {
-                            $subQ->where('role', UserRoles::Influencer->value)
+                            $subQ->where('role', UserRole::INFLUENCER->value)
                                 ->whereHas('influencer_info', function ($infoQ) use ($currentUser) {
                                     $infoQ->where('agency_id', $currentUser->id)
                                         ->where('association_status', 'approved');
@@ -139,10 +139,10 @@ class ChatController extends Controller
                 });
                 break;
 
-            case UserRoles::Influencer:
+            case UserRole::INFLUENCER:
                 $query->whereIn('role', [
-                    UserRoles::Company->value,
-                    UserRoles::Agency->value,
+                    UserRole::COMPANY->value,
+                    UserRole::AGENCY->value,
                 ]);
                 break;
         }
