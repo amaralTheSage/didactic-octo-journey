@@ -7,6 +7,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -56,7 +58,9 @@ class CompanyForm
 
                 Hidden::make('company_info.curator_id')->default(Auth::id()),
 
-                Hidden::make('password')->default(Hash::make(Str::random(32)))
+                Hidden::make('password')->default(Hash::make(Str::random(32))),
+
+                Text::make("Caso a Empresa deseje fazer Log In com esta conta, ela deverá inserir uma nova senha clicando em 'Esqueci minha senha'")
 
             ])->columns(1);
     }
