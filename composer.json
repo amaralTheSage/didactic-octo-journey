@@ -12,7 +12,7 @@
         "php": "^8.2",
         "asmit/resized-column": "^1.1",
         "codewithdennis/filament-lucide-icons": "^4.0",
-        "codezero/browser-locale": "*",
+        "codezero/browser-locale": "^3.4",
         "dutchcodingcompany/filament-socialite": "^3.0",
         "fakerphp/faker": "^1.23",
         "filafly/filament-identity-column": "^1.0",
