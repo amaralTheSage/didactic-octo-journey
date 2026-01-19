@@ -46,8 +46,8 @@ class CampaignMatchesWidget extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        // Campanhas que batem 100%
-        $match100 = $this->getMatchCounts(1.0);
+        // Campanhas que batem 90%
+        $match90 = $this->getMatchCounts(1.0);
 
         // Campanhas que batem entre 50% e 99%
         $match50 = $this->getMatchCounts(0.5, 1.0);
@@ -64,13 +64,13 @@ class CampaignMatchesWidget extends StatsOverviewWidget
                 ]))
                 ->visible(Gate::allows('is_influencer')),
 
-            Stat::make('Match Perfeito', $match100)
-                ->description('Campanhas 100% compatíveis')
+            Stat::make('Match Perfeito', $match90)
+                ->description('Campanhas 90% compatíveis')
                 ->chart([6, 2, 8, 2, 9, 3, 15])
                 ->color('success')
                 ->url(CampaignResource::getUrl('index', [
                     'tableFilters' => [
-                        'match_level' => ['value' => '100']
+                        'match_level' => ['value' => '90']
                     ]
                 ]))
                 ->visible(Gate::allows('is_influencer')),

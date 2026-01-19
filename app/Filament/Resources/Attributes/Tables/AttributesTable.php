@@ -33,7 +33,7 @@ class AttributesTable
                 //
             ])->recordAction('edit')
             ->recordActions([
-                EditAction::make()->hiddenLabel(),
+                EditAction::make()->hiddenLabel()->defaultColor('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

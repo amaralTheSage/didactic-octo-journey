@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Campaigns\Schemas;
 use App\Actions\Filament\ProposeAction;
 use App\Models\Campaign;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
@@ -75,43 +77,76 @@ class CampaignInfolist
                             ->icon('heroicon-o-arrow-path')
                             ->color('gray'),
 
-                        Action::make('validateNow')
-                            ->label('Validar')
-                            ->color('success')
-                            ->icon(Heroicon::OutlinedCheckBadge)
-                            ->visible(fn(Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
-                            ->action(function ($record) {
-                                return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
+                        Actions::make([
+                            ProposeAction::make(),
+
+                            Action::make('remove_proposal')
+                                ->label('Remover Interesse')
+                                ->color('danger')
+                                ->visible(
+                                    fn($record) => Gate::allows('is_agency')
+                                        && $record->proposals()
+                                        ->where('agency_id', Auth::id())
+                                        ->exists()
+                                )
+                                ->action(
+                                    fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                ),
+
+                            Action::make('viewProposals')
+                                ->label('Ver Propostas')
+                                ->color('secondary')
+                                ->url(
+                                    function (Campaign $record) {
+
+                                        return route('filament.admin.resources.campaigns.index', [
+                                            'search' => $record->name,
+                                            'activeTab' => 'proposals',
+                                        ]);
+                                    }
+                                ),
+
+                            Action::make('validateNow')
+                                ->label('Validar')
+                                ->color('success')
+
+                                ->icon(Heroicon::OutlinedCheckBadge)
+                                ->visible(fn(Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
+                                ->action(function ($record) {
+                                    return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
+                                }),
+
+                            Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
+                                $userName = Auth::user()->name;
+
+                                $record->company->notify(Notification::make()
+                                    ->title('Influenciador se interessou na sua campanha')
+                                    ->body("{$userName} demonstrou interesse na campanha {$record->name}")
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver influenciador')
+                                            ->url(route('filament.admin.resources.influencers.index', [
+                                                'search' => $userName,
+                                                'tableAction' => 'viewInfluencerDetails',
+                                                'tableActionRecord' => Auth::user()->getKey(),
+                                            ])),
+                                    ])
+                                    ->toDatabase());
+
+                                Auth::user()->influencer_info?->agency?->notify(Notification::make()
+                                    ->title("{$userName} se interessou em uma campanha")
+                                    ->body("O influenciador demonstrou interesse na campanha {$record->name}")
+                                    ->toDatabase());
+
+                                Notification::make()
+                                    ->title('Interesse registrado!')
+                                    ->body('A empresa recebeu sua notificação.')
+                                    ->success()
+                                    ->send();
                             }),
+                        ])->columns(3)->columnSpanFull(),
 
-                        Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
-                            $userName = Auth::user()->name;
 
-                            $record->company->notify(Notification::make()
-                                ->title('Influenciador se interessou na sua campanha')
-                                ->body("{$userName} demonstrou interesse na campanha {$record->name}")
-                                ->actions([
-                                    Action::make('view')
-                                        ->label('Ver influenciador')
-                                        ->url(route('filament.admin.resources.influencers.index', [
-                                            'search' => $userName,
-                                            'tableAction' => 'viewInfluencerDetails',
-                                            'tableActionRecord' => Auth::user()->getKey(),
-                                        ])),
-                                ])
-                                ->toDatabase());
-
-                            Auth::user()->influencer_info?->agency?->notify(Notification::make()
-                                ->title("{$userName} se interessou em uma campanha")
-                                ->body("O influenciador demonstrou interesse na campanha {$record->name}")
-                                ->toDatabase());
-
-                            Notification::make()
-                                ->title('Interesse registrado!')
-                                ->body('A empresa recebeu sua notificação.')
-                                ->success()
-                                ->send();
-                        }),
 
                     ]),
 
@@ -158,46 +193,58 @@ class CampaignInfolist
                                         ->label('Comissão da Campanha')
                                         ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                                         ->suffix('%')
-
                                         ->numeric()
-                                        ->columnSpan(3)
+                                        ->columnSpan(fn() => Gate::allows('is_influencer') ? 5 : 3)
                                         ->size(TextSize::Large)
                                         ->weight('bold'),
                                 ])->columnSpan(2),
 
+
                         ]),
 
-                    Actions::make([
-                        ProposeAction::make(),
 
-                        Action::make('remove_proposal')
-                            ->label('Remover Interesse')
-                            ->color('danger')
-                            ->visible(
-                                fn($record) => Gate::allows('is_agency')
-                                    && $record->proposals()
-                                    ->where('agency_id', Auth::id())
-                                    ->exists()
-                            )
-                            ->action(
-                                fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
-                            ),
 
-                        Action::make('viewProposals')
-                            ->label('Ver Propostas')
-                            ->color('secondary')
-                            ->url(
-                                function (Campaign $record) {
 
-                                    return route('filament.admin.resources.campaigns.index', [
-                                        'search' => $record->name,
-                                        'activeTab' => 'proposals',
-                                    ]);
-                                }
-                            ),
-                    ]),
                 ]),
 
+
+                RepeatableEntry::make('attribute_values')
+                    ->hiddenLabel()
+                    ->extraAttributes([
+                        'class' => '[&_thead]:hidden'
+                    ])
+                    ->state(function (Campaign $record) {
+                        return $record->attribute_values()
+                            ->with('attribute')
+                            ->get()
+                            ->groupBy('attribute_id')
+                            ->map(function ($values) {
+                                $attribute = $values->first()->attribute;
+
+                                $standardValues = $values->pluck('title');
+                                $customTitles = $values->pluck('pivot.title')->filter()->unique();
+                                $allBadges = $standardValues->concat($customTitles)->toArray();
+
+                                return [
+                                    'attribute_name' => $attribute?->title,
+                                    'badges' => $allBadges,
+                                ];
+                            })
+                            ->values()
+                            ->toArray();
+                    })
+                    ->table([
+                        TableColumn::make('attribute_name'),
+                        TableColumn::make('badges'),
+                    ])
+                    ->schema([
+                        TextEntry::make('attribute_name')
+                            ->weight('medium'),
+
+                        TextEntry::make('badges')
+                            ->badge()
+                    ])
+                    ->columnSpanFull()
             ]);
     }
 }

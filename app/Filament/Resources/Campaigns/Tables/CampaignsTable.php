@@ -64,19 +64,19 @@ class CampaignsTable
                 SelectFilter::make('match_level')
                     ->label('Compatibilidade')
                     ->options([
-                        '100' => 'Match Perfeito (100%)',
-                        '50' => 'Alta Compatibilidade (50%+)',
+                        '90' => 'Alta Compatibilidade (90%)',
+                        '50' => 'Média Compatibilidade (50%+)',
                     ])
                     ->query(function ($query, array $data) {
-                        if ($data['value'] === '100') {
-                            return $query->whereMatchesUser(Auth::user(), 100);
+                        if ($data['value'] === '90') {
+                            return $query->whereMatchesUser(Auth::user(), 90);
                         }
                         if ($data['value'] === '50') {
                             return $query->whereMatchesUser(Auth::user(), 50, 99);
                         }
                     })
-                    ->visible(fn($livewire) => Gate::allows('is_influencer') && self::anTab($livewire)),
-            ], layout: FiltersLayout::AboveContent)
+                    ->visible(Gate::allows('is_influencer')),
+            ])
 
             ->columns([
 
@@ -145,10 +145,6 @@ class CampaignsTable
                     ->sortable()->visible(fn($livewire) => self::anTab($livewire))
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('updated_at')->label('Atualizada em')
-                    ->dateTime()
-                    ->sortable()->visible(fn($livewire) => self::anTab($livewire))
-                    ->toggleable(isToggledHiddenByDefault: true),
 
                 // --------------------------
                 // PROPOSALS TAB
@@ -289,25 +285,7 @@ class CampaignsTable
                 ]),
 
             ])
-            ->filters(
-                [
-                    // SelectFilter::make('status')
-                    //     ->label('Status')
-                    //     ->options([
-                    //         'draft' => __('campaign_status.draft.label'),
-                    //         'approved' => __('campaign_status.approved.label'),
-                    //         'ongoing' => __('campaign_status.ongoing.label'),
-                    //         'finished' => __('campaign_status.finished.label'),
-                    //         'cancelled' => __('campaign_status.cancelled.label'),
-                    //         'rejected' => __('campaign_status.rejected.label'),
-                    //     ])->visible(fn($livewire) => self::prTab($livewire)),
 
-                    // SelectFilter::make('subcategories.[0]')->label('Categoria')
-                    //     ->options(
-                    //         Subcategory::query()->pluck('title', 'id')->toArray(),
-                    //     )->visible(fn($livewire) => self::anTab($livewire)),
-                ]
-            )
             ->recordAction(fn($livewire) => self::anTab($livewire) ? 'view' : 'viewProposal')
             ->recordActions([
                 ViewAction::make()->hiddenLabel()
@@ -319,66 +297,6 @@ class CampaignsTable
                 ViewProposal::make()->hiddenLabel()
                     ->visible(fn($livewire) => self::prTab($livewire)),
 
-                // Action::make('influencerApprove')->icon(Heroicon::Check)->hiddenLabel()->tooltip('Aprovar')
-                //     ->action(function ($record) {
-                //         $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'approved']);
-
-                //         $record->campaign->company->notify(
-                //             Notification::make()
-                //                 ->title('Influenciador aprovou proposta')
-                //                 ->body(Auth::user()->name . ' aprovou a proposta para ' . $record->campaign->name)
-                //                 ->success()
-                //                 ->toDatabase()
-                //         );
-
-                //         $record->agency->notify(
-                //             Notification::make()
-                //                 ->title('Influenciador aprovou proposta')
-                //                 ->body(Auth::user()->name . ' aprovou sua proposta para ' . $record->campaign->name)
-                //                 ->success()
-                //                 ->toDatabase()
-                //         );
-
-                //         Notification::make()
-                //             ->title('Proposta aprovada')
-                //             ->success()
-                //             ->send();
-                //     })->visible(
-                //         fn($livewire, $record) => self::prTab($livewire)
-                //             && Gate::allows('is_influencer')
-                //             && DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('influencer_approval') !== 'approved'
-                //     ),
-
-                // Action::make('influencerReject')->icon(Heroicon::XMark)->hiddenLabel()->tooltip('Rejeitar')
-                //     ->color('danger')
-                //     ->action(function ($record) {
-                //         $record->influencers()->updateExistingPivot(Auth::id(), ['influencer_approval' => 'rejected']);
-
-                //         $record->campaign->company->notify(
-                //             Notification::make()
-                //                 ->title('Influenciador rejeitou proposta')
-                //                 ->body(Auth::user()->name . ' rejeitou a proposta para ' . $record->campaign->name)
-                //                 ->danger()
-                //                 ->toDatabase()
-                //         );
-
-                //         $record->agency->notify(
-                //             Notification::make()
-                //                 ->title('Influenciador rejeitou proposta')
-                //                 ->body(Auth::user()->name . ' rejeitou sua proposta para ' . $record->campaign->name)
-                //                 ->danger()
-                //                 ->toDatabase()
-                //         );
-
-                //         Notification::make()
-                //             ->title('Proposta rejeitada')
-                //             ->danger()
-                //             ->send();
-                //     })->visible(
-                //         fn($livewire, $record) => self::prTab($livewire)
-                //             && Gate::allows('is_influencer')
-                //             && DB::table('proposal_user')->where(['proposal_id' => $record->id, 'user_id' => Auth::id()])->value('influencer_approval') !== 'rejected'
-                //     ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -259,11 +259,11 @@ body {
 }
 
 .fi-ac-icon-btn-group {
-    @apply !bg-background !text-secondary;
+    @apply !bg-inherit !text-secondary;
 }
 
 .fi-ac-icon-btn-group .fi-icon {
-    @apply !bg-background !text-secondary;
+    @apply !bg-inherit !text-secondary;
 }
 
 .fi-ac-link-action .fi-icon {
@@ -295,12 +295,8 @@ td .fi-select-input {
     @apply overflow-visible rounded-2xl bg-background;
 }
 
-td {
-    @apply rounded-b-2xl;
-}
-
 table {
-    @apply rounded-2xl bg-background;
+    @apply bg-background;
 }
 
 .fi-input-wrp-prefix {
@@ -322,10 +318,6 @@ table {
     color: var(--color-card-foreground);
 }
 
-/* .fi-ta-table {
-    background-color: var(--color-card);
-} */
-
 .fi-ta-header-cell {
     @apply bg-card;
 }
@@ -338,20 +330,12 @@ table {
     @apply bg-card;
 }
 
-.fi-ta-row {
-    @apply !bg-background;
-}
-
 * {
     @apply border-border;
 }
 
-td {
-    background: var(--color-background);
-}
-
 .fi-ta-table {
-    @apply rounded-2xl;
+    @apply bg-card dark:bg-background;
 }
 
 /* Botões de Role no Register */

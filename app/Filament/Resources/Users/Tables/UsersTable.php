@@ -24,7 +24,7 @@ class UsersTable
             ->columns([
                 TextColumn::make('role')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => __('roles.'.$state->value))
+                    ->formatStateUsing(fn($state) => __('roles.' . $state->value))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
@@ -83,7 +83,7 @@ class UsersTable
             ->recordActions([
                 ActionGroup::make([
                     Impersonate::make(),
-                    EditAction::make(),
+                    EditAction::make()->defaultColor('gray'),
                     DeleteAction::make(),
                 ]),
             ], RecordActionsPosition::BeforeColumns)

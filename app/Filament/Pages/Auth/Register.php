@@ -409,6 +409,8 @@ class Register extends SimplePage
                     ->label('Agência Vinculada')
                     ->searchable()
                     ->preload()
+                    ->nullable()
+                    ->helperText('Opcional, você pode se afiliar a uma agência quando quiser.')
                     ->getSearchResultsUsing(
                         fn(string $search): array => User::where('role', UserRole::AGENCY)
                             ->where('name', 'ilike', "%{$search}%")
@@ -478,7 +480,7 @@ class Register extends SimplePage
             ->compact()
             ->collapsible()
             ->collapsed()
-            ->label('Atributos Gerais')
+            ->label('Mais informações sobre você')
             ->addable(false)
             ->deletable(false)
             ->reorderable(false)
@@ -544,7 +546,7 @@ class Register extends SimplePage
 
     public function getMaxContentWidth(): Width|string|null
     {
-        return Width::TwoExtraLarge;
+        return Width::ThreeExtraLarge;
     }
 
     protected function getNameFormComponent(): Component
@@ -640,7 +642,7 @@ class Register extends SimplePage
     {
         return Action::make('register')
             ->label(__('filament-panels::auth/pages/register.form.actions.register.label'))
-            ->visible(fn(Get $get) => filled($get('role')))
+            ->visible(fn(Get $get) => filled($get('role') || filled($get('name'))))
             ->submit('register');
     }
 

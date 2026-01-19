@@ -493,47 +493,6 @@ class EditProfile extends BaseEditProfile
                     ->required(),
 
                 $this->getEmailFormComponent(),
-                $this->getPasswordFormComponent(),
-                $this->getPasswordConfirmationFormComponent(),
-
-                TextInput::make('pix_address')->label('Endereço Pix'),
-
-            ]);
-    }
-
-    protected function getInfluencerColumn(): Group
-    {
-        return Group::make()
-            ->statePath('influencer_data')
-            ->dehydrated()
-            ->schema([
-
-                Select::make('subcategories')
-                    ->multiple()
-                    ->label('Categorias')
-                    ->options(
-                        Category::with('subcategories')->get()
-                            ->mapWithKeys(fn($category) => [
-                                $category->title => $category->subcategories
-                                    ->pluck('title', 'id')
-                                    ->toArray(),
-                            ])
-                            ->toArray()
-                    ),
-                Select::make('agency_id')
-                    ->label('Agência Vinculada')
-                    ->searchable()
-                    ->preload()
-                    ->getSearchResultsUsing(
-                        fn(string $search): array => User::where('role', UserRole::AGENCY)
-                            ->where('name', 'ilike', "%{$search}%")
-                            ->limit(50)
-                            ->pluck('name', 'id')
-                            ->toArray()
-                    )
-                    ->getOptionLabelUsing(
-                        fn($value) => User::find($value)?->name
-                    ),
 
                 Group::make()
                     ->statePath('location_data')->columns(3)
@@ -591,6 +550,52 @@ class EditProfile extends BaseEditProfile
                             ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
                     ]),
 
+                $this->getPasswordFormComponent(),
+                $this->getPasswordConfirmationFormComponent(),
+
+                TextInput::make('pix_address')->label('Endereço Pix'),
+
+            ]);
+    }
+
+    protected function getInfluencerColumn(): Group
+    {
+        return Group::make()
+            ->statePath('influencer_data')
+            ->dehydrated()
+            ->schema([
+
+                Select::make('subcategories')
+                    ->multiple()
+                    ->label('Público Alvo')
+                    ->options(
+                        Category::with('subcategories')->get()
+                            ->mapWithKeys(fn($category) => [
+                                $category->title => $category->subcategories
+                                    ->pluck('title', 'id')
+                                    ->toArray(),
+                            ])
+                            ->toArray()
+                    ),
+                Select::make('agency_id')
+                    ->label('Agência Vinculada')
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->helperText('Opcional, você pode se afiliar a uma agência quando quiser.')
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => User::where('role', UserRole::AGENCY)
+                            ->where('name', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('name', 'id')
+                            ->toArray()
+                    )
+                    ->getOptionLabelUsing(
+                        fn($value) => User::find($value)?->name
+                    ),
+
+
+
                 Section::make('Redes Sociais')->collapsed()->collapsible()
                     ->schema([
                         Group::make()->columns(2)->schema([
@@ -626,7 +631,7 @@ class EditProfile extends BaseEditProfile
                             ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
 
                         TextInput::make('commission_cut')
-                            ->label('Comissão')
+                            ->label('Comissão da Agência')
                             ->suffix('%')
                             ->extraInputAttributes(['style' => 'text-align: right;'])
                             ->mask('999')
@@ -757,16 +762,16 @@ class EditProfile extends BaseEditProfile
         return $schema->components([
             Wizard::make(
                 [
-                    Step::make('Informações Básicas')
+                    Step::make('Dados Pessoais')
                         ->schema([
                             $this->getBaseInfoColumn(),
                         ]),
 
-                    Step::make('Informações de Influenciador')->schema([
+                    Step::make('Meu Perfil')->schema([
                         $this->getInfluencerColumn(),
                     ])->visible(Gate::allows('is_influencer')),
 
-                    Step::make('Atributos')->schema([
+                    Step::make('Detalhes')->schema([
                         $this->getAttributesRepeater(),
                     ])->visible(Gate::allows('is_influencer')),
                 ]
