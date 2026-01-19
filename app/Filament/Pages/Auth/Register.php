@@ -236,11 +236,29 @@ class Register extends SimplePage
                     'agency' => 'Agência',
                     'curator' => 'Curadoria',
                 ])
-                ->icons([
-                    'influencer' => 'heroicon-o-user',
-                    'company' =>  Heroicon::OutlinedBuildingOffice2,
-                    'agency' => Heroicon::OutlinedBuildingStorefront,
-                    'curator' => 'lucide-search-check',
+                ->icons(function (Get $get) {
+                    $selectedRole = $get('role');
+
+                    return [
+                        'influencer' => $selectedRole === 'influencer'
+                            ? 'heroicon-s-user'
+                            : 'heroicon-o-user',
+                        'company' => $selectedRole === 'company'
+                            ? 'heroicon-s-building-office-2'
+                            : 'heroicon-o-building-office-2',
+                        'agency' => $selectedRole === 'agency'
+                            ? 'heroicon-s-building-storefront'
+                            : 'heroicon-o-building-storefront',
+                        'curator' => $selectedRole === 'curator'
+                            ? 'heroicon-s-magnifying-glass-circle'
+                            : 'heroicon-o-magnifying-glass-circle',
+                    ];
+                })
+                ->colors([
+                    'influencer' => 'secondary',
+                    'company' => 'secondary',
+                    'agency' => 'secondary',
+                    'curator' => 'secondary',
                 ])
                 ->grouped()
                 ->extraFieldWrapperAttributes(['class' => 'text-center flex flex-col w-fit mx-auto gap-4'])

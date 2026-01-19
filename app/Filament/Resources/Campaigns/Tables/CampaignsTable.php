@@ -18,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
@@ -59,29 +60,24 @@ class CampaignsTable
                     );
                 }
             })
-            ->groups(groups: fn($livewire) => self::prTab($livewire) ? [
-                // Group::make('company_approval')->label('Aprovação da Empresa')->collapsible(),
-                Group::make('status')->collapsible()->orderQueryUsing(function (Builder $query, string $direction) {
-                    return $query->orderByRaw("
-                CASE 
-                    WHEN status = 'draft' THEN 1
-                    WHEN status = 'approved' THEN 2
-                    WHEN status = 'cancelled' THEN 3
-                    WHEN status = 'finished' THEN 4
-                    ELSE 5
-                END {$direction}
-            ");
-                })
-                    ->getTitleFromRecordUsing(
-                        fn($record) => __("campaign_status.{$record->status}.label")
-                    )
-                    ->getDescriptionFromRecordUsing(
-                        fn($record) => __("campaign_status.{$record->status}.description")
-                    ),
-            ] : [])
-            ->defaultGroup(fn($livewire) => self::prTab($livewire) ?
-                'status'
-                : null)->groupingDirectionSettingHidden()
+            ->filters([
+                SelectFilter::make('match_level')
+                    ->label('Compatibilidade')
+                    ->options([
+                        '100' => 'Match Perfeito (100%)',
+                        '50' => 'Alta Compatibilidade (50%+)',
+                    ])
+                    ->query(function ($query, array $data) {
+                        if ($data['value'] === '100') {
+                            return $query->whereMatchesUser(Auth::user(), 100);
+                        }
+                        if ($data['value'] === '50') {
+                            return $query->whereMatchesUser(Auth::user(), 50, 99);
+                        }
+                    })
+                    ->visible(fn($livewire) => Gate::allows('is_influencer') && self::anTab($livewire)),
+            ], layout: FiltersLayout::AboveContent)
+
             ->columns([
 
                 // CAMPAIGNS TAB

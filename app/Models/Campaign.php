@@ -43,7 +43,7 @@ class Campaign extends Model
     protected function influencerIds(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn () => $this->temp_influencer_ids,
+            get: fn() => $this->temp_influencer_ids,
             set: function ($value) {
                 // Save to the public property for the Observer to use
                 $this->temp_influencer_ids = $value;
@@ -78,5 +78,25 @@ class Campaign extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(User::class, 'company_id');
+    }
+
+    public function scopeWhereMatchesUser($query, User $user, int $minPercent, int $maxPercent = 100)
+    {
+        $min = $minPercent / 100;
+        $max = $maxPercent / 100;
+
+        return $query->whereIn('id', function ($sub) use ($user, $min, $max) {
+            $sub->select('c.id')
+                ->from('campaigns as c')
+                ->join('attribute_value_campaign as avc', 'c.id', '=', 'avc.campaign_id')
+                ->join('attribute_value_user as avu', function ($join) use ($user) {
+                    $join->on('avc.attribute_value_id', '=', 'avu.attribute_value_id')
+                        ->where('avu.user_id', $user->id)
+                        // Match de Title 
+                        ->whereRaw('COALESCE(avc.title, \'\') = COALESCE(avu.title, \'\')');
+                })
+                ->groupBy('c.id')
+                ->havingRaw('CAST(COUNT(avu.id) AS FLOAT) / NULLIF((SELECT count(*) FROM attribute_value_campaign WHERE campaign_id = c.id), 0) >= ?', [$min]);;
+        });
     }
 }
