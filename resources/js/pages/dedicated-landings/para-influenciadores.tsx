@@ -94,7 +94,7 @@ export default function ParaInfluenciadores() {
             'Receba propostas de marcas relevantes, negocie com segurança e acompanhe seus ganhos com total transparência. Sua carreira, profissionalizada.',
         ctaText: 'Se cadastre aqui',
         ctaHref: '/dashboard/register',
-        backgroundColor: 'bg-purple-200',
+        // backgroundColor: 'bg-purple-200',
     };
 
     return (
@@ -124,21 +124,21 @@ export default function ParaInfluenciadores() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <StatsAccordion
-                    eyebrow="CREATOR STUDIO"
-                    headlineParts={['Crie.', 'Engaje.', 'Fature.']}
-                    description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
-                    items={statsItems}
-                />
-            </FadeInEffect>
-
-            <FadeInEffect>
                 <FeatureCarousel
                     headingStart="Sua criatividade"
                     headingHighlight="profissionalizada."
                     slides={slides}
                     variant={2}
                 />{' '}
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <StatsAccordion
+                    eyebrow="CREATOR STUDIO"
+                    headlineParts={['Crie.', 'Engaje.', 'Fature.']}
+                    description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
+                    items={statsItems}
+                />
             </FadeInEffect>
 
             <FadeInEffect>

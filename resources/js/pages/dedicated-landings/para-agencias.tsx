@@ -41,7 +41,7 @@ export default function ParaAgencias() {
             'Centralize seu casting, envie propostas em lote e gerencie comissões com total transparência. Tudo em um único sistema.',
         ctaText: 'Se cadastre aqui',
         ctaHref: '/dashboard/register',
-        backgroundColor: 'bg-green-200',
+        // backgroundColor: 'bg-green-200',
     };
 
     const slides = [
@@ -129,20 +129,20 @@ export default function ParaAgencias() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <StatsAccordion
-                    eyebrow="AGENCY OS"
-                    headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
-                    description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
-                    items={statsItems}
+                <FeatureCarousel
+                    headingStart="Operação de escala"
+                    headingHighlight="simplificada."
+                    slides={slides}
                     variant={2}
                 />
             </FadeInEffect>
 
             <FadeInEffect>
-                <FeatureCarousel
-                    headingStart="Operação de escala"
-                    headingHighlight="simplificada."
-                    slides={slides}
+                <StatsAccordion
+                    eyebrow="AGENCY OS"
+                    headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
+                    description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
+                    items={statsItems}
                     variant={2}
                 />
             </FadeInEffect>
