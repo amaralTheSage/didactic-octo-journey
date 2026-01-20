@@ -102,6 +102,7 @@ export default function ParaEmpresas() {
             'Conecte sua marca a influenciadores auditados, valide pagamentos via PIX e acompanhe cada entrega com métricas claras e rastreáveis.',
         ctaText: 'Se cadastre aqui',
         ctaHref: '/dashboard/register',
+        backgroundColor: 'bg-orange-200',
     };
 
     return (
@@ -131,20 +132,20 @@ export default function ParaEmpresas() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <FeatureCarousel
-                    headingStart="Gestão moderna encontra"
-                    headingHighlight="dados reais."
-                    slides={slides}
-                />{' '}
-            </FadeInEffect>
-
-            <FadeInEffect>
                 <StatsAccordion
                     eyebrow="ANALYTICS CORE"
                     headlineParts={['Metrifique.', 'Otimize.', 'Escale.']}
                     description="Infraestrutura de dados que adapta suas campanhas em tempo real sem comprometer o budget ou a qualidade da entrega."
                     items={statsItems}
                 />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Gestão moderna encontra"
+                    headingHighlight="dados reais."
+                    slides={slides}
+                />{' '}
             </FadeInEffect>
 
             <FadeInEffect>

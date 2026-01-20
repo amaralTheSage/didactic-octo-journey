@@ -98,6 +98,7 @@ export default function ParaCuradorias() {
             'Gerencie múltiplos clientes, execute curadorias estratégicas e entregue relatórios profissionais com total autonomia e transparência.',
         ctaText: 'Se cadastre aqui',
         ctaHref: '/dashboard/register',
+        backgroundColor: 'bg-cyan-200',
     };
 
     return (
@@ -128,20 +129,20 @@ export default function ParaCuradorias() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <FeatureCarousel
-                    headingStart="Consultoria de influência"
-                    headingHighlight="profissionalizada."
-                    slides={slides}
-                />
-            </FadeInEffect>
-
-            <FadeInEffect>
                 <StatsAccordion
                     eyebrow="CURATOR OS"
                     headlineParts={['Curate.', 'Gerencie.', 'Entregue.']}
                     description="A plataforma completa para profissionais que gerenciam estratégias de marketing de influência para empresas."
                     items={statsItems}
                     variant={2}
+                />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Consultoria de influência"
+                    headingHighlight="profissionalizada."
+                    slides={slides}
                 />
             </FadeInEffect>
 
