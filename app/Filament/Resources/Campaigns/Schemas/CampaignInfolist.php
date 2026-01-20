@@ -32,11 +32,11 @@ class CampaignInfolist
                     ->schema([
                         TextEntry::make('name')
                             ->extraAttributes(['class' => 'campaign-name-entry'])
-                            ->icon(fn ($record) => $record->validated_at
+                            ->icon(fn($record) => $record->validated_at
                                 ? 'heroicon-o-check-badge'
                                 : null)
                             ->iconPosition('after')
-                            ->tooltip(fn ($record) => $record->validated_at
+                            ->tooltip(fn($record) => $record->validated_at
                                 ? 'Campanha Verificada'
                                 : null)
                             ->iconColor('success')
@@ -84,17 +84,18 @@ class CampaignInfolist
                                 ->label('Remover Interesse')
                                 ->color('danger')
                                 ->visible(
-                                    fn ($record) => Gate::allows('is_agency')
+                                    fn($record) => Gate::allows('is_agency')
                                         && $record->proposals()
-                                            ->where('agency_id', Auth::id())
-                                            ->exists()
+                                        ->where('agency_id', Auth::id())
+                                        ->exists()
                                 )
                                 ->action(
-                                    fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                    fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                                 ),
 
                             Action::make('viewProposals')
                                 ->label('Ver Propostas')
+                                ->visible(Gate::allows('is_company_or_curator'))
                                 ->color('secondary')
                                 ->url(
                                     function (Campaign $record) {
@@ -105,14 +106,54 @@ class CampaignInfolist
                                     }
                                 ),
 
+                            Action::make('viewOurProposal')
+                                ->label('Ver Proposta')
+                                ->visible(fn() => Gate::allows('is_agency') || Gate::allows('is_influencer'))
+                                ->color('secondary')
+                                ->url(function (Campaign $record) {
+                                    $proposal = null;
+
+                                    if (Gate::allows('is_agency')) {
+                                        $proposal = $record->proposals()
+                                            ->where('agency_id', Auth::id())
+                                            ->first();
+                                    } elseif (Gate::allows('is_influencer')) {
+                                        $proposal = $record->proposals()
+                                            ->whereHas('influencers', function ($query) {
+                                                $query->where('users.id', Auth::id());
+                                            })
+                                            ->first();
+                                    }
+
+                                    if (!$proposal) {
+                                        return null;
+                                    }
+
+                                    return route('filament.admin.resources.proposals.index', [
+                                        'search' => $record->name,
+                                        'tableAction' => 'viewProposal',
+                                        'tableActionRecord' => $proposal->id
+                                    ]);
+                                })
+                                ->disabled(function (Campaign $record) {
+                                    if (Gate::allows('is_agency')) {
+                                        return !$record->proposals()->where('agency_id', Auth::id())->exists();
+                                    } elseif (Gate::allows('is_influencer')) {
+                                        return !$record->proposals()->whereHas('influencers', function ($query) {
+                                            $query->where('users.id', Auth::id());
+                                        })->exists();
+                                    }
+                                    return true;
+                                }),
+
                             Action::make('validateNow')
                                 ->label('Validar')
                                 ->color('success')
 
                                 ->icon(Heroicon::OutlinedCheckBadge)
-                                ->visible(fn (Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
+                                ->visible(fn(Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
                                 ->action(function ($record) {
-                                    return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
+                                    return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
                                 }),
 
                             Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
@@ -135,6 +176,15 @@ class CampaignInfolist
                                 Auth::user()->influencer_info?->agency?->notify(Notification::make()
                                     ->title("{$userName} se interessou em uma campanha")
                                     ->body("O influenciador demonstrou interesse na campanha {$record->name}")
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Campanha')
+                                            ->url(route('filament.admin.resources.campaigns.index', [
+                                                'search' => $record->name,
+                                                'tableAction' => 'view',
+                                                'tableActionRecord' => $record->id,
+                                            ])),
+                                    ])
                                     ->toDatabase());
 
                                 Notification::make()
@@ -167,7 +217,7 @@ class CampaignInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')->color('primary')
-                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -191,7 +241,7 @@ class CampaignInfolist
                                         ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                                         ->suffix('%')
                                         ->numeric()
-                                        ->columnSpan(fn () => Gate::allows('is_influencer') ? 5 : 3)
+                                        ->columnSpan(fn() => Gate::allows('is_influencer') ? 5 : 3)
                                         ->size(TextSize::Large)
                                         ->weight('bold'),
                                 ])->columnSpan(2),

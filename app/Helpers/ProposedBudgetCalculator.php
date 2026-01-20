@@ -27,8 +27,11 @@ class ProposedBudgetCalculator
             $totalSum += array_sum($prices);
         }
 
+        // Filtra valores zero para o mínimo
+        $nonZeroPrices = array_filter($allPrices, fn($price) => $price > 0);
+
         return [
-            'min' => min($allPrices),
+            'min' => !empty($nonZeroPrices) ? min($nonZeroPrices) : 0,
             'max' => $totalSum,
         ];
     }
