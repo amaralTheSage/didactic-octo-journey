@@ -7,7 +7,6 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\Campaign;
 use Illuminate\Support\Facades\Gate;
 
 class CampaignMatchesWidget extends StatsOverviewWidget
@@ -23,7 +22,7 @@ class CampaignMatchesWidget extends StatsOverviewWidget
             ->addSelect([
                 'total_reqs' => DB::table('attribute_value_campaign')
                     ->whereColumn('campaign_id', 'c.id')
-                    ->selectRaw('count(*)')
+                    ->selectRaw('count(*)'),
             ])
             // Join para encontrar onde o usuário dá "match" (ID + Title)
             ->join('attribute_value_campaign as avc', 'c.id', '=', 'avc.campaign_id')
@@ -42,8 +41,6 @@ class CampaignMatchesWidget extends StatsOverviewWidget
             ->count();
     }
 
-
-
     protected function getStats(): array
     {
         // Campanhas que batem 90%
@@ -59,8 +56,8 @@ class CampaignMatchesWidget extends StatsOverviewWidget
                 ->color('info')
                 ->url(CampaignResource::getUrl('index', [
                     'tableFilters' => [
-                        'match_level' => ['value' => '50']
-                    ]
+                        'match_level' => ['value' => '50'],
+                    ],
                 ]))
                 ->visible(Gate::allows('is_influencer')),
 
@@ -70,8 +67,8 @@ class CampaignMatchesWidget extends StatsOverviewWidget
                 ->color('success')
                 ->url(CampaignResource::getUrl('index', [
                     'tableFilters' => [
-                        'match_level' => ['value' => '90']
-                    ]
+                        'match_level' => ['value' => '90'],
+                    ],
                 ]))
                 ->visible(Gate::allows('is_influencer')),
         ];

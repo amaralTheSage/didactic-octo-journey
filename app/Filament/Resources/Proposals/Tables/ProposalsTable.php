@@ -8,8 +8,6 @@ use App\Enums\UserRole;
 use App\Helpers\ProposedBudgetCalculator;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -51,8 +49,7 @@ class ProposalsTable
                             case UserRole::CURATOR:
                                 $subQuery->whereHas(
                                     'campaign.company.company_info',
-                                    fn($q) =>
-                                    $q->where('curator_id', $user->id)
+                                    fn($q) => $q->where('curator_id', $user->id)
                                 );
                                 break;
 
@@ -195,7 +192,7 @@ class ProposalsTable
                         ->color($colorByStatus)
                         ->formatStateUsing(fn($state): string => __("campaign_status.$state.label")),
 
-                ])
+                ]),
 
             ])
             ->filters([

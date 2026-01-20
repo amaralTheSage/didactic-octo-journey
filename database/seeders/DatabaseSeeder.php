@@ -8,6 +8,7 @@ use App\Models\Campaign;
 use App\Models\Category;
 use App\Models\InfluencerInfo;
 use App\Models\Product;
+use App\Models\Proposal;
 use App\Models\Subcategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -426,7 +427,7 @@ class DatabaseSeeder extends Seeder
                         && $influencer->influencer_info->association_status === 'approved';
                 });
 
-                $proposal = \App\Models\Proposal::create([
+                $proposal = Proposal::create([
                     'message' => fake()->paragraph(2),
                     'proposed_agency_cut' => rand(5, 30),
                     'campaign_id' => $campaign->id,

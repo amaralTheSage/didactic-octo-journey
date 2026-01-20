@@ -6,6 +6,14 @@ import Testimonials from '@/components/landing/testimonials';
 import '../../css/app.css';
 import LandingsLayout from './dedicated-landings/landings-layouts';
 
+const ctaData = {
+    title: 'Pronto para começar?',
+    description:
+        'Junte-se ao marketplace mais completo do Brasil. Conecte-se, negocie e escale seus resultados com segurança e transparência.',
+    ctaText: 'Criar Conta Grátis',
+    ctaHref: '/dashboard/register',
+};
+
 export default function Landing() {
     return (
         <LandingsLayout>
@@ -19,7 +27,7 @@ export default function Landing() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <CTASection />
+                <CTASection {...ctaData} />
             </FadeInEffect>
         </LandingsLayout>
     );

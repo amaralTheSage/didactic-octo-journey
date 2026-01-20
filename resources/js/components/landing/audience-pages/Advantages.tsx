@@ -18,7 +18,7 @@ export default function Advantages({
     items,
 }: AdvantagesProps) {
     return (
-        <section className="bg-white px-4 py-20 md:px-8 lg:px-16">
+        <section className="mx-auto max-w-7xl bg-white py-20 md:mx-8 lg:mx-16">
             <div className="mx-auto">
                 <div className="mb-12">
                     <h2 className="mb-4 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
@@ -29,12 +29,12 @@ export default function Advantages({
                     </p>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="grid grid-cols-1 divide-y divide-slate-200 bg-white md:grid-cols-2 md:divide-x md:divide-y-0 lg:grid-cols-4">
+                <div className="overflow-hidden">
+                    <div className="grid grid-cols-1 bg-white md:grid-cols-2 lg:grid-cols-4">
                         {items.map((item, index) => (
                             <div
                                 key={index}
-                                className="group p-8 transition-colors duration-300 hover:bg-slate-50"
+                                className="group p-8 transition-colors duration-300 hover:bg-slate-100"
                             >
                                 <div className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-900 transition-colors">
                                     <item.icon size={20} strokeWidth={2} />

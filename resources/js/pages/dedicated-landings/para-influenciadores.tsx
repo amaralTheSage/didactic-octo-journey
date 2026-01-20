@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import CTASection from '@/components/landing/audience-pages/CTASection';
 import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
@@ -57,6 +58,7 @@ export default function ParaInfluenciadores() {
             tags: ['EXTRATO', 'TRANSPARÊNCIA', 'PREVISIBILIDADE'],
         },
     ];
+
     const statsItems = [
         {
             title: 'Media Kit Vivo',
@@ -86,6 +88,15 @@ export default function ParaInfluenciadores() {
         },
     ];
 
+    const ctaData = {
+        title: 'Pronto para monetizar seu conteúdo?',
+        description:
+            'Receba propostas de marcas relevantes, negocie com segurança e acompanhe seus ganhos com total transparência. Sua carreira, profissionalizada.',
+        ctaText: 'Se cadastre aqui',
+        ctaHref: '/dashboard/register',
+        backgroundColor: 'bg-purple-200',
+    };
+
     return (
         <LandingsLayout>
             <Hero
@@ -99,7 +110,7 @@ export default function ParaInfluenciadores() {
                     { value: 'R$', label: 'Tabela Dinâmica' },
                     { value: 'Chat', label: 'Direto c/ Marca' },
                 ]}
-                bgImage="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2370&auto=format&fit=crop"
+                bgImage="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop"
                 floatingCardTitle="PERFIL"
                 floatingCardSubtitle="Seu media kit atualizado automaticamente."
                 ctaText="Sou Criador"
@@ -113,20 +124,25 @@ export default function ParaInfluenciadores() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <FeatureCarousel
-                    headingStart="Sua criatividade"
-                    headingHighlight="profissionalizada."
-                    slides={slides}
-                />{' '}
-            </FadeInEffect>
-
-            <FadeInEffect>
                 <StatsAccordion
                     eyebrow="CREATOR STUDIO"
                     headlineParts={['Crie.', 'Engaje.', 'Fature.']}
                     description="Ferramentas profissionais para quem leva a criação de conteúdo a sério e busca estabilidade financeira."
                     items={statsItems}
                 />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Sua criatividade"
+                    headingHighlight="profissionalizada."
+                    slides={slides}
+                    variant={2}
+                />{' '}
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <CTASection {...ctaData} />
             </FadeInEffect>
         </LandingsLayout>
     );

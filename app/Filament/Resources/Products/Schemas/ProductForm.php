@@ -2,28 +2,56 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Enums\UserRole;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class ProductForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $user = Auth::user();
+
+        $companyField = match ($user->role) {
+            UserRole::COMPANY => Hidden::make('company_id')
+                ->default($user->id),
+
+            UserRole::CURATOR => Select::make('company_id')
+                ->label('Empresa')
+                ->options(fn() => $user->curator_companies()->pluck('name', 'users.id'))
+                ->searchable()
+                ->required(),
+
+            default => Hidden::make('company_id'),
+        };
+
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('price')
-                    ->numeric()
-                    ->inputMode('decimal')
-                    ->step('0.01')->prefix('R$')
-                    ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.'))
-                    ->dehydrateStateUsing(fn ($state) => (int) (str_replace(['.', ','], ['', '.'], $state) * 100))->required()
-                    ->placeholder('0,00')
-                    ->required(),
-                MarkdownEditor::make('description')
-                    ->nullable()->columnSpan(2),
+
+                Group::make([
+                    Section::make([
+                        $companyField,
+
+                        TextInput::make('name')
+                            ->label('Nome')
+                            ->required(),
+
+                        TextInput::make('price')
+                            ->label('Preço')
+                            ->moneyBRL()
+                            ->required(),
+
+                        MarkdownEditor::make('description')
+                            ->label('Descrição')
+                            ->nullable(),
+                    ])->columnSpan(6)->columns(1)->columnStart(2),
+                ])->columns(8)->columnSpanFull()
             ]);
     }
 }

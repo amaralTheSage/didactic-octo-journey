@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ProductResource extends Resource
 {
@@ -43,7 +44,7 @@ class ProductResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === UserRole::COMPANY ?? false;
+        return Gate::allows('is_company_or_curator');
     }
 
     public static function getPages(): array

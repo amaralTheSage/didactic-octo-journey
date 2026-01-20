@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import CTASection from '@/components/landing/audience-pages/CTASection';
 import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
@@ -95,6 +96,14 @@ export default function ParaEmpresas() {
         },
     ];
 
+    const ctaData = {
+        title: 'Pronto para lançar campanhas com segurança?',
+        description:
+            'Conecte sua marca a influenciadores auditados, valide pagamentos via PIX e acompanhe cada entrega com métricas claras e rastreáveis.',
+        ctaText: 'Se cadastre aqui',
+        ctaHref: '/dashboard/register',
+    };
+
     return (
         <LandingsLayout>
             <Hero
@@ -107,10 +116,10 @@ export default function ParaEmpresas() {
                     { value: '+500', label: 'Influenciadores' },
                     { value: '24h', label: 'Aprovação Média' },
                 ]}
-                bgImage="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop"
+                bgImage="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
                 floatingCardTitle="ANÁLISE DE DADOS"
                 floatingCardSubtitle="Alcance previsto de +2.4M no Q3 baseado em propostas."
-                ctaText="Anunciar Campanha"
+                ctaText="Se cadastre aqui"
             />
 
             <FadeInEffect>
@@ -136,6 +145,10 @@ export default function ParaEmpresas() {
                     description="Infraestrutura de dados que adapta suas campanhas em tempo real sem comprometer o budget ou a qualidade da entrega."
                     items={statsItems}
                 />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <CTASection {...ctaData} />
             </FadeInEffect>
         </LandingsLayout>
     );

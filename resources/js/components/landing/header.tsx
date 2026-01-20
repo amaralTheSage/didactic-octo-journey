@@ -52,6 +52,12 @@ export default function Header() {
                     >
                         Influenciadores
                     </Link>
+                    <Link
+                        href="/para-curadorias"
+                        className="transition-colors hover:text-black"
+                    >
+                        Curadorias
+                    </Link>
                 </div>
 
                 {/* CTA */}
@@ -94,6 +100,12 @@ export default function Header() {
                         className="transition-colors hover:text-black"
                     >
                         Influenciadores
+                    </Link>
+                    <Link
+                        href="/para-curadorias"
+                        className="transition-colors hover:text-black"
+                    >
+                        Curadorias
                     </Link>
 
                     <a

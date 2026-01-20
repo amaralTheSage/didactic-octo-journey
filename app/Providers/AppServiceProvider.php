@@ -61,6 +61,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->role === UserRole::CURATOR;
         });
 
+        Gate::define('is_company_or_curator', function (User $user) {
+            return $user->role === UserRole::COMPANY || $user->role === UserRole::CURATOR;
+        });
+
         Gate::define('is_influencer', function (User $user) {
             return $user->role === UserRole::INFLUENCER;
         });

@@ -22,26 +22,24 @@ class ListCompanies extends ListRecords
         $user = Auth::user();
         $tabs = [];
 
-        $tabs['all'] = Tab::make('Todas Empresas');
-
         if ($user->role === UserRole::CURATOR) {
+            $tabs['all'] = Tab::make('Todas Empresas');
             $tabs['my_companies'] = Tab::make('Minhas Empresas')
                 ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereHas(
+                    fn (Builder $query) => $query->whereHas(
                         'company_info',
-                        fn($q) =>
-                        $q->where('curator_id', $user->id)
+                        fn ($q) => $q->where('curator_id', $user->id)
                     )
                 );
         }
 
         return $tabs;
     }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->modalWidth(Width::ExtraLarge)->after(fn(User $record) => CompanyInfo::create(['curator_id' => Auth::id(), 'company_id' => $record->id])),
+            CreateAction::make()->modalWidth(Width::ExtraLarge)->after(fn (User $record) => CompanyInfo::create(['curator_id' => Auth::id(), 'company_id' => $record->id])),
         ];
     }
 }

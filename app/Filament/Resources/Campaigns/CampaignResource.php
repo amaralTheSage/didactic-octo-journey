@@ -75,7 +75,10 @@ class CampaignResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return Gate::allows('is_company') && $record->company_id === Auth::id();
+        $user = Auth::user();
+
+        return (Gate::allows('is_company') && $record->company_id === $user->id)
+            || (Gate::allows('is_curator') && $user->curator_companies()->where('users.id', $record->company_id)->exists());
     }
 
     public static function getPages(): array

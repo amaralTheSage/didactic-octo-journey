@@ -32,11 +32,11 @@ class CampaignInfolist
                     ->schema([
                         TextEntry::make('name')
                             ->extraAttributes(['class' => 'campaign-name-entry'])
-                            ->icon(fn($record) => $record->validated_at
+                            ->icon(fn ($record) => $record->validated_at
                                 ? 'heroicon-o-check-badge'
                                 : null)
                             ->iconPosition('after')
-                            ->tooltip(fn($record) => $record->validated_at
+                            ->tooltip(fn ($record) => $record->validated_at
                                 ? 'Campanha Verificada'
                                 : null)
                             ->iconColor('success')
@@ -84,13 +84,13 @@ class CampaignInfolist
                                 ->label('Remover Interesse')
                                 ->color('danger')
                                 ->visible(
-                                    fn($record) => Gate::allows('is_agency')
+                                    fn ($record) => Gate::allows('is_agency')
                                         && $record->proposals()
-                                        ->where('agency_id', Auth::id())
-                                        ->exists()
+                                            ->where('agency_id', Auth::id())
+                                            ->exists()
                                 )
                                 ->action(
-                                    fn($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
+                                    fn ($record) => $record->proposals()->where('agency_id', Auth::id())->delete()
                                 ),
 
                             Action::make('viewProposals')
@@ -110,9 +110,9 @@ class CampaignInfolist
                                 ->color('success')
 
                                 ->icon(Heroicon::OutlinedCheckBadge)
-                                ->visible(fn(Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
+                                ->visible(fn (Campaign $record) => Gate::allows('is_company') && $record->company_id === Auth::id() && ! $record->validated_at)
                                 ->action(function ($record) {
-                                    return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
+                                    return redirect(route('payments.qrcode').'?campaign_id='.$record->id);
                                 }),
 
                             Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
@@ -145,8 +145,6 @@ class CampaignInfolist
                             }),
                         ])->columns(3)->columnSpanFull(),
 
-
-
                     ]),
 
                 Group::make()->schema([
@@ -169,7 +167,7 @@ class CampaignInfolist
                                 Action::make('viewCompany')
                                     ->label('Ver Empresa')
                                     ->icon('heroicon-o-building-office')->color('primary')
-                                    ->url(fn($record) => route('filament.admin.resources.companies.index', [
+                                    ->url(fn ($record) => route('filament.admin.resources.companies.index', [
                                         'search' => $record->company->name,
                                         'tableAction' => 'viewCompanyDetails',
                                         'tableActionRecord' => $record->company->getKey(),
@@ -193,24 +191,19 @@ class CampaignInfolist
                                         ->helperText('Percentual do lucro da campanha destinado à agência e aos influenciadores')
                                         ->suffix('%')
                                         ->numeric()
-                                        ->columnSpan(fn() => Gate::allows('is_influencer') ? 5 : 3)
+                                        ->columnSpan(fn () => Gate::allows('is_influencer') ? 5 : 3)
                                         ->size(TextSize::Large)
                                         ->weight('bold'),
                                 ])->columnSpan(2),
 
-
                         ]),
 
-
-
-
                 ]),
-
 
                 RepeatableEntry::make('attribute_values')
                     ->hiddenLabel()
                     ->extraAttributes([
-                        'class' => '[&_thead]:hidden'
+                        'class' => '[&_thead]:hidden',
                     ])
                     ->state(function (Campaign $record) {
                         return $record->attribute_values()
@@ -241,9 +234,9 @@ class CampaignInfolist
                             ->weight('medium'),
 
                         TextEntry::make('badges')
-                            ->badge()
+                            ->badge(),
                     ])
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ]);
     }
 }

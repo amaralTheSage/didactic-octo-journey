@@ -13,4 +13,9 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function company()
+    {
+        return $this->belongsTo(User::class, 'company_id');
+    }
 }

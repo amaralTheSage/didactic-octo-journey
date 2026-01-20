@@ -42,8 +42,6 @@
 
             if ($field === 'commission_cut' || $field === 'proposed_agency_cut') {
                 return $value . '%';
-
-
             }
 
             return (string) $value;
@@ -77,6 +75,18 @@
                 '</span>'
             );
         }
+
+        function getRoleBadge($userRole): HtmlString
+        {
+            $badges = [
+                'company' => '<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Empresa</span>',
+                'agency' => '<span class="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">Agência</span>',
+                'influencer' => '<span class="inline-flex items-center rounded-md bg-pink-50 px-2 py-0.5 text-xs font-medium text-pink-700 ring-1 ring-inset ring-pink-700/10">Influenciador</span>',
+                'curator' => '<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-pink-700/10">Curadoria</span>',
+            ];
+
+            return new HtmlString($badges[$userRole] ?? '<span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-700/10">Usuário</span>');
+        }
     @endphp
 
     <div class="space-y-6">
@@ -95,7 +105,7 @@
             @foreach ($logs as $log)
 
                 @php
-                    $isCompany = Auth::user()->role === UserRole::COMPANY;
+                    $isCompany = Gate::allows('is_company_or_curator');
 
                     // 1. Filtramos as mudanças da proposta (remove comissão se for empresa)
                     $proposalChanges = collect($log->changes['proposal'] ?? [])
@@ -136,8 +146,11 @@
                     <img src="{{ $log->user->avatar_url }}" class="h-8 w-8 rounded-full" />
 
                     <div class="flex-1 space-y-1">
-                        <div class="flex justify-between">
-                            <span class="text-sm font-semibold text-foreground">{{ $log->user->name }}</span>
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-foreground">{{ $log->user->name }}</span>
+                                {!! getRoleBadge($log->user->role->value ?? 'user') !!}
+                            </div>
                             <span class="text-xs text-muted-foreground">
                                 {{ $log->created_at->translatedFormat('d \\d\\e F \\d\\e Y \\à\\s H:i') }}
                             </span>
@@ -207,14 +220,25 @@
                             @endphp
 
                             <div class="pt-1 space-y-1">
-                                <div class="text-xs font-medium text-foreground flex gap-2">
-                                    {{ $name }}
+                                <div class="text-xs font-medium text-foreground flex items-center gap-2">
+                                    <span>{{ $name }}</span>
+                                    @if ($isAdded)
+                                        <span
+                                            class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold text-green-700 ">
+                                            Adicionado
+                                        </span>
+                                    @elseif ($isRemoved)
+                                        <span
+                                            class="inline-flex items-center rounded-md  px-2 py-0.5 text-xs font-semibold text-red-700 ">
+                                            Removido
+                                        </span>
+                                    @endif
                                 </div>
 
                                 @foreach ($fieldSource as $field => $data)
                                     @php
 
-                                        if ($field === 'commission_cut' && Auth::user()->role === UserRole::COMPANY)
+                                        if ($field === 'commission_cut' && Gate::allows('is_company_or_curator'))
                                             continue;
 
                                         if (!isNumericChange($field, $numericFields))
@@ -234,10 +258,12 @@
                                     @endphp
 
                                     <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span>{{ __('proposal_fields.' . $field) }}:</span>
+                                        <span
+                                            class="{{ $isRemoved ? 'line-through' : '' }}">{{ __('proposal_fields.' . $field) }}:</span>
 
                                         @if (!$isAdded)
-                                            <span>{{ formatValue($from, $field, $moneyFields, $numericFields) }}</span>
+                                            <span
+                                                class="{{ $isRemoved ? 'line-through' : '' }}">{{ formatValue($from, $field, $moneyFields, $numericFields) }}</span>
                                         @endif
 
                                         @if (!$isRemoved && !$isAdded)

@@ -9,7 +9,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class CompaniesTable
 {
@@ -21,23 +21,24 @@ class CompaniesTable
 
         return $table
             ->modifyQueryUsing(
-                fn(Builder $query) =>
-                $query->withCount('proposals')->orderBy('proposals_count', 'desc')
+                fn(Builder $query) => $query->withCount('proposals')->orderBy('proposals_count', 'desc')
             )
             ->columns([
                 ImageColumn::make('avatar_url')
-                    ->label('')->circular(),
+                    ->label('Nome')->width('4%')->circular(),
 
-                TextColumn::make('name')->label('Nome')
+                TextColumn::make('name')->label('')
                     ->searchable(),
 
                 TextColumn::make('campaigns_count')
                     ->label('Campanhas')
-                    ->counts('campaigns'),
+                    ->counts('campaigns')
+                    ->visible(Gate::allows('is_curator')),
 
                 TextColumn::make('proposals_count')
                     ->label('Propostas')
-                    ->counts('proposals'),
+                    ->counts('proposals')
+                    ->visible(Gate::allows('is_curator')),
 
             ])
             ->filters([

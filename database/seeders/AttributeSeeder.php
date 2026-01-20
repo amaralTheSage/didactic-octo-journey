@@ -91,7 +91,6 @@ class AttributeSeeder extends Seeder
             ]);
         }
 
-
         /*
         |--------------------------------------------------
         | Acessibilidade

@@ -2,35 +2,23 @@
 
 namespace App\Filament\Resources\Campaigns\Tables;
 
-use App\Actions\Filament\EditProposalAction;
-use App\Actions\Filament\ViewProposal;
 use App\Filament\Tables\Columns\ExpandableBadges;
-use App\Helpers\ProposedBudgetCalculator;
-use App\Models\Subcategory;
-use Filament\Actions\Action;
+use App\Models\Campaign;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Notifications\Notification;
-use Filament\Support\Colors\Color;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 
 class CampaignsTable
 {
-
     public static function configure(Table $table): Table
     {
         $colorByStatus = fn(string $state) => match ($state) {
@@ -88,9 +76,6 @@ class CampaignsTable
                         : null)
                     ->iconColor('success'),
 
-                ImageColumn::make('company.avatar_url')->circular()->label(' ')->toggleable()
-                    ->visible(Gate::denies('is_company')),
-
                 ExpandableBadges::make('subcategories')
                     ->label('Categorias')
                     ->limit(5)
@@ -100,8 +85,12 @@ class CampaignsTable
                         'style' => 'min-width: 400px !important; display: block;',
                     ]),
 
-                TextColumn::make('company.name')->label('Empresa')->toggleable()
+                ImageColumn::make('company.avatar_url')->circular()->label('Empresa')->toggleable()
+                    ->visible(Gate::denies('is_company')),
+                TextColumn::make('company.name')->label(' ')->toggleable()
                     ->searchable()->visible(Gate::denies('is_company')),
+
+
                 TextColumn::make('product.name')->label('Produto')->toggleable()
                     ->searchable(),
 
@@ -134,7 +123,6 @@ class CampaignsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-
             ])
 
             ->recordAction('view')
@@ -142,7 +130,12 @@ class CampaignsTable
                 ViewAction::make()->hiddenLabel(),
 
                 EditAction::make()->hiddenLabel()->defaultColor('gray')
-                    ->visible(fn() => Gate::allows('is_company')),
+                    ->visible(function (Campaign $record) {
+                        $user = Auth::user();
+
+                        return (Gate::allows('is_company') && $record->company_id === $user->id)
+                            || (Gate::allows('is_curator') && $user->curator_companies()->where('users.id', $record->company_id)->exists());
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

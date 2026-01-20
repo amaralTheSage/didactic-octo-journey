@@ -19,44 +19,7 @@ const AudienceGrid: React.FC = () => {
 
                 {/* The Grid - Masonry Style */}
                 <div className="grid h-auto grid-cols-1 gap-4 md:h-[800px] md:grid-cols-3">
-                    {/* Column 1: Companies  */}
-                    <Link
-                        href="/para-empresas"
-                        className="group relative h-[500px] flex-1 cursor-pointer overflow-hidden bg-gray-900 md:h-full"
-                    >
-                        <img
-                            src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
-                            alt="Companies"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
-                        />
-
-                        <div className="absolute top-6 right-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                            <div className="rounded-full bg-white/20 p-3 text-white backdrop-blur-md">
-                                <ArrowUpRight size={24} />
-                            </div>
-                        </div>
-
-                        <div className="absolute top-6 left-6">
-                            <div className="rounded border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white uppercase backdrop-blur-sm">
-                                Empresas
-                            </div>
-                        </div>
-
-                        <div className="absolute right-8 bottom-8 left-8">
-                            <h3 className="mb-2 text-3xl leading-tight font-bold text-white">
-                                Alcance
-                                <br />
-                                Global
-                            </h3>
-                            <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
-                                Gerencie e anuncie suas campanhas com acesso
-                                direto aos maiores influenciadores e agências do
-                                Brasil.
-                            </p>
-                        </div>
-                    </Link>
-
-                    {/* Column 2: Agencies  */}
+                    {/* Column 1: Agencies  */}
                     <Link
                         href="/para-agencias"
                         className="group relative h-[500px] w-full cursor-pointer overflow-hidden bg-gray-100 md:h-full"
@@ -92,6 +55,81 @@ const AudienceGrid: React.FC = () => {
                             </p>
                         </div>
                     </Link>
+
+                    {/* Column 2: Companies and Curator  */}
+                    <div className="grid h-full grid-rows-2 gap-4">
+                        <Link
+                            href="/para-empresas"
+                            className="group relative cursor-pointer overflow-hidden bg-gray-900"
+                        >
+                            <img
+                                src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
+                                alt="Companies"
+                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
+                            />
+
+                            <div className="absolute top-6 right-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="rounded-full bg-white/20 p-3 text-white backdrop-blur-md">
+                                    <ArrowUpRight size={24} />
+                                </div>
+                            </div>
+
+                            <div className="absolute top-6 left-6">
+                                <div className="rounded border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white uppercase backdrop-blur-sm">
+                                    Empresas
+                                </div>
+                            </div>
+
+                            <div className="absolute right-8 bottom-8 left-8">
+                                <h3 className="mb-2 text-3xl leading-tight font-bold text-white">
+                                    Alcance
+                                    <br />
+                                    Global
+                                </h3>
+                                <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
+                                    Gerencie e anuncie suas campanhas com acesso
+                                    direto aos maiores influenciadores e
+                                    agências do Brasil.
+                                </p>
+                            </div>
+                        </Link>
+
+                        <Link
+                            href="/para-curadorias"
+                            className="group relative w-full cursor-pointer overflow-hidden bg-gray-100"
+                        >
+                            <img
+                                src="https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=2340&auto=format&fit=crop
+"
+                                alt="Curadorias"
+                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
+
+                            <div className="absolute top-6 right-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                <div className="rounded-full bg-white/20 p-3 text-white backdrop-blur-md">
+                                    <ArrowUpRight size={24} />
+                                </div>
+                            </div>
+
+                            <div className="absolute top-6 left-6">
+                                <div className="rounded border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white uppercase backdrop-blur-sm">
+                                    Curadorias
+                                </div>
+                            </div>
+
+                            <div className="absolute right-8 bottom-8 left-8">
+                                <h3 className="mb-2 text-3xl leading-tight font-bold text-white">
+                                    Monetize Sua <br />
+                                    Audiência
+                                </h3>
+                                <p className="max-w-[80%] transform text-sm text-gray-300 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:translate-y-4 md:opacity-0">
+                                    Conecte-se com grandes marcas, defina seus
+                                    preços de tabela e receba com segurança.
+                                </p>
+                            </div>
+                        </Link>
+                    </div>
 
                     {/* Column 3: Influencers  */}
                     <Link

@@ -1,4 +1,5 @@
 import Advantages from '@/components/landing/audience-pages/Advantages';
+import CTASection from '@/components/landing/audience-pages/CTASection';
 import FadeInEffect from '@/components/landing/audience-pages/FadeInEffect';
 import FeatureCarousel from '@/components/landing/audience-pages/FeatureCarousel';
 import Hero from '@/components/landing/audience-pages/Hero';
@@ -33,6 +34,15 @@ export default function ParaAgencias() {
                 'Os perfis dos seus agenciados são atualizados automaticamente, servindo como uma vitrine constante.',
         },
     ];
+
+    const ctaData = {
+        title: 'Pronto para escalar sua agência?',
+        description:
+            'Centralize seu casting, envie propostas em lote e gerencie comissões com total transparência. Tudo em um único sistema.',
+        ctaText: 'Se cadastre aqui',
+        ctaHref: '/dashboard/register',
+        backgroundColor: 'bg-green-200',
+    };
 
     const slides = [
         {
@@ -104,10 +114,11 @@ export default function ParaAgencias() {
                     { value: '0%', label: 'Taxa Setup' },
                     { value: 'Multi', label: 'Gestão de Cast' },
                 ]}
-                bgImage="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
+                bgImage="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                 floatingCardTitle="FINANCEIRO"
                 floatingCardSubtitle="Comissões de R$ 45k validadas este mês."
-                ctaText="Cadastrar Agência"
+                ctaText="Se cadastre aqui"
+                variant={2}
             />
             <FadeInEffect>
                 <Advantages
@@ -118,20 +129,26 @@ export default function ParaAgencias() {
             </FadeInEffect>
 
             <FadeInEffect>
-                <FeatureCarousel
-                    headingStart="Operação de escala"
-                    headingHighlight="simplificada."
-                    slides={slides}
-                />
-            </FadeInEffect>
-
-            <FadeInEffect>
                 <StatsAccordion
                     eyebrow="AGENCY OS"
                     headlineParts={['Gerencie.', 'Venda.', 'Cresça.']}
                     description="O sistema operacional completo para agências de influência que buscam eficiência operacional e crescimento escalável."
                     items={statsItems}
+                    variant={2}
                 />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <FeatureCarousel
+                    headingStart="Operação de escala"
+                    headingHighlight="simplificada."
+                    slides={slides}
+                    variant={2}
+                />
+            </FadeInEffect>
+
+            <FadeInEffect>
+                <CTASection {...ctaData} />
             </FadeInEffect>
         </LandingsLayout>
     );

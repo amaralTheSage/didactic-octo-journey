@@ -19,6 +19,10 @@ Route::get('/para-empresas', function () {
     return Inertia::render('dedicated-landings/para-empresas');
 })->name('para_empresas');
 
+Route::get('/para-curadorias', function () {
+    return Inertia::render('dedicated-landings/para-curadorias');
+})->name('para_curadorias');
+
 Route::get('/para-influenciadores', function () {
     return Inertia::render('dedicated-landings/para-influenciadores');
 })->name('para_influenciadores');
@@ -51,4 +55,4 @@ Route::middleware('auth')
         Route::post('/{chat}/users', [ChatController::class, 'addUsers'])->name('chats.add-users');
     });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

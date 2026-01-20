@@ -9,7 +9,6 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -169,8 +168,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
-            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+            ? asset('storage/'.$this->avatar)
+            : 'https://ui-avatars.com/api/?name='.urlencode($this->name);
     }
 
     public function getAvatarUrlAttribute(): ?string
@@ -179,7 +178,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             return null;
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**

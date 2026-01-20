@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class CompanyInfo extends Model
 {
     protected $table = 'company_info';
-    protected $fillable = ['curator_id', 'company_id'];
 
+    protected $fillable = ['curator_id', 'company_id'];
 
     public function company()
     {

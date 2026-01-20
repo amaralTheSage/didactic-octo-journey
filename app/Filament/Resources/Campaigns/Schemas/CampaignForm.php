@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Repeater;
@@ -17,6 +18,8 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Leandrocfe\FilamentPtbrFormFields\Money;
@@ -25,6 +28,22 @@ class CampaignForm
 {
     public static function configure(Schema $schema): Schema
     {
+
+        $user = Auth::user();
+
+        $companyField = match ($user->role) {
+            UserRole::COMPANY => Hidden::make('company_id')
+                ->default($user->id),
+
+            UserRole::CURATOR => Select::make('company_id')
+                ->label('Empresa Responsável')
+                ->options(fn() => $user->curator_companies()->pluck('name', 'users.id'))
+                ->live()
+                ->searchable()
+                ->required(),
+
+            default => Hidden::make('company_id'),
+        };
 
         return $schema
             ->components([
@@ -35,39 +54,45 @@ class CampaignForm
                         ->required(),
 
                     Select::make('product_id')
+                        ->label('Produto')
                         ->relationship(
                             'product',
                             'name',
-                            fn($query) => $query->where('company_id', Auth::id())
+                            fn(Builder $query, Get $get) => $query->where('company_id', $get('company_id'))
                         )
-                        ->label('Produto')
                         ->searchable()
                         ->preload()
                         ->required()
+                        ->disabled(fn(Get $get) => blank($get('company_id')))
+                        ->key('product_select_field_' . ($user->role->value ?? 'default'))
                         ->createOptionForm([
                             TextInput::make('name')
                                 ->required(),
 
                             Money::make('price')
                                 ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state)),
+
                             MarkdownEditor::make('description')
-                                ->nullable()->columnSpan(2),
-                            Hidden::make('company_id')->default(Auth::id()),
+                                ->nullable()
+                                ->columnSpan(2),
+
+                            Hidden::make('company_id'),
                         ])
-                        ->createOptionAction(
-                            fn($action) => $action->modalHeading('Criar Produto')
-                        ),
+                        ->createOptionAction(function (Action $action) {
+                            return $action
+                                ->modalHeading('Criar Produto')
+                                ->modalWidth(Width::Medium)
+                                ->mutateDataUsing(function (array $data, Get $get): array {
+                                    $data['company_id'] = $get('company_id');
 
-
+                                    return $data;
+                                });
+                        }),
                 ]),
 
-
-
-
-                Hidden::make('company_id')
-                    ->default(Auth::id()),
-
                 Section::make()->schema([
+                    $companyField,
+
                     Select::make('influencer_ids')
                         ->label('Influenciadores')
                         ->multiple()
@@ -88,7 +113,6 @@ class CampaignForm
                 ]),
 
                 Group::make([
-
                     Select::make('subcategory_ids')
                         ->relationship('subcategories', 'title')
                         ->label('Categorias')

@@ -11,7 +11,9 @@ class CreateProduct extends CreateRecord
 {
     protected function handleRecordCreation(array $data): Model
     {
-        $data['company_id'] = Auth::user()->id;
+        if (!isset($data['company_id'])) {
+            $data['company_id'] = Auth::user()->id;
+        }
 
         return parent::handleRecordCreation($data);
     }
