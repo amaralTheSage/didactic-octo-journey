@@ -11,6 +11,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class ProposalsTable
 {
     public static function configure(Table $table): Table
     {
-        $colorByStatus = fn(string $state) => match ($state) {
+        $colorByStatus = fn (string $state) => match ($state) {
             'approved' => 'success',
             'finished' => 'success',
             'pending' => 'gray',
@@ -43,13 +44,13 @@ class ProposalsTable
                     return $query->where(function (Builder $subQuery) use ($user, $role) {
                         switch ($role) {
                             case UserRole::COMPANY:
-                                $subQuery->whereHas('campaign', fn($q) => $q->where('company_id', $user->id));
+                                $subQuery->whereHas('campaign', fn ($q) => $q->where('company_id', $user->id));
                                 break;
 
                             case UserRole::CURATOR:
                                 $subQuery->whereHas(
                                     'campaign.company.company_info',
-                                    fn($q) => $q->where('curator_id', $user->id)
+                                    fn ($q) => $q->where('curator_id', $user->id)
                                 );
                                 break;
 
@@ -57,7 +58,7 @@ class ProposalsTable
                                 $subQuery->where('agency_id', $user->id);
                                 break;
                             case UserRole::INFLUENCER:
-                                $subQuery->whereHas('influencers', fn($q) => $q->where('users.id', $user->id));
+                                $subQuery->whereHas('influencers', fn ($q) => $q->where('users.id', $user->id));
                                 break;
                         }
                     });
@@ -66,15 +67,15 @@ class ProposalsTable
             ->columns([
                 TextColumn::make('campaign.name')->label('Campanha')
                     ->searchable()
-                    ->icon(fn($record) => $record->campaign->validated_at
+                    ->icon(fn ($record) => $record->campaign->validated_at
                         ? 'heroicon-o-check-badge'
                         : null)
                     ->iconPosition('after')
-                    ->tooltip(fn($record) => $record->campaign->validated_at
+                    ->tooltip(fn ($record) => $record->campaign->validated_at
                         ? 'Campanha Verificada'
                         : null)
                     ->iconColor('success')
-                    ->description(fn($record) => 'Produto: ' . $record->campaign->product->name),
+                    ->description(fn ($record) => 'Produto: '.$record->campaign->product->name),
 
                 // TextColumn::make('campaign.product.name')->label('Produto')
                 //     ->searchable()
@@ -100,7 +101,7 @@ class ProposalsTable
                     ->stacked()
                     ->limit(3)
                     ->tooltip('influencers.name')->tooltip(
-                        fn($record) => $record->influencers
+                        fn ($record) => $record->influencers
                             ->pluck('name')
                             ->join(', ')
 
@@ -137,7 +138,7 @@ class ProposalsTable
                     ->state(function ($record) {
                         $influencers = $record->influencers()
                             ->get()
-                            ->map(fn($inf) => [
+                            ->map(fn ($inf) => [
                                 'reels_price' => $inf->pivot->reels_price ?? 0,
                                 'stories_price' => $inf->pivot->stories_price ?? 0,
                                 'carrousel_price' => $inf->pivot->carrousel_price ?? 0,
@@ -157,8 +158,8 @@ class ProposalsTable
 
                         return new HtmlString('
                                 <div class="flex flex-col gap-0.5 text-sm">
-                                    <span class="text-gray-600 dark:text-gray-400">de R$ ' . number_format($range['min'], 2, ',', '.') . '</span>
-                                    <span class="text-gray-600 dark:text-gray-400">à R$ ' . number_format($range['max'], 2, ',', '.') . '</span>
+                                    <span class="text-gray-600 dark:text-gray-400">de R$ '.number_format($range['min'], 2, ',', '.').'</span>
+                                    <span class="text-gray-600 dark:text-gray-400">à R$ '.number_format($range['max'], 2, ',', '.').'</span>
                                 </div>
                             ');
                     })
@@ -174,7 +175,7 @@ class ProposalsTable
                         ->color($colorByStatus)
 
                         ->action(EditProposalAction::make()->disabled(Gate::denies('is_company')))
-                        ->formatStateUsing(fn($state): string => __("approval_status.$state")),
+                        ->formatStateUsing(fn ($state): string => __("approval_status.$state")),
 
                     // APROVAÇÃO DA AGÊNCIA
 
@@ -184,19 +185,44 @@ class ProposalsTable
                         ->color($colorByStatus)
 
                         ->action(EditProposalAction::make()->disabled(Gate::denies('is_agency')))
-                        ->formatStateUsing(fn($state): string => __("approval_status.$state")),
+                        ->formatStateUsing(fn ($state): string => __("approval_status.$state")),
 
                     // Status
                     TextColumn::make('status')->label('Status Geral')
                         ->badge()
                         ->color($colorByStatus)
-                        ->formatStateUsing(fn($state): string => __("campaign_status.$state.label")),
+                        ->formatStateUsing(fn ($state): string => __("campaign_status.$state.label")),
 
                 ]),
 
             ])
             ->filters([
-                //
+                SelectFilter::make('company_approval')
+                    ->label('Empresa')
+                    ->options([
+                        'pending' => __('approval_status.pending'),
+                        'approved' => __('approval_status.approved'),
+                        'rejected' => __('approval_status.rejected'),
+                    ])
+                    ->placeholder('Todos'),
+
+                SelectFilter::make('agency_approval')
+                    ->label('Agência')
+                    ->options([
+                        'pending' => __('approval_status.pending'),
+                        'approved' => __('approval_status.approved'),
+                        'rejected' => __('approval_status.rejected'),
+                    ])
+                    ->placeholder('Todos'),
+
+                SelectFilter::make('influencer_approval')
+                    ->label('Influenciador')
+                    ->options([
+                        'pending' => __('approval_status.pending'),
+                        'approved' => __('approval_status.approved'),
+                        'rejected' => __('approval_status.rejected'),
+                    ])
+                    ->placeholder('Todos'),
             ])
             ->recordAction('viewProposal')
             ->recordActions([

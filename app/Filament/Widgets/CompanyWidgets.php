@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Enums\ApprovalStatus;
 use App\Enums\UserRole;
 use App\Filament\Resources\Campaigns\CampaignResource;
+use App\Filament\Resources\Proposals\ProposalResource;
 use App\Models\Proposal;
 use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Support\Enums\IconPosition;
@@ -63,7 +64,6 @@ class CompanyWidgets extends StatsOverviewWidget
 
         return [
 
-
             Stat::make('Campanhas com Candidatos', $match50)
                 ->description('Campanhas com influenciadores +50% compatíveis')
                 ->chart([2, 4, 6, 8, 10, 12, 14])
@@ -85,7 +85,8 @@ class CompanyWidgets extends StatsOverviewWidget
                 ->descriptionIcon(LucideIcon::Handshake, IconPosition::Before)
                 ->chart([1, 5, 10, 5, 15, 25, 20])
                 ->color('info')
-                ->visible(Gate::allows('is_company')),
+                ->visible(Gate::allows('is_company'))
+                ->url(ProposalResource::getUrl('index')),
 
             Stat::make('Propostas Pendentes', Proposal::query()
                 ->whereHas('campaign', function ($query) {
@@ -97,7 +98,14 @@ class CompanyWidgets extends StatsOverviewWidget
                 ->descriptionIcon(LucideIcon::Loader, IconPosition::Before)
                 ->chart([1, 3, 5, 10, 20, 40])
                 ->color('success')
-                ->visible(Gate::allows('is_company')),
+                ->visible(Gate::allows('is_company'))
+                ->url(ProposalResource::getUrl('index', [
+                    'filters' => [
+                        'company_approval' => [
+                            'value' => 'pending',
+                        ],
+                    ],
+                ])),
 
         ];
     }
