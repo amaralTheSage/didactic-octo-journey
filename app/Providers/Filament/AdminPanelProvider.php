@@ -52,11 +52,10 @@ class AdminPanelProvider extends PanelProvider
             ->registration(Register::class)
             ->login()
             ->brandLogo(asset('assets/hubinflu-logo.png'))->brandLogoHeight('28px')
-            // ->brandLogo(fn() => view('filament.logo'))
             ->brandName('HubInflu')
             ->passwordReset()
-            // ->emailVerification()
-            // ->emailChangeVerification()
+            ->emailVerification()
+            ->emailChangeVerification()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -66,16 +65,16 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
             ])
-            ->renderHook(
-                PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
-                fn(): string => Blade::render(<<<'BLADE'
-                    <div x-data="{ role: @entangle('data.role') }">
-                        <div x-show="role === 'influencer'">
-                            <x-filament-socialite::buttons />
-                        </div>
-                    </div>
-                BLADE)
-            )
+            // ->renderHook(
+            //     PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
+            //     fn(): string => Blade::render(<<<'BLADE'
+            //         <div x-data="{ role: @entangle('data.role') }">
+            //             <div x-show="role === 'influencer'">
+            //                 <x-filament-socialite::buttons />
+            //             </div>
+            //         </div>
+            //     BLADE)
+            // )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
