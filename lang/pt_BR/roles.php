@@ -5,4 +5,5 @@ return [
     'company' => 'Empresa',
     'influencer' => 'Influenciador',
     'curator' => 'Curadoria',
+    'admin' => 'Admin',
 ];

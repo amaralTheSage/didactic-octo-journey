@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use UnitEnum;
 
 class InfluencerResource extends Resource
@@ -44,9 +45,8 @@ class InfluencerResource extends Resource
 
     public static function canViewAny(): bool
     {
-        $role = Auth::user()?->role;
 
-        return $role === UserRole::COMPANY || $role === UserRole::AGENCY;
+        return Gate::allows('is_company_or_curator') || Gate::allows('is_agency');
     }
 
     public static function form(Schema $schema): Schema

@@ -5,9 +5,8 @@ namespace App\Filament\Widgets;
 use App\Enums\ApprovalStatus;
 use App\Enums\UserRole;
 use App\Filament\Resources\Campaigns\CampaignResource;
+use App\Filament\Resources\Proposals\ProposalResource;
 use App\Models\Proposal;
-use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
-use Filament\Support\Enums\IconPosition;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
@@ -61,14 +60,31 @@ class CompanyWidgets extends StatsOverviewWidget
         $match50 = $this->getMatchCounts(0.5);
         $match90 = $this->getMatchCounts(0.9);
 
-        return [
+        $user = auth()->user();
 
+        // Definimos a lógica de filtro de dono/curador em uma closure para não repetir código
+        $applyOwnershipFilter = function ($query) use ($user) {
+            if ($user->role === \App\Enums\UserRole::COMPANY) {
+                return $query->where('company_id', $user->id);
+            }
+
+            if ($user->role === \App\Enums\UserRole::CURATOR) {
+                // Busca os IDs de todas as empresas vinculadas a este curador
+                return $query->whereIn('company_id', function ($sub) use ($user) {
+                    $sub->select('company_id')
+                        ->from('company_info')
+                        ->where('curator_id', $user->id);
+                });
+            }
+        };
+
+        return [
 
             Stat::make('Campanhas com Candidatos', $match50)
                 ->description('Campanhas com influenciadores +50% compatíveis')
                 ->chart([2, 4, 6, 8, 10, 12, 14])
                 ->color('info')
-                ->url(CampaignResource::getUrl('index')), // Aqui você pode filtrar a tabela depois
+                ->url(CampaignResource::getUrl('index')),
 
             Stat::make('Campanhas Ideais', $match90)
                 ->description('Campanhas com influenciadores +90% compatíveis')
@@ -77,27 +93,32 @@ class CompanyWidgets extends StatsOverviewWidget
                 ->url(CampaignResource::getUrl('index')),
 
             Stat::make('Propostas Recebidas', Proposal::query()
-                ->whereHas('campaign', function ($query) {
-                    $query->where('company_id', auth()->id());
-                })
+                ->whereHas('campaign', $applyOwnershipFilter)
                 ->count())
                 ->description('Totais de propostas recebidas')
-                ->descriptionIcon(LucideIcon::Handshake, IconPosition::Before)
+                ->descriptionIcon(\Filament\Support\Facades\FilamentIcon::resolve('lucide-handshake'), \Filament\Support\Enums\IconPosition::Before)
                 ->chart([1, 5, 10, 5, 15, 25, 20])
                 ->color('info')
-                ->visible(Gate::allows('is_company')),
+                // Visível para Empresa ou Curador
+                ->visible(fn () => $user->role === \App\Enums\UserRole::COMPANY || $user->role === \App\Enums\UserRole::CURATOR)
+                ->url(ProposalResource::getUrl('index')),
 
             Stat::make('Propostas Pendentes', Proposal::query()
-                ->whereHas('campaign', function ($query) {
-                    $query->where('company_id', auth()->id());
-                })
+                ->whereHas('campaign', $applyOwnershipFilter)
                 ->where('company_approval', ApprovalStatus::PENDING)
                 ->count())
                 ->description('Propostas com aprovação pendente')
-                ->descriptionIcon(LucideIcon::Loader, IconPosition::Before)
+                ->descriptionIcon(\Filament\Support\Facades\FilamentIcon::resolve('lucide-loader'), \Filament\Support\Enums\IconPosition::Before)
                 ->chart([1, 3, 5, 10, 20, 40])
                 ->color('success')
-                ->visible(Gate::allows('is_company')),
+                ->visible(fn () => $user->role === \App\Enums\UserRole::COMPANY || $user->role === \App\Enums\UserRole::CURATOR)
+                ->url(ProposalResource::getUrl('index', [
+                    'filters' => [
+                        'company_approval' => [
+                            'value' => 'pending',
+                        ],
+                    ],
+                ])),
 
         ];
     }
