@@ -230,7 +230,7 @@ class ProposalsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->visible(Gate::allows('is_company')),
+                    DeleteBulkAction::make()->visible(Gate::allows('is_company_or_curator')),
                 ]),
             ]);
     }

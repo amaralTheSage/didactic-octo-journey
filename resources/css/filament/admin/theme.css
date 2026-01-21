@@ -255,6 +255,14 @@ body {
 
 }
 
+.fi-dropdown-panel{
+    @apply  w-full !min-w-fit;
+}
+
+.fi-dropdown-list{
+    @apply w-70;
+}
+
 .fi-input {
     @apply rounded-2xl bg-card;
 }

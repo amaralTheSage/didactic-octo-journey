@@ -21,7 +21,7 @@ class PaymentController extends Controller
 {
     public function page(Request $request)
     {
-        Gate::authorize('is_company');
+        Gate::authorize('is_company_or_curator');
 
         if (Payment::whereId($request['payment'])->first()->user_id !== Auth::id()) {
             return to_route('filament.admin.pages.dashboard');
@@ -40,7 +40,7 @@ class PaymentController extends Controller
         Log::info('Iniciando criação de pagamento via AbacatePay');
 
         $amount = 1;
-        Gate::authorize('is_company');
+        Gate::authorize('is_company_or_curator');
 
         $validated = $request->validate([
             'campaign_id' => 'required|exists:App\Models\Campaign,id',

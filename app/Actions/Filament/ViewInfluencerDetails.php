@@ -32,6 +32,7 @@ class ViewInfluencerDetails
                     ->label('Emprestar Influenciador')
                     ->icon(Heroicon::OutlinedUserPlus)
                     ->color('secondary')
+                    ->visible('is_agency')
                     ->schema([
                         Select::make('agency_id')
                             ->label('Agência')
