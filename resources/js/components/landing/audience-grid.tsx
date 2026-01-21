@@ -2,13 +2,13 @@ import { Link } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 import React from 'react';
 
-const AudienceGrid: React.FC = () => {
+export default function AudienceGrid() {
     return (
-        <section className="bg-white" id="audience-grid">
-            <div className="container mx-auto px-6 py-4 md:px-12">
+        <section className="bg-white py-12" id="audience-grid">
+            <div className="container mx-auto px-6 md:px-12">
                 {/* Section Header */}
                 <div className="mb-16">
-                    <h2 className="mb-4 text-4xl font-medium tracking-tight md:text-5xl">
+                    <h2 className="mb-4 text-4xl font-medium tracking-tight md:text-5xl text-gray-900">
                         A Plataforma
                     </h2>
                     <div className="flex items-center gap-2 text-sm font-medium tracking-wider text-gray-400 uppercase">
@@ -19,9 +19,9 @@ const AudienceGrid: React.FC = () => {
 
                 {/* The Grid - Masonry Style */}
                 <div className="grid h-auto grid-cols-1 gap-4 md:h-[800px] md:grid-cols-3">
-                    {/* Column 1: Agencies  */}
+                    {/* Column 1: Agencies */}
                     <Link
-                        href="/para-agencias"
+                        href="para-agencias"
                         className="group relative h-[500px] w-full cursor-pointer overflow-hidden bg-gray-100 md:h-full"
                     >
                         <img
@@ -56,11 +56,18 @@ const AudienceGrid: React.FC = () => {
                         </div>
                     </Link>
 
-                    {/* Column 2: Companies and Curator  */}
-                    <div className="grid h-full grid-rows-2 gap-4">
+                    {/* Column 2: Companies and Curator */}
+                    {/* 
+                        FIX: 
+                        1. Changed container from block to flex-col on mobile to allow stacking.
+                        2. Removed fixed height h-[500px] on mobile wrapper which was causing overlap/cutoff.
+                        3. Used h-auto for mobile wrapper, md:h-full for desktop.
+                        4. Added grid-rows-2 for desktop to ensure even split.
+                    */}
+                    <div className="flex flex-col gap-4 h-auto md:h-full md:grid md:grid-rows-2">
                         <Link
-                            href="/para-empresas"
-                            className="group relative cursor-pointer overflow-hidden bg-gray-900"
+                            href="para-empresas"
+                            className="group relative h-[500px] w-full cursor-pointer overflow-hidden bg-gray-900 md:h-full"
                         >
                             <img
                                 src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2301&auto=format&fit=crop"
@@ -95,12 +102,11 @@ const AudienceGrid: React.FC = () => {
                         </Link>
 
                         <Link
-                            href="/para-curadorias"
-                            className="group relative w-full cursor-pointer overflow-hidden bg-gray-100"
+                            href="para-curadorias"
+                            className="group relative h-[500px] w-full cursor-pointer overflow-hidden bg-gray-100 md:h-full"
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=2340&auto=format&fit=crop
-"
+                                src="https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=2340&auto=format&fit=crop"
                                 alt="Curadorias"
                                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:grayscale-0 md:grayscale md:filter"
                             />
@@ -131,9 +137,9 @@ const AudienceGrid: React.FC = () => {
                         </Link>
                     </div>
 
-                    {/* Column 3: Influencers  */}
+                    {/* Column 3: Influencers */}
                     <Link
-                        href="/para-influenciadores"
+                        href="para-influenciadores"
                         className="group relative h-[500px] w-full cursor-pointer overflow-hidden bg-gray-100 md:h-full"
                     >
                         <img
@@ -171,5 +177,3 @@ const AudienceGrid: React.FC = () => {
         </section>
     );
 };
-
-export default AudienceGrid;
