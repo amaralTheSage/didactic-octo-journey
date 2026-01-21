@@ -11,6 +11,7 @@ use App\Filament\Resources\Proposals\Schemas\ProposalInfolist;
 use App\Filament\Resources\Proposals\Tables\ProposalsTable;
 use App\Models\Proposal;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -21,7 +22,7 @@ class ProposalResource extends Resource
 {
     protected static ?string $model = Proposal::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBellAlert;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Handshake;
 
     protected static ?string $modelLabel = 'Proposta';
 

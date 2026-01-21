@@ -34,7 +34,8 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Mídia',
             ])
-            ->topbar(false)->sidebarCollapsibleOnDesktop()
+            ->topbar(false)
+            ->sidebarCollapsibleOnDesktop()
             ->colors(['primary' => 'oklch(0.3979 0.0632 231.2552)', 'secondary' => 'oklch(0.6546 0.1119 207.9244)'])
             ->font('Figtree')
             ->path('dashboard')
@@ -65,10 +66,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
             ])
-
             ->renderHook(
                 PanelsRenderHook::AUTH_REGISTER_FORM_AFTER,
-                fn (): string => Blade::render(<<<'BLADE'
+                fn(): string => Blade::render(<<<'BLADE'
                     <div x-data="{ role: @entangle('data.role') }">
                         <div x-show="role === 'influencer'">
                             <x-filament-socialite::buttons />
