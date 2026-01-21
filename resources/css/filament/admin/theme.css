@@ -250,6 +250,11 @@ body {
     @apply bg-card;
 }
 
+.modal-limitado {
+    @apply bg-amber-200;
+
+}
+
 .fi-input {
     @apply rounded-2xl bg-card;
 }

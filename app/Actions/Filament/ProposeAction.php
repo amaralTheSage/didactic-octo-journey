@@ -48,8 +48,12 @@ class ProposeAction extends Action
         $this->modalDescription(fn ($record) => "Envie sua proposta para a campanha: {$record->name}");
         $this->modalSubmitActionLabel('Enviar Proposta');
         $this->modalWidth('4xl');
+        $this->extraModalWindowAttributes([
+            'style' => 'max-height: 90vh; overflow-y: auto;',
+        ]);
 
         $this->schema([
+
             Textarea::make('message')
                 ->label('Mensagem')
                 ->placeholder('Descreva por que sua agência é ideal para esta campanha...')
@@ -334,6 +338,7 @@ class ProposeAction extends Action
                     })
                     ->helperText('Faixa baseada nos preços dos influenciadores selecionados'),
             ])->columns(2),
+
         ]);
 
         $this->action(function (Campaign $record, array $data) {
