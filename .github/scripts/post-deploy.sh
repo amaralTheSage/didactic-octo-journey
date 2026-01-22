@@ -10,6 +10,7 @@ php artisan filament:optimize
 
 php artisan migrate --force --isolated
 
+
 echo "::notice::Bring site back from maintenance mode..."
 php artisan up
 

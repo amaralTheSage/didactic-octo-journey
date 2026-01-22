@@ -108,7 +108,23 @@ class CampaignInfolist
 
                             Action::make('viewOurProposal')
                                 ->label('Ver Proposta')
-                                ->visible(fn() => Gate::allows('is_agency') || Gate::allows('is_influencer'))
+                                ->visible(
+                                    function (Campaign $record) {
+                                        if (Gate::allows('is_agency')) {
+                                            return  $record->proposals()
+                                                ->where('agency_id', Auth::id())
+                                                ->exists();
+                                        } elseif (Gate::allows('is_influencer')) {
+                                            return $record->proposals()
+                                                ->whereHas('influencers', function ($query) {
+                                                    $query->where('users.id', Auth::id());
+                                                })
+                                                ->exists();
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+                                )
                                 ->color('secondary')
                                 ->url(function (Campaign $record) {
                                     $proposal = null;
@@ -156,43 +172,49 @@ class CampaignInfolist
                                     return redirect(route('payments.qrcode') . '?campaign_id=' . $record->id);
                                 }),
 
-                            Action::make('influencerWantsToParticipate')->visible(Gate::allows('is_influencer'))->label('Quero Participar')->action(function ($record) {
-                                $userName = Auth::user()->name;
+                            Action::make('influencerWantsToParticipate')
+                                ->visible(fn($record) => Gate::allows('is_influencer') &&     !$record->proposals()
+                                    ->whereHas('influencers', function ($query) {
+                                        $query->where('users.id', Auth::id());
+                                    })
+                                    ->exists())
+                                ->label('Quero Participar')->action(function ($record) {
+                                    $userName = Auth::user()->name;
 
-                                $record->company->notify(Notification::make()
-                                    ->title('Influenciador se interessou na sua campanha')
-                                    ->body("{$userName} demonstrou interesse na campanha {$record->name}")
-                                    ->actions([
-                                        Action::make('view')
-                                            ->label('Ver influenciador')
-                                            ->url(route('filament.admin.resources.influencers.index', [
-                                                'search' => $userName,
-                                                'tableAction' => 'viewInfluencerDetails',
-                                                'tableActionRecord' => Auth::user()->getKey(),
-                                            ])),
-                                    ])
-                                    ->toDatabase());
+                                    $record->company->notify(Notification::make()
+                                        ->title('Influenciador se interessou na sua campanha')
+                                        ->body("{$userName} demonstrou interesse na campanha {$record->name}")
+                                        ->actions([
+                                            Action::make('view')
+                                                ->label('Ver influenciador')
+                                                ->url(route('filament.admin.resources.influencers.index', [
+                                                    'search' => $userName,
+                                                    'tableAction' => 'viewInfluencerDetails',
+                                                    'tableActionRecord' => Auth::user()->getKey(),
+                                                ])),
+                                        ])
+                                        ->toDatabase());
 
-                                Auth::user()->influencer_info?->agency?->notify(Notification::make()
-                                    ->title("{$userName} se interessou em uma campanha")
-                                    ->body("O influenciador demonstrou interesse na campanha {$record->name}")
-                                    ->actions([
-                                        Action::make('view')
-                                            ->label('Ver Campanha')
-                                            ->url(route('filament.admin.resources.campaigns.index', [
-                                                'search' => $record->name,
-                                                'tableAction' => 'view',
-                                                'tableActionRecord' => $record->id,
-                                            ])),
-                                    ])
-                                    ->toDatabase());
+                                    Auth::user()->influencer_info?->agency?->notify(Notification::make()
+                                        ->title("{$userName} se interessou em uma campanha")
+                                        ->body("O influenciador demonstrou interesse na campanha {$record->name}")
+                                        ->actions([
+                                            Action::make('view')
+                                                ->label('Ver Campanha')
+                                                ->url(route('filament.admin.resources.campaigns.index', [
+                                                    'search' => $record->name,
+                                                    'tableAction' => 'view',
+                                                    'tableActionRecord' => $record->id,
+                                                ])),
+                                        ])
+                                        ->toDatabase());
 
-                                Notification::make()
-                                    ->title('Interesse registrado!')
-                                    ->body('A empresa recebeu sua notificação.')
-                                    ->success()
-                                    ->send();
-                            }),
+                                    Notification::make()
+                                        ->title('Interesse registrado!')
+                                        ->body('A empresa recebeu sua notificação.')
+                                        ->success()
+                                        ->send();
+                                }),
                         ])->columns(3)->columnSpanFull(),
 
                     ]),

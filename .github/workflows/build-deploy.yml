@@ -64,6 +64,7 @@ jobs:
           remote_port: ${{ secrets.SSH_PORT }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key: ${{ secrets.SSH_KEY }}
+
       - name: 'run post deploy script'
         uses: appleboy/ssh-action@v1
         with:
@@ -72,6 +73,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: 'cd /srv/hubinflu && bash ./.github/scripts/post-deploy.sh'
+
+      - name: Iniciar Nightwatch Agent
+        run: |
+          php artisan nightwatch:agent > agent-log.txt 2>&1 &
+          sleep 5
+
       - name: 'Deploy failed, bring site back up'
         if: failure()
         uses: appleboy/ssh-action@v1
