@@ -75,9 +75,7 @@ jobs:
           script: 'cd /srv/hubinflu && bash ./.github/scripts/post-deploy.sh'
 
       - name: Iniciar Nightwatch Agent
-        run: |
-          php artisan nightwatch:agent > agent-log.txt 2>&1 &
-          sleep 5
+        run: nohup php artisan nightwatch:agent > /dev/null 2>&1 &
 
       - name: 'Deploy failed, bring site back up'
         if: failure()
