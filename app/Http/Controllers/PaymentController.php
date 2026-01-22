@@ -94,7 +94,6 @@ class PaymentController extends Controller
         $status = $request->input('data.pixQrCode.status');
         $campaignId = $request->input('data.pixQrCode.metadata.campaign_id');
 
-        PaymentReceived::dispatch($abacateId, $status, $campaignId);
 
         $webhookSecret = $request->query('webhookSecret');
 
@@ -158,7 +157,10 @@ class PaymentController extends Controller
                     'campaign_id' => $campaignId,
                 ]);
 
-                $p = Payment::where('campaign_id', $campaignId)->where('abacate_id', $abacateId);
+                PaymentReceived::dispatch($abacateId, $status, $campaignId);
+
+
+                $p = Payment::where('campaign_id', $campaignId)->where('abacate_id', $abacateId)->firstOrFail();
 
                 $p->update(['paid_at' => now()]);
                 Campaign::whereId($campaignId)->update(['validated_at' => $p['paid_at']]); // p/ garantir que é o exato mesmo tempo

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Proposal extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'agency_id',
         'campaign_id',
@@ -45,5 +47,19 @@ class Proposal extends Model
     public function influencers(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot('reels_price', 'stories_price', 'carrousel_price', 'commission_cut', 'influencer_approval');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function (Proposal $proposal) {
+            if (! $proposal->campaign) {
+                return;
+            }
+
+            // Proposals always inherit deliverables from the campaign
+            $proposal->n_reels = $proposal->campaign->n_reels;
+            $proposal->n_stories = $proposal->campaign->n_stories;
+            $proposal->n_carrousels = $proposal->campaign->n_carrousels;
+        });
     }
 }

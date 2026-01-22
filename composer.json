@@ -84,6 +84,10 @@
         "pint": [
             "./vendor/bin/pint"
         ],
+        "test:filament": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test tests/Feature/Filament"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",

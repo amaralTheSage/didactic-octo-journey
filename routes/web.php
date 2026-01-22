@@ -31,6 +31,10 @@ Route::get('/login', function () {
     return redirect('/dashboard/login');
 })->name('login');
 
+Route::get('/register', function () {
+    return redirect('/dashboard/register');
+})->name('register');
+
 Route::get('/payments/getqrcode', [PaymentController::class, 'store'])->name('payments.qrcode')->middleware('auth');
 
 Route::get('/payments/code', [PaymentController::class, 'page'])->name('payments.page')->middleware(['auth', 'signed']);

@@ -81,6 +81,10 @@ class CampaignResource extends Resource
             || (Gate::allows('is_curator') && $user->curator_companies()->where('users.id', $record->company_id)->exists());
     }
 
+    public static function canCreate(): bool
+    {
+        return Gate::allows('is_company_or_curator');
+    }
     public static function getPages(): array
     {
 

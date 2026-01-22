@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Campaign extends Model
 {
+    use HasFactory;
+
     public ?array $temp_influencer_ids = null;
 
     protected $fillable = [
@@ -48,7 +51,7 @@ class Campaign extends Model
     protected function influencerIds(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn () => $this->temp_influencer_ids,
+            get: fn() => $this->temp_influencer_ids,
             set: function ($value) {
                 // Save to the public property for the Observer to use
                 $this->temp_influencer_ids = $value;
