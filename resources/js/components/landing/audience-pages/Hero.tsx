@@ -93,13 +93,16 @@ export default function Hero({
 
                         {/* Description & CTA */}
                         <div className="justify-items mb-12 flex flex-col items-end gap-8 md:flex-row md:justify-between">
-                            <button className="group relative flex cursor-pointer items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium tracking-wider whitespace-nowrap text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-primary">
+                            <a
+                                href="/dashboard/register"
+                                className="group relative flex cursor-pointer items-center gap-3 rounded-full bg-primary px-8 py-4 font-medium tracking-wider whitespace-nowrap text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-primary"
+                            >
                                 {ctaText}
                                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75"></span>
                                     <span className="relative inline-flex h-3 w-3 rounded-full bg-secondary"></span>
                                 </span>
-                            </button>
+                            </a>
 
                             <p className="max-w-lg text-lg leading-relaxed text-slate-500 md:text-xl">
                                 {description}
@@ -214,7 +217,10 @@ export default function Hero({
 
                     {/* CTA Row */}
                     <div className="mb-12 flex w-full flex-col items-center gap-6 sm:w-auto sm:flex-row">
-                        <button className="group relative w-full overflow-hidden rounded-full bg-slate-900 px-8 py-4 font-semibold text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-slate-800 sm:w-auto">
+                        <a
+                            href="/dashboard/register"
+                            className="group relative w-full overflow-hidden rounded-full bg-slate-900 px-8 py-4 font-semibold text-white shadow-xl shadow-slate-900/20 transition-all duration-300 hover:scale-105 hover:bg-slate-800 sm:w-auto"
+                        >
                             <span className="relative z-10 flex items-center justify-center gap-2">
                                 {ctaText}
                                 <svg
@@ -233,7 +239,7 @@ export default function Hero({
                                     <path d="m12 5 7 7-7 7" />
                                 </svg>
                             </span>
-                        </button>
+                        </a>
                     </div>
 
                     {/* Stats Row - Clean Divider Style */}

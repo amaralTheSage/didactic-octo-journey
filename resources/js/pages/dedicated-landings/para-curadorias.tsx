@@ -117,7 +117,7 @@ export default function ParaCuradorias() {
                 bgImage="https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=2340&auto=format&fit=crop"
                 floatingCardTitle="RESULTADOS"
                 floatingCardSubtitle="15 campanhas ativas gerenciadas este mês."
-                ctaText="Cadastrar Curadoria"
+                ctaText="Se cadastre aqui"
                 variant={2}
             />
             <FadeInEffect>
