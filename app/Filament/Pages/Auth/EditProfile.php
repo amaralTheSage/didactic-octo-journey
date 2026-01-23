@@ -480,7 +480,6 @@ class EditProfile extends BaseEditProfile
                     ->hiddenLabel()
                     ->disk('public')
                     ->directory('avatars')
-                    ->visibility()
                     ->alignCenter()
                     ->image()
                     ->avatar()
