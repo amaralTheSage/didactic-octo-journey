@@ -6,7 +6,7 @@ echo "::group::Running post-deploy script..."
 
 echo "::notice::Caching framework..."
 php artisan optimize
-php artisan filament:optimize
+# php artisan filament:optimize
 
 php artisan migrate --force --isolated
 
