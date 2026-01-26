@@ -11,6 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: SSH smoke test
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            whoami
+            hostname
+            uptime
+
       - name: Checkout
         uses: actions/checkout@v5
 
