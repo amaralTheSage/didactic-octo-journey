@@ -598,19 +598,19 @@ class EditProfile extends BaseEditProfile
                     ->schema([
                         Group::make()->columns(2)->schema([
                             TextInput::make('instagram')->placeholder('@Instagram'),
-                            TextInput::make('instagram_followers')->numeric(),
+                            TextInput::make('instagram_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('youtube')->placeholder('@YouTube'),
-                            TextInput::make('youtube_followers')->numeric(),
+                            TextInput::make('youtube_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('tiktok')->placeholder('@TikTok'),
-                            TextInput::make('tiktok_followers')->numeric(),
+                            TextInput::make('tiktok_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('twitter')->placeholder('@Twitter'),
-                            TextInput::make('twitter_followers')->numeric(),
+                            TextInput::make('twitter_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('facebook')->placeholder('@Facebook'),
-                            TextInput::make('facebook_followers')->numeric(),
+                            TextInput::make('facebook_followers')->label('Seguidores')->integerInputFormatted(),
                         ]),
                     ]),
 
@@ -632,9 +632,9 @@ class EditProfile extends BaseEditProfile
                             ->label('Comissão da Agência')
                             ->suffix('%')
                             ->extraInputAttributes(['style' => 'text-align: right;'])
-                            ->mask('999')
+                            ->mask('99')
                             ->minValue(0)
-                            ->maxValue(100),
+                            ->maxValue(99),
                     ])->columns(4),
             ])
             ->visible(fn(Get $get) => $get('role') === 'influencer');

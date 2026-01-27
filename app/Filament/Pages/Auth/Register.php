@@ -424,19 +424,19 @@ class Register extends SimplePage
                     ->schema([
                         Group::make()->columns(2)->schema([
                             TextInput::make('instagram')->placeholder('@Instagram'),
-                            TextInput::make('instagram_followers')->label('Seguidores')->numeric(),
+                            TextInput::make('instagram_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('youtube')->placeholder('@YouTube'),
-                            TextInput::make('youtube_followers')->label('Seguidores')->numeric(),
+                            TextInput::make('youtube_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('tiktok')->placeholder('@TikTok'),
-                            TextInput::make('tiktok_followers')->label('Seguidores')->numeric(),
+                            TextInput::make('tiktok_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('twitter')->placeholder('@Twitter'),
-                            TextInput::make('twitter_followers')->label('Seguidores')->numeric(),
+                            TextInput::make('twitter_followers')->label('Seguidores')->integerInputFormatted(),
 
                             TextInput::make('facebook')->placeholder('@Facebook'),
-                            TextInput::make('facebook_followers')->label('Seguidores')->numeric(),
+                            TextInput::make('facebook_followers')->label('Seguidores')->integerInputFormatted(),
                         ]),
                     ]),
 
@@ -459,9 +459,9 @@ class Register extends SimplePage
                             ->label('Comissão da Agência')
                             ->suffix('%')
                             ->extraInputAttributes(['style' => 'text-align: right;'])
-                            ->mask('999')
+                            ->mask('99')
                             ->minValue(0)
-                            ->maxValue(100),
+                            ->maxValue(99),
 
                         Text::make('Valor tabelado para ser cobrado da empresa')->columnSpan(4),
                     ])->columns(4),

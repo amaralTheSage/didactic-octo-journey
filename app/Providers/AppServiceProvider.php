@@ -43,6 +43,25 @@ class AppServiceProvider extends ServiceProvider
                 ->dehydrateStateUsing(fn($state) => (float) str_replace(['.', ','], ['', '.'], $state));
         });
 
+        TextInput::macro('integerInputFormatted', function () {
+            /** @var TextInput $this */
+            return $this
+                ->numeric() // Ensures validation is numeric
+                ->inputMode('numeric')
+                ->step(1)
+                ->stripCharacters(['.', ','])
+                ->minValue(0)
+                // Use Alpine.js $money mask: separator=',', decimal='.', precision=0
+                // Note: $money(input, decimalSeparator, thousandsSeparator, precision)
+                ->mask(RawJs::make(<<<'JS'
+                $money($input, ',', '.', 0)
+            JS))
+                // Display format: 1234 -> 1.234
+                ->formatStateUsing(fn($state) => $state ? number_format((int) $state, 0, ',', '.') : null)
+                // Database format: 1.234 -> 1234
+                ->dehydrateStateUsing(fn($state) => $state ? (int) str_replace('.', '', $state) : null);
+        });
+
         Campaign::observe(CampaignObserver::class);
 
         Gate::define('is_admin', function (User $user) {
