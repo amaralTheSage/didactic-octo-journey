@@ -179,7 +179,7 @@ class EditProfile extends BaseEditProfile
                 null
             );
 
-            $data['influencer_data']['location_data'] = compact('country', 'state', 'city');
+            $data['location_data'] = compact('country', 'state', 'city');
         }
 
         $existingSelections = $user->attribute_values()

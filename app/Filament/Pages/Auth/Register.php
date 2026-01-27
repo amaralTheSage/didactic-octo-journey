@@ -49,6 +49,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Password;
 use Leandrocfe\FilamentPtbrFormFields\Money;
@@ -101,12 +102,13 @@ class Register extends SimplePage
             $data = $this->form->getState();
             $this->callHook('afterValidate');
 
+            $data = $this->mutateFormDataBeforeRegister($data);
+
             $isInfluencer = ($data['role'] === 'influencer');
 
             $influencerData = $data['influencer_data'] ?? [];
             $subcategories = $influencerData['subcategories'] ?? [];
 
-            $data = $this->mutateFormDataBeforeRegister($data);
             $this->callHook('beforeRegister');
 
             $user = $this->handleRegistration($data);
@@ -186,7 +188,6 @@ class Register extends SimplePage
      */
     protected function handleRegistration(array $data): Model
     {
-
         return $this->getUserModel()::create($data);
     }
 
@@ -326,6 +327,7 @@ class Register extends SimplePage
                             ->visible(fn(Get $get) => $get('role') === 'influencer')
 
                             ->schema([
+
                                 Select::make('country')
                                     ->label('País')
                                     ->placeholder('')
@@ -347,13 +349,22 @@ class Register extends SimplePage
                                 Select::make('state')
                                     ->label('Estado')
                                     ->placeholder('')
-                                    ->options(
-                                        fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-                                            ->collect()
-                                            ->sortBy('nome')
-                                            ->pluck('nome', 'sigla')
-                                            ->toArray()
-                                    )
+                                    ->options(function () {
+                                        try {
+                                            // Definimos um timeout baixo (ex: 3 segundos) para não travar o form
+                                            $response = Http::timeout(1)->get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+
+                                            if ($response->failed()) return [];
+
+                                            return $response->collect()
+                                                ->sortBy('nome')
+                                                ->pluck('nome', 'sigla')
+                                                ->toArray();
+                                        } catch (\Throwable $e) {
+                                            Log::warning("IBGE API (States) failed: " . $e->getMessage());
+                                            return [];
+                                        }
+                                    })
                                     ->searchable()
                                     ->reactive()
                                     ->afterStateUpdated(fn(callable $set) => $set('city', null))
@@ -363,21 +374,24 @@ class Register extends SimplePage
                                     ->label('Cidade')
                                     ->placeholder('')
                                     ->options(function (Get $get) {
-                                        if (! $get('state')) {
+                                        $state = $get('state');
+                                        if (!$state || $get('country') !== 'BR') return [];
+
+                                        try {
+                                            return Http::timeout(1)
+                                                ->get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
+                                                ->collect()
+                                                ->pluck('nome', 'nome')
+                                                ->toArray();
+                                        } catch (\Throwable $e) {
                                             return [];
                                         }
-
-                                        return Http::get(
-                                            "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
-                                        )
-                                            ->collect()
-                                            ->pluck('nome', 'nome')
-                                            ->toArray();
                                     })
                                     ->searchable()
                                     ->disabled(fn(Get $get) => $get('country') !== 'BR'),
                             ]),
 
+                        Text::make('Caso a lista de estados e cidades não carregue, você poderá preencher seu endereço na página de edição de perfil.'),
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),
                     ]),
@@ -652,16 +666,21 @@ class Register extends SimplePage
      */
     protected function mutateFormDataBeforeRegister(array $data): array
     {
-        if (isset($data['influencer_data']['location_data'])) {
-            $loc = $data['influencer_data']['location_data'];
+        if (isset($data['location_data'])) {
+            $loc = $data['location_data'];
 
-            $data['influencer_data']['location'] = implode('|', [
+            $locationString = implode('|', [
                 $loc['country'] ?? '',
                 $loc['state'] ?? '',
                 $loc['city'] ?? '',
             ]);
 
-            unset($data['influencer_data']['location_data']);
+            if (!isset($data['influencer_data'])) {
+                $data['influencer_data'] = [];
+            }
+            $data['influencer_data']['location'] = $locationString;
+
+            unset($data['location_data']);
         }
 
         return $data;
