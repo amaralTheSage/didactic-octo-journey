@@ -331,7 +331,7 @@ class Register extends SimplePage
                                 Select::make('country')
                                     ->label('País')
                                     ->placeholder('')
-
+                                    ->columnSpan(fn(Get $get) => $get('country') === 'BR' ? 1 : 3)
                                     ->options([
                                         'BR' => 'Brasil',
                                         'US' => 'Estados Unidos',
@@ -368,7 +368,9 @@ class Register extends SimplePage
                                     ->searchable()
                                     ->reactive()
                                     ->afterStateUpdated(fn(callable $set) => $set('city', null))
-                                    ->disabled(fn(Get $get) => $get('country') !== 'BR'),
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                    ->visible(fn(Get $get) => $get('country') === 'BR'),
+
 
                                 Select::make('city')
                                     ->label('Cidade')
@@ -388,10 +390,12 @@ class Register extends SimplePage
                                         }
                                     })
                                     ->searchable()
-                                    ->disabled(fn(Get $get) => $get('country') !== 'BR'),
+                                    ->disabled(fn(Get $get) => $get('country') !== 'BR')
+                                    ->visible(fn(Get $get) => $get('country') === 'BR'),
                             ]),
 
-                        Text::make('Caso a lista de estados e cidades não carregue, você poderá preencher seu endereço na página de edição de perfil.'),
+                        Text::make('Caso a lista de estados e cidades não carregue, você poderá preencher seu endereço na página de edição de perfil.')->visible(fn(Get $get) => $get('role') === 'influencer' && $get('location_data.country') === 'BR')->live(),
+
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),
                     ]),
