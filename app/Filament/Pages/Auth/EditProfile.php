@@ -31,6 +31,7 @@ use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
@@ -46,6 +47,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Js;
@@ -499,7 +501,8 @@ class EditProfile extends BaseEditProfile
                     ->schema([
                         Select::make('country')
                             ->label('País')
-                            ->placeholder('Selecione um país')
+                            ->placeholder('')
+                            ->columnSpan(fn(Get $get) => $get('country') === 'BR' ? 1 : 3)
                             ->options([
                                 'BR' => 'Brasil',
                                 'US' => 'Estados Unidos',
@@ -516,39 +519,54 @@ class EditProfile extends BaseEditProfile
 
                         Select::make('state')
                             ->label('Estado')
-                            ->placeholder('Selecione um estado')
-                            ->options(
-                                fn() => Http::get('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
-                                    ->collect()
-                                    ->sortBy('nome')
-                                    ->pluck('nome', 'sigla')
-                                    ->toArray()
-                            )
+                            ->placeholder('')
+                            ->options(function () {
+                                try {
+                                    // Definimos um timeout baixo (ex: 3 segundos) para não travar o form
+                                    $response = Http::timeout(1)->get('https://servicodados.ibge.gov.br/api/v1/localidades/estados');
+
+                                    if ($response->failed()) return [];
+
+                                    return $response->collect()
+                                        ->sortBy('nome')
+                                        ->pluck('nome', 'sigla')
+                                        ->toArray();
+                                } catch (\Throwable $e) {
+                                    Log::warning("IBGE API (States) failed: " . $e->getMessage());
+                                    return [];
+                                }
+                            })
                             ->searchable()
                             ->reactive()
                             ->afterStateUpdated(fn(callable $set) => $set('city', null))
                             ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR'),
+                            ->visible(fn(Get $get) => $get('country') === 'BR'),
+
 
                         Select::make('city')
                             ->label('Cidade')
-                            ->placeholder('Selecione uma cidade')
+                            ->placeholder('')
                             ->options(function (Get $get) {
-                                if (! $get('state')) {
+                                $state = $get('state');
+                                if (!$state || $get('country') !== 'BR') return [];
+
+                                try {
+                                    return Http::timeout(1)
+                                        ->get("https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$state}/municipios")
+                                        ->collect()
+                                        ->pluck('nome', 'nome')
+                                        ->toArray();
+                                } catch (\Throwable $e) {
                                     return [];
                                 }
-
-                                return Http::get(
-                                    "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{$get('state')}/municipios"
-                                )
-                                    ->collect()
-                                    ->pluck('nome', 'nome')
-                                    ->toArray();
                             })
                             ->searchable()
                             ->disabled(fn(Get $get) => $get('country') !== 'BR')
-                            ->required(fn(Get $get) => $get('country') === 'BR' && $get('state')),
+                            ->visible(fn(Get $get) => $get('country') === 'BR'),
                     ]),
+
+                Text::make('Caso a lista de estados e cidades não carregue, tente novamente mais tarde.')->visible(fn(Get $get) => $get('role') === 'influencer' && $get('location_data.country') === 'BR')->live(),
+
 
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
