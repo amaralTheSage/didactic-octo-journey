@@ -74,6 +74,8 @@ class Register extends SimplePage
      */
     protected string $userModel;
 
+    public ?string $role = null;
+
     public function mount(): void
     {
         if (Filament::auth()->check()) {
@@ -262,9 +264,10 @@ class Register extends SimplePage
                     'curator' => 'secondary',
                 ])
                 ->grouped()
-                ->extraFieldWrapperAttributes(['class' => 'text-center flex flex-col w-fit mx-auto gap-4'])
-                ->extraAttributes(['class' => 'text-center flex justify-center'])
+                ->extraFieldWrapperAttributes(['class' => 'text-center flex flex-col w-fit justify-center mx-auto gap-4'])
+                ->extraAttributes(['class' => 'text-center flex justify-center mx-auto'])
                 ->required()
+                ->afterStateUpdated(fn($state) => $this->role = $state)
                 ->live()
                 ->inline(),
 
@@ -280,6 +283,7 @@ class Register extends SimplePage
                     ])->visible(fn(Get $get) => $get('role') === 'influencer'),
 
                     Step::make('Detalhes')->schema([
+                        Text::make('Os campos abaixo são opcionais e podem ser preenchidos a qualquer momento na página de edição de perfil'),
                         $this->getAttributesRepeater(),
                     ])->visible(fn(Get $get) => $get('role') === 'influencer'),
                 ]
@@ -318,11 +322,12 @@ class Register extends SimplePage
                             ->placeholder('Sou criador de conteúdo...')
                             ->required(),
 
-                        TextInput::make('pix_address')->label('Chave Pix'),
+                        TextInput::make('pix_address')->label('Chave Pix')->helperText('Opcional'),
 
                         $this->getEmailFormComponent(),
                         Group::make()
                             ->statePath('location_data')
+
                             ->columns(3)
                             ->visible(fn(Get $get) => $get('role') === 'influencer')
 
@@ -330,6 +335,7 @@ class Register extends SimplePage
 
                                 Select::make('country')
                                     ->label('País')
+                                    ->helperText('Opcional')
                                     ->placeholder('')
                                     ->columnSpan(fn(Get $get) => $get('country') === 'BR' ? 1 : 3)
                                     ->options([
@@ -349,6 +355,7 @@ class Register extends SimplePage
                                 Select::make('state')
                                     ->label('Estado')
                                     ->placeholder('')
+                                    ->helperText('Opcional')
                                     ->options(function () {
                                         try {
                                             // Definimos um timeout baixo (ex: 3 segundos) para não travar o form
@@ -374,6 +381,7 @@ class Register extends SimplePage
 
                                 Select::make('city')
                                     ->label('Cidade')
+                                    ->helperText('Opcional')
                                     ->placeholder('')
                                     ->options(function (Get $get) {
                                         $state = $get('state');
@@ -408,6 +416,8 @@ class Register extends SimplePage
             ->statePath('influencer_data')
             ->dehydrated()
             ->schema([
+                Text::make('Os campos abaixo são opcionais e podem ser preenchidos a qualquer momento na página de edição de perfil'),
+
                 Select::make('subcategories')
                     ->multiple()
                     ->label('Público Alvo')
@@ -426,7 +436,6 @@ class Register extends SimplePage
                     ->searchable()
                     ->preload()
                     ->nullable()
-                    ->helperText('Opcional, você pode se afiliar a uma agência quando quiser.')
                     ->getSearchResultsUsing(
                         fn(string $search): array => User::where('role', UserRole::AGENCY)
                             ->where('name', 'ilike', "%{$search}%")
@@ -565,6 +574,7 @@ class Register extends SimplePage
     protected function getNameFormComponent(): Component
     {
         return TextInput::make('name')
+            ->live()
             ->label(__('filament-panels::auth/pages/register.form.name.label'))
             ->required()
             ->maxLength(255)
@@ -576,6 +586,7 @@ class Register extends SimplePage
         return TextInput::make('email')
             ->label(__('filament-panels::auth/pages/register.form.email.label'))
             ->email()
+            ->live()
             ->required()
             ->maxLength(255)
             ->unique($this->getUserModel());
@@ -655,7 +666,7 @@ class Register extends SimplePage
     {
         return Action::make('register')
             ->label(__('filament-panels::auth/pages/register.form.actions.register.label'))
-            ->visible(fn(Get $get) => filled($get('role') || filled($get('name'))))
+            ->visible(fn() => filled($this->role))
             ->submit('register');
     }
 

@@ -252,14 +252,13 @@ body {
 
 .modal-limitado {
     @apply bg-amber-200;
-
 }
 
-.fi-dropdown-panel{
-    @apply  w-full !min-w-fit;
+.fi-dropdown-panel {
+    @apply w-full !min-w-fit;
 }
 
-.fi-dropdown-list{
+.fi-dropdown-list {
     @apply w-70;
 }
 
@@ -291,8 +290,8 @@ body {
     @apply bg-primary text-primary-foreground;
 }
 
-.fi- .fi-simple-main {
-    @apply bg-background;
+.fi-simple-main {
+    @apply bg-background ring-0;
 }
 
 .fi-input-wrp-content-ctn {

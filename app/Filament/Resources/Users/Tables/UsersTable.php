@@ -24,7 +24,7 @@ class UsersTable
             ->columns([
                 TextColumn::make('role')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => __('roles.'.$state->value))
+                    ->formatStateUsing(fn($state) => __('roles.' . $state->value))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')

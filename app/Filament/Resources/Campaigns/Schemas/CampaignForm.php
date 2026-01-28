@@ -74,6 +74,7 @@ class CampaignForm
 
                             MarkdownEditor::make('description')
                                 ->nullable()
+                                ->helperText('Opcional')
                                 ->columnSpan(2),
 
                             Hidden::make('company_id'),
@@ -130,9 +131,9 @@ class CampaignForm
                         ->preload()
                         ->required()->columnSpan(2),
 
-                    TextInput::make('n_influencers')->label('Número de Influenciadores')->numeric()->minValue(0)->nullable(),
+                    TextInput::make('n_influencers')->label('Número de Influenciadores')->numeric()->minValue(0)->nullable()->helperText('Opcional'),
 
-                    TextInput::make('duration')->label('Duração da Campanha (dias)')->numeric()->minValue(0)->nullable(),
+                    TextInput::make('duration')->label('Duração da Campanha (dias)')->numeric()->minValue(0)->nullable()->helperText('Opcional'),
                 ])->columns(4)->columnSpan(2),
 
                 Group::make([
@@ -153,9 +154,9 @@ class CampaignForm
                 ])->columns(2)->columnSpanFull(),
 
                 Group::make()->columns(3)->schema([
-                    TextInput::make('n_stories')->default(0)->numeric()->label('Stories'),
-                    TextInput::make('n_reels')->default(0)->numeric()->label('Reels'),
-                    TextInput::make('n_carrousels')->default(0)->numeric()->label('Carrosséis'),
+                    TextInput::make('n_stories')->default(0)->numeric()->label('Stories')->helperText('Opcional'),
+                    TextInput::make('n_reels')->default(0)->numeric()->label('Reels')->helperText('Opcional'),
+                    TextInput::make('n_carrousels')->default(0)->numeric()->label('Carrosséis')->helperText('Opcional'),
                 ])->columnSpan(2),
 
                 // CampaignForm
@@ -164,6 +165,7 @@ class CampaignForm
                     ->collapsible()
                     ->collapsed()
                     ->label('Atributos Gerais')
+                    ->helperText('Campos opcionais')
                     ->addable(false)
                     ->deletable(false)
                     ->reorderable(false)
@@ -248,6 +250,7 @@ class CampaignForm
                     ->columnSpan(2),
 
                 Repeater::make('location_data')
+                    ->helperText('Campos opcionais')
                     ->label('Localização')->addable(false)
                     ->table([
                         TableColumn::make('País'),
