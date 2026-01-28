@@ -422,3 +422,7 @@ th {
 .fi-sidebar-nav {
     @apply pt-2;
 }
+
+.fi-sc-wizard {
+    @apply bg-sidebar;
+}
